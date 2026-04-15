@@ -28,6 +28,16 @@ pnpm install
 pnpm dev
 ```
 
+## Code Quality
+
+This project uses Biome for linting and formatting.
+
+Run checks:
+
+```bash
+pnpm check
+```
+
 ## Project Structure
 
 This project follows a structure inspired by Bulletproof React, adapted for this codebase.
