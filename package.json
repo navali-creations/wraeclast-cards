@@ -28,4 +28,32 @@
     "typescript": "~6.0.2",
     "vite": "^8.0.4"
   }
+  "name": "wraeclast-cards",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "check": "biome check .",
+    "preview": "vite preview",
+    "format": "biome format . --write"
+  },
+  "dependencies": {
+    "clsx": "^2.1.1",
+    "daisyui": "^5.5.19",
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4",
+    "tailwindcss": "^4.2.2"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^2.4.12",
+    "@tailwindcss/vite": "^4.2.2",
+    "@types/node": "^24.12.2",
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^6.0.1",
+    "typescript": "~6.0.2",
+    "vite": "^8.0.4"
+  }
 }
