@@ -2,8 +2,8 @@
 @plugin "daisyui";
 
 @plugin "daisyui/theme" {
-	name: "light";
-	default: true;
-	prefersdark: false;
-	color-scheme: light;
+  name: "light";
+  default: true;
+  prefersdark: false;
+  color-scheme: light;
 }
