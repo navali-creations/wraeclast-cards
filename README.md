@@ -37,3 +37,21 @@ Run checks:
 ```bash
 pnpm check
 ```
+
+## Project Structure
+
+This project follows a structure inspired by Bulletproof React, adapted for this codebase.
+
+```text
+src/
+  app/
+  components/
+  config/
+  features/
+  lib/
+  routes/
+  types/
+
+content/
+docs/
+```
