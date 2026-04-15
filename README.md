@@ -27,3 +27,13 @@ Run the project:
 pnpm install
 pnpm dev
 ```
+
+## Code Quality
+
+This project uses Biome for linting and formatting.
+
+Run checks:
+
+```bash
+pnpm check
+```

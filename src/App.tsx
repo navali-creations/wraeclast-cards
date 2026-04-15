@@ -8,10 +8,15 @@ function App() {
             Tailwind CSS and daisyUI are configured correctly.
           </p>
           <div className="card-actions justify-end">
-            <button className="btn btn-primary">It works</button>
+            <button type="button" className="btn btn-primary">
+              It works
+            </button>
           </div>
         </div>
       </section>
+      <button type="button" className="btn btn-primary">
+        It works
+      </button>
     </main>
   );
 }
