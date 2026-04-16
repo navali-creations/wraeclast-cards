@@ -19,5 +19,8 @@
     "formatter": {
       "quoteStyle": "double"
     }
+  },
+  "files": {
+    "includes": ["**", "!**/routeTree.gen.ts"]
   }
 }

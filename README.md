@@ -73,3 +73,13 @@ If hooks are not installed yet, run:
 ```bash
 pnpm lefthook install
 ```
+
+## App Providers
+
+The app uses:
+
+- TanStack Router for routing
+- TanStack Query for server-state management
+
+The root app providers are defined in `src/app/providers.tsx`.
+The router bootstrap lives in `src/router.tsx`.
