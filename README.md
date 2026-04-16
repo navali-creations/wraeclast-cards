@@ -55,3 +55,21 @@ src/
 content/
 docs/
 ```
+
+## Git Hooks
+
+This project uses Lefthook to run Biome checks on staged files before each commit.
+
+### Pre-commit behavior
+
+Before each commit, Lefthook runs Biome on staged files to:
+
+- format files automatically
+- apply safe fixes where possible
+- block the commit if errors remain
+
+If hooks are not installed yet, run:
+
+```bash
+pnpm lefthook install
+```
