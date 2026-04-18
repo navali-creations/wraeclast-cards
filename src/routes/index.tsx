@@ -24,39 +24,21 @@ function HomePage() {
           </div>
 
           <div className="grid gap-4 md:grid-cols-3">
-            <article
-              className="rounded-box border border-base-300 p-4"
-              style={{
-                backgroundColor: "var(--color-primary)",
-                color: "var(--color-primary-content)",
-              }}
-            >
+            <article className="rounded-box border border-base-300 bg-primary text-primary-content p-4">
               <p className="text-xs uppercase tracking-[0.2em] opacity-70">
                 Primary
               </p>
               <p className="mt-3 text-lg font-semibold">#8f3d9e</p>
             </article>
 
-            <article
-              className="rounded-box border border-base-300 p-4"
-              style={{
-                backgroundColor: "var(--color-secondary)",
-                color: "var(--color-secondary-content)",
-              }}
-            >
+            <article className="rounded-box border border-base-300 bg-secondary text-secondary-content p-4">
               <p className="text-xs uppercase tracking-[0.2em] opacity-70">
                 Secondary
               </p>
               <p className="mt-3 text-lg font-semibold">#d06cff</p>
             </article>
 
-            <article
-              className="rounded-box border border-base-300 p-4"
-              style={{
-                backgroundColor: "var(--color-accent)",
-                color: "var(--color-accent-content)",
-              }}
-            >
+            <article className="rounded-box border border-base-300 bg-accent text-accent-content p-4">
               <p className="text-xs uppercase tracking-[0.2em] opacity-70">
                 Accent
               </p>
@@ -75,28 +57,18 @@ function HomePage() {
           </div>
 
           <div className="flex flex-wrap gap-3">
-            <Button
-              variant="primary"
-              className="btn"
-              style={{ color: "var(--color-primary-content)" }}
-            >
+            <Button variant="primary" className="btn text-primary-content">
               Primary Token
             </Button>
-            <Button
-              variant="secondary"
-              className="btn"
-              style={{ color: "var(--color-secondary-content)" }}
-            >
+            <Button variant="secondary" className="btn text-secondary-content">
               Secondary Token
             </Button>
-            <Button
-              variant="accent"
-              className="btn"
-              style={{ color: "var(--color-accent-content)" }}
-            >
+            <Button variant="accent" className="btn text-accent-content">
               Accent Token
             </Button>
-            <Button className="btn bg-base-100">Base Token</Button>
+            <Button className="btn bg-base-100 text-base-content">
+              Base Token
+            </Button>
           </div>
         </div>
       </section>
