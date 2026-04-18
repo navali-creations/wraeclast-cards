@@ -8,6 +8,9 @@ importers:
 
   .:
     dependencies:
+      '@navali/fated-connections':
+        specifier: ^0.2.5
+        version: 0.2.5(daisyui@5.5.19)(react-dom@19.2.5(react@19.2.5))(react@19.2.5)(tailwindcss@4.2.2)
       '@tanstack/react-query':
         specifier: ^5.99.0
         version: 5.99.0(react@19.2.5)
@@ -389,6 +392,14 @@ packages:
     peerDependencies:
       '@emnapi/core': ^1.7.1
       '@emnapi/runtime': ^1.7.1
+
+  '@navali/fated-connections@0.2.5':
+    resolution: {integrity: sha512-FBG+SSeBuF8Rypit0xUQCiTbCeZzte8ktTafcFEGBHUm4m1RSCVfym1vb+keJVX04chHjsbMSmZExzL1c2rpqQ==}
+    peerDependencies:
+      daisyui: ^5.0.0
+      react: ^18.0.0 || ^19.0.0
+      react-dom: ^18.0.0 || ^19.0.0
+      tailwindcss: ^4.0.0
 
   '@oxc-project/types@0.124.0':
     resolution: {integrity: sha512-VBFWMTBvHxS11Z5Lvlr3IWgrwhMTXV+Md+EQF0Xf60+wAdsGFTBx7X7K/hP4pi8N7dcm1RvcHwDxZ16Qx8keUg==}
@@ -1422,6 +1433,13 @@ snapshots:
       '@emnapi/runtime': 1.9.2
       '@tybys/wasm-util': 0.10.1
     optional: true
+
+  '@navali/fated-connections@0.2.5(daisyui@5.5.19)(react-dom@19.2.5(react@19.2.5))(react@19.2.5)(tailwindcss@4.2.2)':
+    dependencies:
+      daisyui: 5.5.19
+      react: 19.2.5
+      react-dom: 19.2.5(react@19.2.5)
+      tailwindcss: 4.2.2
 
   '@oxc-project/types@0.124.0': {}
 
