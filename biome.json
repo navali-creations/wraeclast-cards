@@ -21,6 +21,6 @@
     }
   },
   "files": {
-    "includes": ["**", "!**/routeTree.gen.ts"]
+    "includes": ["**", "!dist", "!**/routeTree.gen.ts"]
   }
 }

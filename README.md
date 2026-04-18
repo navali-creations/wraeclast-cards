@@ -212,3 +212,13 @@ Contains internal project documentation.
 - Keep features isolated and cohesive
 - Prefer small, reusable shared components over duplicated UI
 - Avoid placing new code in random top-level files under `src`
+
+## UI Components
+
+This project uses the `@navali/fated-connections` package.
+
+Example:
+
+```tsx
+import { Button } from "@navali/fated-connections";
+```

@@ -1,9 +1,31 @@
 @import "tailwindcss";
-@plugin "daisyui";
+@plugin "daisyui" {
+  themes: false;
+}
 
 @plugin "daisyui/theme" {
-  name: "light";
+  name: "coffee";
   default: true;
-  prefersdark: false;
-  color-scheme: light;
+  --color-base-100: oklch(92% 0.03 85);
+  --color-base-200: oklch(27% 0.105 12.094);
+  --color-base-300: oklch(71.5% 0.03 85);
+  --color-base-content: oklch(27% 0.105 12.094);
+  --color-primary: oklch(45% 0.188 13.697);
+  --color-primary-content: oklch(95% 0.02 85);
+  --color-secondary: oklch(34.465% 0.029 199.194);
+  --color-secondary-content: oklch(86.893% 0.005 199.194);
+  --color-accent: oklch(52% 0.12 224.389);
+  --color-accent-content: oklch(95% 0.02 85);
+  --color-neutral: oklch(20% 0.07 12.094);
+  --color-neutral-content: oklch(92% 0.03 85);
+  --color-info: oklch(79.49% 0.063 184.558);
+  --color-info-content: oklch(18% 0.02 184.558);
+  --color-success: oklch(74.722% 0.072 131.116);
+  --color-success-content: oklch(18% 0.02 131.116);
+  --color-warning: oklch(88.15% 0.14 87.722);
+  --color-warning-content: oklch(22% 0.03 12.094);
+  --color-error: oklch(77.318% 0.128 31.871);
+  --color-error-content: oklch(22% 0.03 12.094);
 }
+
+@source "../node_modules/@navali/fated-connections/dist/**/*.js";
