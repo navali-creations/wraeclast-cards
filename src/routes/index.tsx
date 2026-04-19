@@ -1,4 +1,3 @@
-import { Button } from "@navali/fated-connections";
 import { createFileRoute } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/")({
