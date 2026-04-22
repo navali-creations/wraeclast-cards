@@ -113,7 +113,31 @@ export function AppLayout() {
           <div className="shrink-0 min-w-110 flex justify-end">
             <Link
               to="/downloads"
-              className="btn btn-primary h-9 shrink-0 gap-2 px-5 rounded-lg min-w-30 font-semibold tracking-wide shadow-md border-0 hover:-translate-y-0.5 transition-all duration-200"
+              className="
+              relative isolate overflow-hidden
+              btn btn-primary
+              h-9 shrink-0 gap-2 px-5 rounded-lg min-w-30
+              font-semibold tracking-wide
+              shadow-md border-0
+              transition-all duration-500 ease-in-out
+              hover:scale-[1.05]
+              before:content-['']
+              before:absolute
+              before:top-[-50%]
+              before:left-[-50%]
+              before:w-[200%]
+              before:h-[200%]
+              before:bg-[linear-gradient(0deg,transparent,transparent_30%,rgba(252,250,250,0.3))]
+              before:-rotate-45
+              before:opacity-0
+              before:transition-all
+              before:duration-500
+              before:ease-in-out
+              before:pointer-events-none
+              before:z-0
+              hover:before:opacity-100
+              hover:before:translate-y-full
+              "
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -131,7 +155,7 @@ export function AppLayout() {
                 <polyline points="7 10 12 15 17 10" />
                 <line x1="12" y1="15" x2="12" y2="3" />
               </svg>
-              Download
+              <span className="relative z-10">Download</span>
             </Link>
           </div>
         </div>
