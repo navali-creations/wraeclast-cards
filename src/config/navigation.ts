@@ -1,11 +1,11 @@
 export const mainNavigation = [
-  { label: "Cards", to: "/cards" },
-  { label: "Stacked Decks", to: "/stacked-decks" },
-  { label: "Soothsayer", to: "/soothsayer" },
-  { label: "Downloads", to: "/downloads" },
+  // { label: "Cards", path: "/cards" },
+  // { label: "Stacked Decks", path: "/stacked-decks" },
+  // { label: "Soothsayer", path: "/soothsayer" },
+  // { label: "Downloads", path: "/downloads" },
 ] as const;
 
 export const footerNavigation = [
-  { label: "Attributions", to: "/attributions" },
-  { label: "Privacy Policy", to: "/privacy-policy" },
+  { label: "Attributions", path: "/attributions" },
+  { label: "Privacy Policy", path: "/privacy-policy" },
 ] as const;
