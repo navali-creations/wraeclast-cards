@@ -1,34 +1,33 @@
-import { createContext, useContext, useEffect, useState } from "react";
-
-type Game = "poe1" | "poe2";
+import { createContext, useState } from "react";
+import { EGame } from "../enums";
 
 interface GameContextValue {
-  game: Game;
-  setGame: (game: Game) => void;
+  game: EGame;
+  setGame?: (game: EGame) => void;
+  handleGameToggle?: (e: React.ChangeEvent<HTMLInputElement>) => void;
 }
 
-const GameContext = createContext<GameContextValue | null>(null);
+const GameContext = createContext<GameContextValue>({
+  game: (localStorage.getItem("game") as EGame) ?? EGame.Poe1,
+});
 
 export function GameProvider({ children }: { children: React.ReactNode }) {
-  const [game, setGame] = useState<Game>(
-    () => (localStorage.getItem("game") as Game) ?? "poe1",
+  const stored = localStorage.getItem("game");
+  const [game, setGame] = useState<EGame>(
+    stored === EGame.Poe2 ? EGame.Poe2 : EGame.Poe1,
   );
 
-  useEffect(() => {
-    localStorage.setItem("game", game);
-  }, [game]);
+  const handleGameToggle = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value as EGame;
+    setGame(value);
+    localStorage.setItem("game", value);
+  };
 
   return (
-    <GameContext.Provider value={{ game, setGame }}>
+    <GameContext.Provider value={{ game, setGame, handleGameToggle }}>
       {children}
     </GameContext.Provider>
   );
 }
 
-export function useGame(): GameContextValue {
-  const context = useContext(GameContext);
-  if (!context) {
-    throw new Error("useGame must be used within a GameProvider");
-  }
-  return context;
-}
+export { GameContext };
