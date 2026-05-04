@@ -1,4 +1,5 @@
 import { Link, Outlet } from "@tanstack/react-router";
+import clsx from "clsx";
 import { useContext } from "react";
 import { FiChevronDown, FiDownload } from "react-icons/fi";
 import { footerNavigation, mainNavigation } from "../../config/navigation";
@@ -22,12 +23,6 @@ export function AppLayout() {
                 className="btn btn-ghost lg:hidden"
               >
                 <FiChevronDown />
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M4 6h16M4 12h8m-8 6h16"
-                />
               </button>
               <ul
                 tabIndex={-1}
@@ -44,7 +39,9 @@ export function AppLayout() {
             {/* Logo */}
             <Link
               to="/"
-              className="btn btn-ghost font-cinzel text-lg font-bold tracking-widest uppercase text-(--wc-gold) px-2"
+              className={clsx(
+                "btn btn-ghost font-cinzel text-lg font-bold tracking-widest uppercase text-(--wc-gold) px-2",
+              )}
             >
               Wraeclast<span className="text-(--color-primary)">.</span>Cards
             </Link>
@@ -73,13 +70,24 @@ export function AppLayout() {
             <div className="relative shrink-0 rounded-lg p-1 bg-[color-mix(in_oklch,var(--wc-card-darker)_88%,black)] shadow-[inset_0_0_0_1px_color-mix(in_oklch,var(--wc-border)_90%,transparent)]">
               <span
                 aria-hidden="true"
-                className={`absolute inset-y-1 left-1 w-[calc(50%-0.125rem)] rounded-md transition-transform duration-250 ease-out ${game === EGame.Poe2 ? "translate-x-full" : "translate-x-0"} ${game === EGame.Poe1 ? "bg-[oklch(45%_0.19_14)] shadow-[0_6px_18px_-10px_oklch(45%_0.19_14/0.9)]" : "bg-[oklch(48%_0.12_224)] shadow-[0_6px_18px_-10px_oklch(48%_0.12_224/0.95)]"}`}
+                className={clsx(
+                  "absolute inset-y-1 left-1 w-[calc(50%-0.125rem)] rounded-md transition-transform duration-250 ease-out",
+                  game === EGame.Poe2 ? "translate-x-full" : "translate-x-0",
+                  game === EGame.Poe1
+                    ? "bg-[oklch(45%_0.19_14)] shadow-[0_6px_18px_-10px_oklch(45%_0.19_14/0.9)]"
+                    : "bg-[oklch(48%_0.12_224)] shadow-[0_6px_18px_-10px_oklch(48%_0.12_224/0.95)]",
+                )}
               />
               <div className="relative z-10 flex items-center">
                 {Object.values(EGame).map((v) => (
                   <label
                     key={v}
-                    className={`h-8 min-w-16 px-3.5 flex items-center justify-center rounded-md text-sm font-semibold tracking-wide transition-colors duration-200 cursor-pointer ${game === v ? "text-[oklch(95%_0.02_85)]" : "text-[color-mix(in_oklch,(--wc-text-60)_92%,transparent)]"}`}
+                    className={clsx(
+                      "h-8 min-w-16 px-3.5 flex items-center justify-center rounded-md text-sm font-semibold tracking-wide transition-colors duration-200 cursor-pointer",
+                      game === v
+                        ? "text-[oklch(95%_0.02_85)]"
+                        : "text-[color-mix(in_oklch,(--wc-text-60)_92%,transparent)]",
+                    )}
                   >
                     <input
                       type="radio"
@@ -98,7 +106,9 @@ export function AppLayout() {
             {/* Download button */}
             <Link
               to="/downloads"
-              className="btn btn-primary h-9 shrink-0 gap-2 px-5 rounded-lg min-w-30 font-semibold tracking-wide shadow-md border-0"
+              className={clsx(
+                "btn btn-primary h-9 shrink-0 gap-2 px-5 rounded-lg min-w-30 font-semibold tracking-wide shadow-md border-0",
+              )}
             >
               <FiDownload />
               <span>Download</span>
@@ -126,8 +136,10 @@ export function AppLayout() {
                 <li key={item.path}>
                   <Link
                     to={item.path}
-                    className="link link-hover text-(--wc-text-50)"
-                    activeProps={{ className: "text-(--wc-text-80)!" }}
+                    className={clsx(
+                      "link link-hover text-(--wc-text-50)",
+                      item.active ? "text-(--wc-text-80)!" : "",
+                    )}
                   >
                     {item.label}
                   </Link>

@@ -1,10 +1,10 @@
-import { createContext, useState } from "react";
+import { type ChangeEvent, createContext, useState } from "react";
 import { EGame } from "../enums";
 
 interface GameContextValue {
   game: EGame;
   setGame?: (game: EGame) => void;
-  handleGameToggle?: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  handleGameToggle?: (e: ChangeEvent<HTMLInputElement>) => void;
 }
 
 const GameContext = createContext<GameContextValue>({
@@ -17,7 +17,7 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
     stored === EGame.Poe2 ? EGame.Poe2 : EGame.Poe1,
   );
 
-  const handleGameToggle = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleGameToggle = (e: ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value as EGame;
     setGame(value);
     localStorage.setItem("game", value);
