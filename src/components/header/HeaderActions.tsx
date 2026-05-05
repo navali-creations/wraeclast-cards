@@ -1,14 +1,11 @@
 import { Link } from "@tanstack/react-router";
 import clsx from "clsx";
 import { FiDownload } from "react-icons/fi";
+import { useGame } from "../../app/game-context";
 import { EGame } from "../../enums";
 
-type HeaderActionsProps = {
-  game: EGame;
-  onChangeGame: (game: EGame) => void;
-};
-
-export function HeaderActions({ game, onChangeGame }: HeaderActionsProps) {
+export function HeaderActions() {
+  const { game, setGame } = useGame();
   return (
     <div className="navbar-end gap-3">
       <div className="relative shrink-0 rounded-lg p-1 bg-[color-mix(in_oklch,var(--wc-card-darker)_88%,black)] shadow-[inset_0_0_0_1px_color-mix(in_oklch,var(--wc-border)_90%,transparent)]">
@@ -30,7 +27,7 @@ export function HeaderActions({ game, onChangeGame }: HeaderActionsProps) {
                 type="button"
                 key={gameVersion}
                 aria-pressed={isChecked}
-                onClick={() => onChangeGame(gameVersion)}
+                onClick={() => setGame(gameVersion)}
                 className={clsx(
                   "h-8 min-w-16 px-3.5 flex items-center justify-center rounded-md text-sm font-semibold tracking-wide transition-colors duration-200 cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--wc-gold)",
                   isChecked

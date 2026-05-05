@@ -3,7 +3,7 @@ import { EGame } from "../enums";
 
 interface GameContextValue {
   game: EGame;
-  setGame?: (game: EGame) => void;
+  setGame: (game: EGame) => void;
 }
 
 function applyGame(selectedGame: EGame): EGame {

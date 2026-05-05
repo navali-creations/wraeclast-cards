@@ -1,12 +1,9 @@
-import { useGame } from "../../app/game-context";
 import { HeaderActions } from "./HeaderActions";
 import { HeaderBrand } from "./HeaderBrand";
 import { HeaderDesktopNavigation } from "./HeaderDesktopNavigation";
 import { HeaderNavigation } from "./HeaderNavigation";
 
 export function Header() {
-  const { game, setGame } = useGame();
-
   return (
     <nav className="bg-(--wc-nav-bg) border-b border-(--wc-border)">
       <div className="navbar mx-auto max-w-300 px-4">
@@ -17,7 +14,7 @@ export function Header() {
         <div className="navbar-center hidden lg:flex">
           <HeaderDesktopNavigation />
         </div>
-        <HeaderActions game={game} onChangeGame={setGame} />
+        <HeaderActions />
       </div>
     </nav>
   );
