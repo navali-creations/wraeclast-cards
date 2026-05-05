@@ -2,7 +2,7 @@ import { Link } from "@tanstack/react-router";
 import { FiMenu } from "react-icons/fi";
 import { mainNavigation } from "../../config/navigation";
 
-export function HeaderNavigation() {
+export function HeaderMobileNavigation() {
   return (
     <div className="dropdown lg:hidden">
       <button type="button" className="btn btn-ghost">
