@@ -11,9 +11,7 @@ export function Header() {
           <HeaderNavigation />
           <HeaderBrand />
         </div>
-        <div className="navbar-center hidden lg:flex">
-          <HeaderDesktopNavigation />
-        </div>
+        <HeaderDesktopNavigation />
         <HeaderActions />
       </div>
     </nav>

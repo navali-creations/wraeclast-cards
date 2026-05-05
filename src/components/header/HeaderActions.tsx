@@ -6,6 +6,9 @@ import { EGame } from "../../enums";
 
 export function HeaderActions() {
   const { game, setGame } = useGame();
+
+  const handleGameChange = (gameVersion: EGame) => setGame(gameVersion);
+
   return (
     <div className="navbar-end gap-3">
       <div className="relative shrink-0 rounded-lg p-1 bg-[color-mix(in_oklch,var(--wc-card-darker)_88%,black)] shadow-[inset_0_0_0_1px_color-mix(in_oklch,var(--wc-border)_90%,transparent)]">
@@ -27,7 +30,7 @@ export function HeaderActions() {
                 type="button"
                 key={gameVersion}
                 aria-pressed={isChecked}
-                onClick={() => setGame(gameVersion)}
+                onClick={() => handleGameChange(gameVersion)}
                 className={clsx(
                   "h-8 min-w-16 px-3.5 flex items-center justify-center rounded-md text-sm font-semibold tracking-wide transition-colors duration-200 cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--wc-gold)",
                   isChecked
