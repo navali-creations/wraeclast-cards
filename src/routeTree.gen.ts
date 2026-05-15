@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as StackedDecksRouteImport } from './routes/stacked-decks'
+import { Route as SoothsayerAuthRouteImport } from './routes/soothsayer-auth'
 import { Route as SoothsayerRouteImport } from './routes/soothsayer'
 import { Route as PrivacyPolicyRouteImport } from './routes/privacy-policy'
 import { Route as DownloadsRouteImport } from './routes/downloads'
@@ -21,6 +22,11 @@ import { Route as CardsCardIdRouteImport } from './routes/cards/$cardId'
 const StackedDecksRoute = StackedDecksRouteImport.update({
   id: '/stacked-decks',
   path: '/stacked-decks',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SoothsayerAuthRoute = SoothsayerAuthRouteImport.update({
+  id: '/soothsayer-auth',
+  path: '/soothsayer-auth',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SoothsayerRoute = SoothsayerRouteImport.update({
@@ -65,6 +71,7 @@ export interface FileRoutesByFullPath {
   '/downloads': typeof DownloadsRoute
   '/privacy-policy': typeof PrivacyPolicyRoute
   '/soothsayer': typeof SoothsayerRoute
+  '/soothsayer-auth': typeof SoothsayerAuthRoute
   '/stacked-decks': typeof StackedDecksRoute
   '/cards/$cardId': typeof CardsCardIdRoute
   '/cards/': typeof CardsIndexRoute
@@ -75,6 +82,7 @@ export interface FileRoutesByTo {
   '/downloads': typeof DownloadsRoute
   '/privacy-policy': typeof PrivacyPolicyRoute
   '/soothsayer': typeof SoothsayerRoute
+  '/soothsayer-auth': typeof SoothsayerAuthRoute
   '/stacked-decks': typeof StackedDecksRoute
   '/cards/$cardId': typeof CardsCardIdRoute
   '/cards': typeof CardsIndexRoute
@@ -86,6 +94,7 @@ export interface FileRoutesById {
   '/downloads': typeof DownloadsRoute
   '/privacy-policy': typeof PrivacyPolicyRoute
   '/soothsayer': typeof SoothsayerRoute
+  '/soothsayer-auth': typeof SoothsayerAuthRoute
   '/stacked-decks': typeof StackedDecksRoute
   '/cards/$cardId': typeof CardsCardIdRoute
   '/cards/': typeof CardsIndexRoute
@@ -98,6 +107,7 @@ export interface FileRouteTypes {
     | '/downloads'
     | '/privacy-policy'
     | '/soothsayer'
+    | '/soothsayer-auth'
     | '/stacked-decks'
     | '/cards/$cardId'
     | '/cards/'
@@ -108,6 +118,7 @@ export interface FileRouteTypes {
     | '/downloads'
     | '/privacy-policy'
     | '/soothsayer'
+    | '/soothsayer-auth'
     | '/stacked-decks'
     | '/cards/$cardId'
     | '/cards'
@@ -118,6 +129,7 @@ export interface FileRouteTypes {
     | '/downloads'
     | '/privacy-policy'
     | '/soothsayer'
+    | '/soothsayer-auth'
     | '/stacked-decks'
     | '/cards/$cardId'
     | '/cards/'
@@ -129,6 +141,7 @@ export interface RootRouteChildren {
   DownloadsRoute: typeof DownloadsRoute
   PrivacyPolicyRoute: typeof PrivacyPolicyRoute
   SoothsayerRoute: typeof SoothsayerRoute
+  SoothsayerAuthRoute: typeof SoothsayerAuthRoute
   StackedDecksRoute: typeof StackedDecksRoute
   CardsCardIdRoute: typeof CardsCardIdRoute
   CardsIndexRoute: typeof CardsIndexRoute
@@ -141,6 +154,13 @@ declare module '@tanstack/react-router' {
       path: '/stacked-decks'
       fullPath: '/stacked-decks'
       preLoaderRoute: typeof StackedDecksRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/soothsayer-auth': {
+      id: '/soothsayer-auth'
+      path: '/soothsayer-auth'
+      fullPath: '/soothsayer-auth'
+      preLoaderRoute: typeof SoothsayerAuthRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/soothsayer': {
@@ -201,6 +221,7 @@ const rootRouteChildren: RootRouteChildren = {
   DownloadsRoute: DownloadsRoute,
   PrivacyPolicyRoute: PrivacyPolicyRoute,
   SoothsayerRoute: SoothsayerRoute,
+  SoothsayerAuthRoute: SoothsayerAuthRoute,
   StackedDecksRoute: StackedDecksRoute,
   CardsCardIdRoute: CardsCardIdRoute,
   CardsIndexRoute: CardsIndexRoute,
