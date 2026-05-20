@@ -1,9 +1,9 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Outlet } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/soothsayer")({
-  component: SoothsayerPage,
+  component: SoothsayerLayout,
 });
 
-function SoothsayerPage() {
-  return <h1 className="text-2xl font-bold">Soothsayer</h1>;
+function SoothsayerLayout() {
+  return <Outlet />;
 }

@@ -32,3 +32,13 @@ export function resolveCallbackPhase(
   if (params.error) return "error";
   return "invalid";
 }
+
+export function parseOAuthCallback(params: OAuthCallbackParams): {
+  resolvedPhase: OAuthCallbackPhase;
+  deepLink: string;
+} {
+  return {
+    resolvedPhase: resolveCallbackPhase(params),
+    deepLink: buildDeepLink(params),
+  };
+}

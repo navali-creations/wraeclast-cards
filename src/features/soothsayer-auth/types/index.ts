@@ -12,7 +12,6 @@ export interface OAuthCallbackParams {
   error_description?: string;
 }
 
-export interface OAuthCallbackState {
-  phase: OAuthCallbackPhase;
-  deepLink: string;
-}
+export type OAuthCallbackState =
+  | { phase: "loading" | "waiting" | "success" | "error"; deepLink: string }
+  | { phase: "invalid"; deepLink?: never };

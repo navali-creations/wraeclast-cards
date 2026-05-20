@@ -1,21 +1,17 @@
-import { useLayoutEffect, useMemo, useState } from "react";
-import { buildDeepLink, resolveCallbackPhase } from "../api/oauth-utils";
+import { useEffect, useState } from "react";
+import { parseOAuthCallback } from "../api/oauth-utils";
 import type { OAuthCallbackParams, OAuthCallbackState } from "../types";
 
 export function useOAuthCallback(
   params: OAuthCallbackParams,
 ): OAuthCallbackState {
-  const [phase, setPhase] = useState<OAuthCallbackState["phase"]>("loading");
+  const { resolvedPhase, deepLink } = parseOAuthCallback(params);
 
-  const computed = useMemo(() => {
-    const resolvedPhase = resolveCallbackPhase(params);
-    const deepLink = buildDeepLink(params);
-    return { resolvedPhase, deepLink };
-  }, [params]);
+  const [phase, setPhase] = useState<OAuthCallbackState["phase"]>(() =>
+    resolvedPhase === "invalid" ? resolvedPhase : "loading",
+  );
 
-  useLayoutEffect(() => {
-    const { resolvedPhase, deepLink } = computed;
-
+  useEffect(() => {
     if (resolvedPhase === "invalid" || resolvedPhase === "error") {
       setPhase(resolvedPhase);
       return;
@@ -30,10 +26,11 @@ export function useOAuthCallback(
     }, 2000);
 
     return () => clearTimeout(closeTimer);
-  }, [computed]);
+  }, [resolvedPhase, deepLink]);
 
-  return {
-    phase,
-    deepLink: computed.deepLink,
-  };
+  if (phase === "invalid") {
+    return { phase };
+  }
+
+  return { phase, deepLink };
 }
