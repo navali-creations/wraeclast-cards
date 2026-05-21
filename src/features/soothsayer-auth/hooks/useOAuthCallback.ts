@@ -1,10 +1,10 @@
+import { useSearch } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { parseOAuthCallback } from "../api/oauth-utils";
-import type { OAuthCallbackParams, OAuthCallbackState } from "../types";
+import type { OAuthCallbackState } from "../types";
 
-export function useOAuthCallback(
-  params: OAuthCallbackParams,
-): OAuthCallbackState {
+export function useOAuthCallback(): OAuthCallbackState {
+  const params = useSearch({ from: "/soothsayer/auth" });
   const { resolvedPhase, deepLink } = parseOAuthCallback(params);
 
   const [phase, setPhase] = useState<OAuthCallbackState["phase"]>(() =>
@@ -28,9 +28,8 @@ export function useOAuthCallback(
     return () => clearTimeout(closeTimer);
   }, [resolvedPhase, deepLink]);
 
-  if (phase === "invalid") {
-    return { phase };
-  }
-
+  if (phase === "invalid") return { phase };
+  if (phase === "error")
+    return { phase, deepLink, errorDescription: params.error_description };
   return { phase, deepLink };
 }
