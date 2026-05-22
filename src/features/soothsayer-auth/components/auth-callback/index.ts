@@ -1,2 +1,6 @@
-export { OAuthCallbackProvider } from "./OAuthCallbackContext";
+export {
+  OAuthCallbackProvider,
+  useOAuthCallback,
+  useOAuthCallbackContext,
+} from "./OAuthCallbackContext";
 export { PhaseCard } from "./PhaseCard";

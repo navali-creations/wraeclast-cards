@@ -1,5 +1,8 @@
-import { useOAuthCallback } from "../hooks/useOAuthCallback";
-import { OAuthCallbackProvider, PhaseCard } from "./auth-callback";
+import {
+  OAuthCallbackProvider,
+  PhaseCard,
+  useOAuthCallback,
+} from "./auth-callback";
 
 export function SoothsayerAuth() {
   const state = useOAuthCallback();

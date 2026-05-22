@@ -1,12 +1,12 @@
 import { MdCheckCircle } from "react-icons/md";
-import { ButtonAnchor } from "../button";
+import { ButtonExternalLink } from "../buttons";
 import { AuthCard } from "./AuthCard";
-import { useOAuthCallbackState } from "./OAuthCallbackContext";
 
-export function SuccessCard() {
-  const state = useOAuthCallbackState();
-  if (state.phase === "invalid") return null;
+interface SuccessCardProps {
+  deepLink: string;
+}
 
+export function SuccessCard({ deepLink }: SuccessCardProps) {
   return (
     <AuthCard
       tone="default"
@@ -14,9 +14,9 @@ export function SuccessCard() {
       title="Authorization successful!"
       description="Opening Soothsayer..."
       actions={
-        <ButtonAnchor variant="subtle" className="mb-4" href={state.deepLink}>
+        <ButtonExternalLink variant="subtle" className="mb-4" href={deepLink}>
           Open Soothsayer manually
-        </ButtonAnchor>
+        </ButtonExternalLink>
       }
       showFootnote
     />

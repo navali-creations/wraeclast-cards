@@ -7,7 +7,11 @@ interface ButtonLinkProps extends LinkProps {
   className?: string;
 }
 
-export function ButtonLink({ variant, className, ...props }: ButtonLinkProps) {
+export function ButtonInternalLink({
+  variant,
+  className,
+  ...props
+}: ButtonLinkProps) {
   return (
     <Link
       className={clsx(baseClass, variantClasses[variant], className)}
