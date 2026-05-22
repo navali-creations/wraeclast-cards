@@ -1,12 +1,12 @@
-import { Button } from "../Button";
+import { ButtonAnchor } from "../button";
 import { Spinner } from "../Spinner";
 import { AuthCard } from "./AuthCard";
+import { useOAuthCallbackState } from "./OAuthCallbackContext";
 
-interface WaitingCardProps {
-  onManualOpen: () => void;
-}
+export function WaitingCard() {
+  const state = useOAuthCallbackState();
+  if (state.phase === "invalid") return null;
 
-export function WaitingCard({ onManualOpen }: WaitingCardProps) {
   return (
     <AuthCard
       tone="default"
@@ -14,9 +14,9 @@ export function WaitingCard({ onManualOpen }: WaitingCardProps) {
       title="Opening Soothsayer..."
       description="If a dialog appeared asking you to open the app, click Allow or Open."
       actions={
-        <Button variant="primary" onClick={onManualOpen}>
+        <ButtonAnchor variant="primary" href={state.deepLink}>
           Open Soothsayer manually
-        </Button>
+        </ButtonAnchor>
       }
       showFootnote
     />

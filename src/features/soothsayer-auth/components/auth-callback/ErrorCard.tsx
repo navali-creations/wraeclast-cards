@@ -1,35 +1,29 @@
-import { Button } from "../Button";
+import { ButtonAnchor, ButtonLink } from "../button";
 import { Spinner } from "../Spinner";
 import { AuthCard } from "./AuthCard";
+import { useOAuthCallbackState } from "./OAuthCallbackContext";
 
-interface ErrorCardProps {
-  description?: string;
-  onManualOpen: () => void;
-  onDownload: () => void;
-}
+export function ErrorCard() {
+  const state = useOAuthCallbackState();
+  if (state.phase !== "error") return null;
 
-export function ErrorCard({
-  description,
-  onManualOpen,
-  onDownload,
-}: ErrorCardProps) {
   return (
     <AuthCard
       tone="error"
       icon={<Spinner tone="error" />}
       title="Couldn't open Soothsayer"
       description={
-        description ??
+        state.errorDescription ??
         "The app may not be installed, or the protocol handler isn't registered. Download Soothsayer and try again."
       }
       actions={
         <>
-          <Button variant="error" onClick={onManualOpen}>
+          <ButtonAnchor variant="error" href={state.deepLink}>
             Try again
-          </Button>
-          <Button variant="subtle" onClick={onDownload}>
+          </ButtonAnchor>
+          <ButtonLink variant="subtle" to="/downloads">
             Download Soothsayer -&gt;
-          </Button>
+          </ButtonLink>
         </>
       }
       showFootnote

@@ -1,32 +1,21 @@
-import type { OAuthCallbackState } from "../../types";
 import { ErrorCard } from "./ErrorCard";
 import { InvalidCard } from "./InvalidCard";
 import { LoadingCard } from "./LoadingCard";
+import { useOAuthCallbackState } from "./OAuthCallbackContext";
 import { SuccessCard } from "./SuccessCard";
 import { WaitingCard } from "./WaitingCard";
 
-interface PhaseCardProps {
-  state: OAuthCallbackState;
-  onManualOpen: () => void;
-  onDownload: () => void;
-}
-
-export function PhaseCard({ state, onManualOpen, onDownload }: PhaseCardProps) {
-  switch (state.phase) {
+export function PhaseCard() {
+  const { phase } = useOAuthCallbackState();
+  switch (phase) {
     case "loading":
       return <LoadingCard />;
     case "waiting":
-      return <WaitingCard onManualOpen={onManualOpen} />;
+      return <WaitingCard />;
     case "success":
-      return <SuccessCard onManualOpen={onManualOpen} />;
+      return <SuccessCard />;
     case "error":
-      return (
-        <ErrorCard
-          description={state.errorDescription}
-          onManualOpen={onManualOpen}
-          onDownload={onDownload}
-        />
-      );
+      return <ErrorCard />;
     case "invalid":
       return <InvalidCard />;
   }
