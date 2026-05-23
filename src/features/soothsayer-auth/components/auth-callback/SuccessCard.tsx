@@ -1,7 +1,7 @@
 import { MdCheckCircle } from "react-icons/md";
 import { ButtonExternalLink } from "../../../../components/buttons";
-import { AuthCard } from "./AuthCard";
-import { useOAuthCallbackContext } from "./OAuthCallbackContext";
+import { useOAuthCallbackContext } from "../../contexts/OAuthCallbackContext";
+import { AuthCard } from "./AuthCard/AuthCard";
 
 export function SuccessCard() {
   const state = useOAuthCallbackContext();

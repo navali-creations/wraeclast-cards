@@ -1,5 +1,5 @@
 import { Spinner } from "../Spinner";
-import { AuthCard } from "./AuthCard";
+import { AuthCard } from "./AuthCard/AuthCard";
 
 export function LoadingCard() {
   return (

@@ -1,7 +1,7 @@
+import { useOAuthCallbackContext } from "../../contexts/OAuthCallbackContext";
 import { ErrorCard } from "./ErrorCard";
 import { InvalidCard } from "./InvalidCard";
 import { LoadingCard } from "./LoadingCard";
-import { useOAuthCallbackContext } from "./OAuthCallbackContext";
 import { SuccessCard } from "./SuccessCard";
 import { WaitingCard } from "./WaitingCard";
 

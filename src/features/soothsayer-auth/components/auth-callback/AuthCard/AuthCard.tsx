@@ -1,5 +1,5 @@
-import type { CardTone } from "../../types";
-import { Card } from "../Card";
+import type { CardTone } from "../../../types";
+import { Card } from "../../Card";
 import {
   bodyClass,
   footnoteClass,

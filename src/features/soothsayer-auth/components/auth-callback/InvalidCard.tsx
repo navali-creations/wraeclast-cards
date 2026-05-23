@@ -1,5 +1,5 @@
 import { MdWarningAmber } from "react-icons/md";
-import { AuthCard } from "./AuthCard";
+import { AuthCard } from "./AuthCard/AuthCard";
 
 export function InvalidCard() {
   return (

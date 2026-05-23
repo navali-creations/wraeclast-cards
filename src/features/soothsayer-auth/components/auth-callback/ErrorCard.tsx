@@ -2,9 +2,9 @@ import {
   ButtonExternalLink,
   ButtonInternalLink,
 } from "../../../../components/buttons";
+import { useOAuthCallbackContext } from "../../contexts/OAuthCallbackContext";
 import { Spinner } from "../Spinner";
-import { AuthCard } from "./AuthCard";
-import { useOAuthCallbackContext } from "./OAuthCallbackContext";
+import { AuthCard } from "./AuthCard/AuthCard";
 
 export function ErrorCard() {
   const state = useOAuthCallbackContext();

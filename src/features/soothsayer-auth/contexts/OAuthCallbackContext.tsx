@@ -1,7 +1,7 @@
 import { useSearch } from "@tanstack/react-router";
 import { createContext, useContext, useEffect, useState } from "react";
-import { parseOAuthCallback } from "../../api/oauth-utils";
-import type { OAuthCallbackState } from "../../types";
+import { parseOAuthCallback } from "../api/oauth-utils";
+import type { OAuthCallbackState } from "../types";
 
 const OAuthCallbackContext = createContext<OAuthCallbackState | null>(null);
 
