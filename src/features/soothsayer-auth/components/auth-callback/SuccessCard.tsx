@@ -1,12 +1,12 @@
 import { MdCheckCircle } from "react-icons/md";
-import { ButtonExternalLink } from "../buttons";
+import { ButtonExternalLink } from "../../../../components/buttons";
 import { AuthCard } from "./AuthCard";
+import { useOAuthCallbackContext } from "./OAuthCallbackContext";
 
-interface SuccessCardProps {
-  deepLink: string;
-}
-
-export function SuccessCard({ deepLink }: SuccessCardProps) {
+export function SuccessCard() {
+  const state = useOAuthCallbackContext();
+  if (state.phase !== "success") return null;
+  const { deepLink } = state;
   return (
     <AuthCard
       tone="default"

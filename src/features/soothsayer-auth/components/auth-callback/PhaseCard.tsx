@@ -6,22 +6,16 @@ import { SuccessCard } from "./SuccessCard";
 import { WaitingCard } from "./WaitingCard";
 
 export function PhaseCard() {
-  const state = useOAuthCallbackContext();
-  const { phase } = state;
+  const { phase } = useOAuthCallbackContext();
   switch (phase) {
     case "loading":
       return <LoadingCard />;
     case "waiting":
-      return <WaitingCard deepLink={state.deepLink} />;
+      return <WaitingCard />;
     case "success":
-      return <SuccessCard deepLink={state.deepLink} />;
+      return <SuccessCard />;
     case "error":
-      return (
-        <ErrorCard
-          deepLink={state.deepLink}
-          errorDescription={state.errorDescription}
-        />
-      );
+      return <ErrorCard />;
     case "invalid":
       return <InvalidCard />;
   }

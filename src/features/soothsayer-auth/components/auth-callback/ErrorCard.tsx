@@ -1,13 +1,15 @@
-import { ButtonExternalLink, ButtonInternalLink } from "../buttons";
+import {
+  ButtonExternalLink,
+  ButtonInternalLink,
+} from "../../../../components/buttons";
 import { Spinner } from "../Spinner";
 import { AuthCard } from "./AuthCard";
+import { useOAuthCallbackContext } from "./OAuthCallbackContext";
 
-interface ErrorCardProps {
-  deepLink: string;
-  errorDescription?: string;
-}
-
-export function ErrorCard({ deepLink, errorDescription }: ErrorCardProps) {
+export function ErrorCard() {
+  const state = useOAuthCallbackContext();
+  if (state.phase !== "error") return null;
+  const { deepLink, errorDescription } = state;
   return (
     <AuthCard
       tone="error"

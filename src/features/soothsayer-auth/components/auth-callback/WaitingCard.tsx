@@ -1,12 +1,12 @@
-import { ButtonExternalLink } from "../buttons";
+import { ButtonExternalLink } from "../../../../components/buttons";
 import { Spinner } from "../Spinner";
 import { AuthCard } from "./AuthCard";
+import { useOAuthCallbackContext } from "./OAuthCallbackContext";
 
-interface WaitingCardProps {
-  deepLink: string;
-}
-
-export function WaitingCard({ deepLink }: WaitingCardProps) {
+export function WaitingCard() {
+  const state = useOAuthCallbackContext();
+  if (state.phase !== "waiting") return null;
+  const { deepLink } = state;
   return (
     <AuthCard
       tone="default"
