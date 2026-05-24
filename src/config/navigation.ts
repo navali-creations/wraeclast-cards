@@ -6,7 +6,7 @@ type StaticRoutePath = Exclude<
   `${string}$${string}` | "." | ".."
 >;
 
-type MainNavigationItem = {
+type NavigationItem = {
   label: string;
   path: StaticRoutePath;
 };
@@ -17,11 +17,11 @@ type FooterNavigationItem = {
   active?: boolean;
 };
 
-export const mainNavigation: MainNavigationItem[] = [
-  // { label: "Cards", path: "/cards" },
-  // { label: "Stacked Decks", path: "/stacked-decks" },
-  // { label: "Soothsayer", path: "/soothsayer" },
-  // { label: "Downloads", path: "/downloads" },
+export const navigationRoutes: NavigationItem[] = [
+  { label: "Cards", path: "/cards" },
+  { label: "Stacked Decks", path: "/stacked-decks" },
+  { label: "Soothsayer", path: "/soothsayer" },
+  { label: "Downloads", path: "/downloads" },
 ] as const;
 
 export const footerNavigation: FooterNavigationItem[] = [
