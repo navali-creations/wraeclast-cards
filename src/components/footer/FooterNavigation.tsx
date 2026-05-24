@@ -1,19 +1,23 @@
 import { Link } from "@tanstack/react-router";
 import { FiGithub } from "react-icons/fi";
-import {
-  footerNavigation,
-  footerPagesNavigation,
-} from "../../config/navigation";
+import { footerNavigation, navigationRoutes } from "../../config/navigation";
+import { Text } from "../text";
 
 export function FooterNavigation() {
   return (
-    <div className="flex gap-12">
+    <div className="flex gap-8 sm:gap-12">
       <div>
-        <p className="text-xs font-semibold uppercase tracking-widest text-(--wc-text-40) mb-3">
+        <Text
+          size="xs"
+          weight="semibold"
+          uppercase
+          dimmed
+          className="mb-3 tracking-widest"
+        >
           Pages
-        </p>
+        </Text>
         <ul className="space-y-2">
-          {footerPagesNavigation.map((item) => (
+          {navigationRoutes.map((item) => (
             <li key={item.path}>
               <Link
                 to={item.path}
@@ -27,9 +31,15 @@ export function FooterNavigation() {
       </div>
 
       <div>
-        <p className="text-xs font-semibold uppercase tracking-widest text-(--wc-text-40) mb-3">
+        <Text
+          size="xs"
+          weight="semibold"
+          uppercase
+          dimmed
+          className="mb-3 tracking-widest"
+        >
           Info
-        </p>
+        </Text>
         <ul className="space-y-2">
           {footerNavigation.map((item) => (
             <li key={item.path}>
@@ -45,7 +55,7 @@ export function FooterNavigation() {
             <a
               href="https://github.com/navali-creations/wraeclast-cards.git"
               target="_blank"
-              rel="noreferrer"
+              rel="noreferrer noopener"
               className="text-sm link link-hover text-(--wc-text-50) flex items-center gap-1.5"
             >
               <FiGithub />

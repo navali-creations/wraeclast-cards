@@ -1,11 +1,11 @@
 import { Link } from "@tanstack/react-router";
-import { mainNavigation } from "../../config/navigation";
+import { navigationRoutes } from "../../config/navigation";
 
 export function HeaderDesktopNavigation() {
   return (
     <div className="navbar-center hidden lg:flex">
       <ul className="menu menu-horizontal px-1">
-        {mainNavigation.map((item) => (
+        {navigationRoutes.map((item) => (
           <li key={item?.path}>
             <Link
               to={item?.path}
