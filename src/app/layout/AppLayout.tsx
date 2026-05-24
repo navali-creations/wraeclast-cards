@@ -1,5 +1,4 @@
 import { Outlet, useLocation } from "@tanstack/react-router";
-import clsx from "clsx";
 import { Footer } from "../../components/footer/Footer";
 import { Header } from "../../components/header/Header";
 
@@ -13,11 +12,12 @@ export function AppLayout() {
     <div className="min-h-screen flex flex-col bg-base-200">
       <Header />
 
-      {/* Main content */}
-      <main className={clsx("flex-1 bg-base-200", isFullWidthRoute && "flex")}>
+      <main className="flex-1 flex flex-col">
         <div
           className={
-            isFullWidthRoute ? "flex-1" : "mx-auto max-w-300 px-4 py-6"
+            isFullWidthRoute
+              ? "flex-1"
+              : "flex-1 flex flex-col mx-auto w-full max-w-300 px-4 py-6"
           }
         >
           <Outlet />
