@@ -16,7 +16,7 @@ export function AppLayout() {
         <div
           className={
             isFullWidthRoute
-              ? "flex-1"
+              ? "flex-1 flex flex-col"
               : "flex-1 flex flex-col mx-auto w-full max-w-300 px-4 py-6"
           }
         >

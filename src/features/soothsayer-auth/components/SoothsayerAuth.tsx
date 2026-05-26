@@ -9,7 +9,7 @@ export function SoothsayerAuth() {
 
   return (
     <OAuthCallbackProvider value={state}>
-      <div className="h-full min-h-full flex items-center justify-center bg-base-content px-5">
+      <div className="flex-1 flex items-center justify-center bg-base-content px-5">
         <div className="w-full max-w-sm">
           <PhaseCard />
         </div>
