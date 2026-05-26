@@ -12,7 +12,7 @@ function CardsPage() {
     <div className="-mx-4 -mt-6 -mb-6 flex flex-1 flex-col min-h-0">
       <div className="space-y-5 px-4 pt-5 pb-4">
         <div className="space-y-2">
-          <h1 className="font-cinzel text-[2.15rem] leading-none font-bold tracking-[-0.02em] text-[color-mix(in_oklch,var(--wc-gold)_88%,white)] sm:text-[2.4rem]">
+          <h1 className="font-cinzel text-4xl leading-none font-bold tracking-tight text-[color-mix(in_oklch,var(--wc-gold)_88%,white)] sm:text-5xl">
             Divination Cards
           </h1>
           <Text

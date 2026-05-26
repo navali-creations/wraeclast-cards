@@ -9,7 +9,7 @@ export function HeaderDesktopNavigation() {
           <li key={item?.path}>
             <Link
               to={item?.path}
-              className="text-sm text-(--wc-text-60)"
+              className="text-sm text-(--wc-text-60) hover:bg-transparent hover:text-(--wc-text-60) focus:outline-none focus-visible:outline-none focus:bg-transparent focus-visible:bg-transparent"
               activeProps={{ className: "text-(--wc-text-90)!" }}
             >
               {item?.label}
