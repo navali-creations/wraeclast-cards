@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import type { SortingState } from "@tanstack/react-table";
+import clsx from "clsx";
 import { useMemo, useState } from "react";
 import { CardsFilters } from "../../features/cards/components/CardsFilters";
 import { CardsResults } from "../../features/cards/components/CardsResults";
@@ -43,7 +44,7 @@ function CardsPage() {
         <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
           <CardsFilters value={searchTerm} onChange={setSearchTerm} />
 
-          <div className="flex items-center gap-1 self-start rounded-md border border-[#5a2528] bg-[#2a0608] p-1">
+          <div className="flex items-center gap-2 self-start">
             {SORT_CHIPS.map((label) => {
               const isActive = activeSortLabel === label;
               const isDisabled = !(label in SORT_MAP);
@@ -56,13 +57,17 @@ function CardsPage() {
                     const s = SORT_MAP[label];
                     if (s) setSorting(s);
                   }}
-                  className={
-                    isDisabled
-                      ? "h-6 cursor-not-allowed rounded-sm border border-transparent px-2.5 text-[11px] font-medium text-[#a78868]/40"
-                      : isActive
-                        ? "h-6 rounded-sm border border-[#6b2f33] bg-[#3b1013] px-2.5 text-[11px] font-semibold text-[#f2d8b4]"
-                        : "h-6 rounded-sm border border-transparent bg-transparent px-2.5 text-[11px] font-medium text-[#a78868] hover:border-[#5d2f32] hover:text-[#d6b68f]"
-                  }
+                  className={clsx(
+                    "rounded-lg border px-3 py-1.5 text-[11px] font-medium transition-colors",
+                    isDisabled &&
+                      "cursor-not-allowed border-(--wc-border) text-(--wc-text-50) opacity-40",
+                    !isDisabled &&
+                      isActive &&
+                      "border-(--wc-accent-border) bg-(--wc-glow) font-semibold text-(--wc-gold-bright)",
+                    !isDisabled &&
+                      !isActive &&
+                      "border-(--wc-border) text-(--wc-text-60) hover:border-(--wc-accent-border) hover:text-(--wc-text-80)",
+                  )}
                 >
                   {label}
                 </button>
