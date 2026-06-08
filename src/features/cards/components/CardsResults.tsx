@@ -2,7 +2,7 @@ import type { SortingState } from "@tanstack/react-table";
 import { useMemo } from "react";
 import { useCardsQuery } from "../hooks";
 import type { Card } from "../types";
-import { CardsTable } from "./CardsTable";
+import { CardsGrid } from "./CardsGrid";
 
 interface CardsResultsProps {
   searchTerm: string;
@@ -10,11 +10,7 @@ interface CardsResultsProps {
   onSortingChange: (sorting: SortingState) => void;
 }
 
-export function CardsResults({
-  searchTerm,
-  sorting,
-  onSortingChange,
-}: CardsResultsProps) {
+export function CardsResults({ searchTerm }: CardsResultsProps) {
   const { data, isLoading, error } = useCardsQuery();
   const cards: Card[] = data ?? [];
 
@@ -40,12 +36,11 @@ export function CardsResults({
       <p className="text-sm font-medium text-[#6d5b44]">
         {filteredCards.length} cards
       </p>
-      <CardsTable
+      <CardsGrid
+        key={normalizedSearch}
         data={filteredCards}
         isLoading={isLoading}
         error={error}
-        sorting={sorting}
-        onSortingChange={onSortingChange}
       />
     </div>
   );

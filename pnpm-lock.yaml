@@ -11,6 +11,9 @@ importers:
       '@navali/fated-connections':
         specifier: ^0.2.5
         version: 0.2.5(daisyui@5.5.19)(react-dom@19.2.5(react@19.2.5))(react@19.2.5)(tailwindcss@4.2.2)
+      '@navali/poe1-divination-cards':
+        specifier: ^3.28.2
+        version: 3.28.2
       '@tanstack/react-query':
         specifier: ^5.99.0
         version: 5.99.0(react@19.2.5)
@@ -412,6 +415,9 @@ packages:
       react: ^18.0.0 || ^19.0.0
       react-dom: ^18.0.0 || ^19.0.0
       tailwindcss: ^4.0.0
+
+  '@navali/poe1-divination-cards@3.28.2':
+    resolution: {integrity: sha512-Fm18sshXig/QLFGDFUZAcfka4zMfcFYDgPQMY4ODEfxgfdVWJDo+I5z9LqBCplD/XaZ8deD3lPxy+ySVazWIhQ==}
 
   '@oxc-project/types@0.124.0':
     resolution: {integrity: sha512-VBFWMTBvHxS11Z5Lvlr3IWgrwhMTXV+Md+EQF0Xf60+wAdsGFTBx7X7K/hP4pi8N7dcm1RvcHwDxZ16Qx8keUg==}
@@ -1768,6 +1774,8 @@ snapshots:
       react: 19.2.5
       react-dom: 19.2.5(react@19.2.5)
       tailwindcss: 4.2.2
+
+  '@navali/poe1-divination-cards@3.28.2': {}
 
   '@oxc-project/types@0.124.0': {}
 

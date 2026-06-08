@@ -4,6 +4,7 @@ export type Card = {
   imageUrl?: string;
   flavourText?: string;
   rewardText: string;
+  rewardHtml: string;
   stackSize: number;
   dropLocations: string[];
 };
