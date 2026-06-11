@@ -1,0 +1,1 @@
+export { StackedDeckTable } from "./StackedDeckTable";

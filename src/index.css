@@ -123,6 +123,7 @@ body {
   --wc-text-50: oklch(55% 0.04 85);
   --wc-text-40: oklch(45% 0.04 85);
   --wc-text-30: oklch(38% 0.04 85);
+  --wc-card-name: oklch(31.8% 0.02 60.6);
 }
 
 /* ============================================================
@@ -193,66 +194,12 @@ body {
   --wc-text-50: oklch(55% 0.04 85);
   --wc-text-40: oklch(45% 0.04 85);
   --wc-text-30: oklch(38% 0.04 85);
+  --wc-card-name: oklch(31.8% 0.02 60.6);
 }
 
 @source "../node_modules/@navali/fated-connections/dist/**/*.js";
 
 /* ── PoE item text colours ────────────────────────────────── */
-:root {
-  --wc-card-name: oklch(31.8% 0.02 60.6);
-}
-
-.tc.-default {
-  color: oklch(83.3% 0.0001 263.3);
-}
-.tc.-normal {
-  color: oklch(83.3% 0.0001 263.3);
-}
-.tc.-magic {
-  color: oklch(68.2% 0.1719 280.8);
-}
-.tc.-rare {
-  color: oklch(97.4% 0.1574 109);
-}
-.tc.-unique {
-  color: oklch(57.1% 0.1244 53.4);
-}
-.tc.-gem {
-  color: oklch(64.5% 0.107 189.3);
-}
-.tc.-currency {
-  color: oklch(70.2% 0.0415 87.6);
-}
-.tc.-augmented {
-  color: oklch(68.2% 0.1719 280.8);
-}
-.tc.-crafted {
-  color: oklch(79.8% 0.1058 283.7);
-}
-.tc.-corrupted {
-  color: oklch(54.2% 0.2225 29.2);
-}
-.tc.-fractured {
-  color: oklch(66% 0.0696 91.1);
-}
-.tc.-fire {
-  color: oklch(42.3% 0.1734 29.2);
-}
-.tc.-cold {
-  color: oklch(49.2% 0.09 250.1);
-}
-.tc.-lightning {
-  color: oklch(88.7% 0.1821 95.3);
-}
-.tc.-chaos {
-  color: oklch(57.8% 0.2258 348.3);
-}
-.tc.-life {
-  color: oklch(55% 0.2257 29.2);
-}
-.tc.-mana {
-  color: oklch(56% 0.19 278.3);
-}
 
 /* ── Prose (markdown typography) ─────────────────────────── */
 .prose {

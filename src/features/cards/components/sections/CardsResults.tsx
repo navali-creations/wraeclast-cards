@@ -1,8 +1,8 @@
 import type { SortingState } from "@tanstack/react-table";
 import { useMemo } from "react";
-import { useCardsQuery } from "../hooks";
-import type { Card } from "../types";
-import { CardsGrid } from "./CardsGrid";
+import { useCardsQuery } from "../../hooks";
+import type { Card } from "../../types";
+import { CardsGrid } from "../CardsGrid";
 
 interface CardsResultsProps {
   searchTerm: string;

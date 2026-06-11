@@ -6,9 +6,8 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 import clsx from "clsx";
-import { useTableSorting } from "../hooks/useTableSorting";
-import type { Card } from "../types";
-import { type ColMeta, columns } from "./CardsTable.columns";
+import { type CardRow, type ColMeta, columns } from "./CardsTable.columns";
+import { useTableSorting } from "./useTableSorting";
 
 const SKELETON_ROW_IDS = Array.from(
   { length: 8 },
@@ -39,7 +38,7 @@ function SortIndicator({ direction }: { direction: "asc" | "desc" | false }) {
 }
 
 interface CardsTableProps {
-  data: Card[];
+  data: CardRow[];
   isLoading?: boolean;
   error?: Error | null;
   sorting?: SortingState;

@@ -1,9 +1,17 @@
 import type { CellContext } from "@tanstack/react-table";
 import { createColumnHelper } from "@tanstack/react-table";
-import type { Card } from "../types";
 import { CardImageCell, DropLocationsCell } from "./CardsTable.cells";
 
-const col = createColumnHelper<Card>();
+export type CardRow = {
+  id: string;
+  name: string;
+  imageUrl?: string;
+  flavourText?: string;
+  rewardText: string;
+  dropLocations: string[];
+};
+
+const col = createColumnHelper<CardRow>();
 
 export type ColMeta = { className?: string };
 
@@ -11,7 +19,7 @@ const colMeta = (className: string): ColMeta => ({ className });
 
 const textCell =
   (className: string, fallback?: string) =>
-  (info: CellContext<Card, string | undefined>) => (
+  (info: CellContext<CardRow, string | undefined>) => (
     <span className={className}>{info.getValue() ?? fallback}</span>
   );
 

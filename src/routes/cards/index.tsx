@@ -1,11 +1,16 @@
 import { createFileRoute } from "@tanstack/react-router";
 import type { SortingState } from "@tanstack/react-table";
 import clsx from "clsx";
-import { useMemo, useState } from "react";
-import { CardsFilters } from "../../features/cards/components/CardsFilters";
-import { CardsResults } from "../../features/cards/components/CardsResults";
+import { CardsFilters } from "../../features/cards/components/controls/CardsFilters";
+import { CardsResults } from "../../features/cards/components/sections/CardsResults";
 
 export const Route = createFileRoute("/cards/")({
+  validateSearch: (search: Record<string, unknown>) => ({
+    name: typeof search.name === "string" ? search.name : undefined,
+    sortBy: typeof search.sortBy === "string" ? search.sortBy : undefined,
+    sortDesc:
+      search.sortDesc === true || search.sortDesc === "true" ? true : undefined,
+  }),
   component: CardsPage,
 });
 
@@ -16,21 +21,37 @@ const SORT_MAP: Record<string, SortingState> = {
 };
 
 function CardsPage() {
-  const [searchTerm, setSearchTerm] = useState("");
-  const [sorting, setSorting] = useState<SortingState>([
-    { id: "name", desc: false },
-  ]);
+  const { name, sortBy, sortDesc } = Route.useSearch();
+  const navigate = Route.useNavigate();
 
-  const activeSortLabel = useMemo(
-    () =>
-      SORT_CHIPS.find((label) => {
-        const s = SORT_MAP[label];
-        return (
-          s && sorting[0]?.id === s[0]?.id && sorting[0]?.desc === s[0]?.desc
-        );
-      }) ?? null,
-    [sorting],
-  );
+  const searchTerm = name ?? "";
+  const sorting: SortingState = [
+    { id: sortBy ?? "name", desc: sortDesc ?? false },
+  ];
+
+  const setSearchTerm = (value: string) =>
+    navigate({ search: (prev) => ({ ...prev, name: value || undefined }) });
+
+  const setSorting = (newSorting: SortingState) => {
+    const s = newSorting[0];
+    navigate({
+      search: (prev) => ({
+        ...prev,
+        sortBy: s?.id === "name" && !s?.desc ? undefined : s?.id,
+        sortDesc: s?.desc || undefined,
+      }),
+    });
+  };
+
+  const activeSortLabel =
+    SORT_CHIPS.find((label) => {
+      const s = SORT_MAP[label];
+      return (
+        s &&
+        s[0]?.id === (sortBy ?? "name") &&
+        s[0]?.desc === (sortDesc ?? false)
+      );
+    }) ?? null;
 
   return (
     <div className="-mx-4 -mt-6 -mb-6 flex flex-1 flex-col min-h-0">
