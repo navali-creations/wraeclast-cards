@@ -199,8 +199,6 @@ body {
 
 @source "../node_modules/@navali/fated-connections/dist/**/*.js";
 
-/* ── PoE item text colours ────────────────────────────────── */
-
 /* ── Prose (markdown typography) ─────────────────────────── */
 .prose {
   color: var(--color-base-content);

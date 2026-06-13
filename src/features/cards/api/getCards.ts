@@ -1,8 +1,6 @@
 import cardsData from "@navali/poe1-divination-cards/data/cards.json";
+import { DIVINATION_CARDS_IMAGES_BASE_URL } from "../hooks/useDivinationCardsData";
 import type { Card } from "../types";
-
-const IMAGE_BASE =
-  "https://cdn.jsdelivr.net/npm/@navali/poe1-divination-cards@3.28.2/data/images";
 
 type RawCard = {
   name: string;
@@ -46,7 +44,9 @@ function toCard(raw: RawCard, index: number): Card {
   return {
     id: `${index}-${raw.name}`,
     name: raw.name,
-    imageUrl: raw.art_src ? `${IMAGE_BASE}/${raw.art_src}` : undefined,
+    imageUrl: raw.art_src
+      ? `${DIVINATION_CARDS_IMAGES_BASE_URL}/${raw.art_src}`
+      : undefined,
     flavourText: raw.flavour_html ? stripHtml(raw.flavour_html) : undefined,
     rewardText: raw.description,
     rewardHtml: raw.reward_html

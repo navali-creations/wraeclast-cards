@@ -1,8 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
 import type { SortingState } from "@tanstack/react-table";
 import clsx from "clsx";
-import { CardsFilters } from "../../features/cards/components/controls/CardsFilters";
-import { CardsResults } from "../../features/cards/components/sections/CardsResults";
+import { Button } from "../../components/buttons";
+import {
+  CardsFilters,
+  CardsResults,
+} from "../../features/cards/components/DivinationCard";
 
 export const Route = createFileRoute("/cards/")({
   validateSearch: (search: Record<string, unknown>) => ({
@@ -14,10 +17,8 @@ export const Route = createFileRoute("/cards/")({
   component: CardsPage,
 });
 
-const SORT_CHIPS = ["Name ↑", "Price"];
-
-const SORT_MAP: Record<string, SortingState> = {
-  "Name ↑": [{ id: "name", desc: false }],
+const SORT_FIELDS: Record<string, string> = {
+  Name: "name",
 };
 
 function CardsPage() {
@@ -25,33 +26,36 @@ function CardsPage() {
   const navigate = Route.useNavigate();
 
   const searchTerm = name ?? "";
-  const sorting: SortingState = [
-    { id: sortBy ?? "name", desc: sortDesc ?? false },
-  ];
+  const activeDesc = sortDesc ?? false;
 
   const setSearchTerm = (value: string) =>
     navigate({ search: (prev) => ({ ...prev, name: value || undefined }) });
 
   const setSorting = (newSorting: SortingState) => {
-    const s = newSorting[0];
+    const sortEntry = newSorting[0];
     navigate({
       search: (prev) => ({
         ...prev,
-        sortBy: s?.id === "name" && !s?.desc ? undefined : s?.id,
-        sortDesc: s?.desc || undefined,
+        sortBy:
+          sortEntry?.id === "name" && !sortEntry?.desc
+            ? undefined
+            : sortEntry?.id,
+        sortDesc: sortEntry?.desc || undefined,
       }),
     });
   };
 
   const activeSortLabel =
-    SORT_CHIPS.find((label) => {
-      const s = SORT_MAP[label];
-      return (
-        s &&
-        s[0]?.id === (sortBy ?? "name") &&
-        s[0]?.desc === (sortDesc ?? false)
-      );
-    }) ?? null;
+    Object.keys(SORT_FIELDS).find(
+      (label) => SORT_FIELDS[label] === (sortBy ?? "name"),
+    ) ?? null;
+
+  const handleSortChipClick = (label: string) => {
+    const fieldId = SORT_FIELDS[label];
+    if (!fieldId) return;
+    const isActive = activeSortLabel === label;
+    setSorting([{ id: fieldId, desc: isActive ? !activeDesc : false }]);
+  };
 
   return (
     <div className="-mx-4 -mt-6 -mb-6 flex flex-1 flex-col min-h-0">
@@ -66,32 +70,25 @@ function CardsPage() {
           <CardsFilters value={searchTerm} onChange={setSearchTerm} />
 
           <div className="flex items-center gap-2 self-start">
-            {SORT_CHIPS.map((label) => {
+            {Object.keys(SORT_FIELDS).map((label) => {
               const isActive = activeSortLabel === label;
-              const isDisabled = !(label in SORT_MAP);
               return (
-                <button
+                <Button
+                  variant="unstyled"
                   key={label}
-                  type="button"
-                  disabled={isDisabled}
-                  onClick={() => {
-                    const s = SORT_MAP[label];
-                    if (s) setSorting(s);
-                  }}
+                  onClick={() => handleSortChipClick(label)}
                   className={clsx(
                     "rounded-lg border px-3 py-1.5 text-[11px] font-medium transition-colors",
-                    isDisabled &&
-                      "cursor-not-allowed border-(--wc-border) text-(--wc-text-50) opacity-40",
-                    !isDisabled &&
-                      isActive &&
-                      "border-(--wc-accent-border) bg-(--wc-glow) font-semibold text-(--wc-gold-bright)",
-                    !isDisabled &&
-                      !isActive &&
-                      "border-(--wc-border) text-(--wc-text-60) hover:border-(--wc-accent-border) hover:text-(--wc-text-80)",
+                    isActive
+                      ? "border-(--wc-accent-border) bg-(--wc-glow) font-semibold text-(--wc-gold-bright)"
+                      : "border-(--wc-border) text-(--wc-text-60) hover:border-(--wc-accent-border) hover:text-(--wc-text-80)",
                   )}
                 >
                   {label}
-                </button>
+                  {isActive && (
+                    <span className="ml-1">{activeDesc ? "↓" : "↑"}</span>
+                  )}
+                </Button>
               );
             })}
           </div>
@@ -102,7 +99,7 @@ function CardsPage() {
         <div className="mx-auto flex w-full max-w-300 flex-1 flex-col px-4 py-6 min-h-0">
           <CardsResults
             searchTerm={searchTerm}
-            sorting={sorting}
+            sorting={[{ id: sortBy ?? "name", desc: activeDesc }]}
             onSortingChange={setSorting}
           />
         </div>

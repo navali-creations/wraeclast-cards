@@ -1,6 +1,3 @@
-/**
- * Maps POE class names to their corresponding color values
- */
 export function getColorForClass(className: string): string {
   switch (className) {
     case "-default":

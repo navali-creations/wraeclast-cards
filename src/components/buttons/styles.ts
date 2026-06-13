@@ -3,6 +3,7 @@ export const baseClass = "text-sm transition-all active:scale-[0.98]";
 const cta = "w-full rounded-lg px-6 py-2.5 font-medium";
 
 export const variantClasses = {
+  unstyled: "",
   primary: `${cta} mb-4 bg-primary text-primary-content hover:bg-(--wc-primary-hover)`,
   subtle: `${cta} border border-base-content/20 text-(--wc-text-60) hover:bg-base-content/5`,
   error: `${cta} mb-3 bg-error text-error-content hover:brightness-110`,

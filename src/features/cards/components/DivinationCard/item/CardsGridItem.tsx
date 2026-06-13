@@ -1,75 +1,13 @@
-import { Fragment, type ReactNode, useMemo, useRef } from "react";
-import { getColorForClass } from "../../../../styles/tc-colors";
-import { useCardMouseEffects } from "../../hooks";
-import type { Card } from "../../types";
+import { useMemo, useRef } from "react";
+import { useCardMouseEffects, useDivinationCardsData } from "../../../hooks";
+import type { Card } from "../../../types";
+import { CardEffects } from "../effects/CardEffects";
+import { renderRewardHtml } from "../grid/renderRewardHtml";
 import { CardFrame } from "./CardFrame";
-import { CardEffects } from "./effects/CardEffects";
-
-const CDN =
-  "https://cdn.jsdelivr.net/npm/@navali/poe1-divination-cards@3.28.2/data";
-const SEPARATOR_URL = `${CDN}/Divination_card_separator.png`;
-
-function sanitizeRewardClassName(className: string): string | undefined {
-  const tokens = className
-    .split(/\s+/)
-    .filter((token) => token === "tc" || /^-[a-z]+$/.test(token));
-  return tokens.length ? tokens.join(" ") : undefined;
-}
-
-function renderRewardHtml(rewardHtml: string): ReactNode {
-  if (!rewardHtml) return null;
-
-  if (typeof DOMParser === "undefined") {
-    return rewardHtml.replace(/<[^>]*>/g, "");
-  }
-
-  const doc = new DOMParser().parseFromString(
-    `<div>${rewardHtml}</div>`,
-    "text/html",
-  );
-  const root = doc.body.firstElementChild;
-  if (!root) return rewardHtml;
-
-  let key = 0;
-  const nextKey = () => `reward-${key++}`;
-
-  const toNode = (node: ChildNode): ReactNode => {
-    if (node.nodeType === Node.TEXT_NODE) return node.textContent;
-    if (node.nodeType !== Node.ELEMENT_NODE) return null;
-
-    const element = node as HTMLElement;
-    const children = Array.from(element.childNodes).map((child) => (
-      <Fragment key={nextKey()}>{toNode(child)}</Fragment>
-    ));
-
-    if (element.tagName === "BR") return <br key={nextKey()} />;
-
-    if (element.tagName === "SPAN") {
-      const sanitized = sanitizeRewardClassName(element.className);
-      const colorToken = sanitized?.split(/\s+/).find((t) => t.startsWith("-"));
-      return (
-        <span
-          key={nextKey()}
-          className={sanitized}
-          style={
-            colorToken ? { color: getColorForClass(colorToken) } : undefined
-          }
-        >
-          {children}
-        </span>
-      );
-    }
-
-    return <Fragment key={nextKey()}>{children}</Fragment>;
-  };
-
-  return Array.from(root.childNodes).map((child) => (
-    <Fragment key={nextKey()}>{toNode(child)}</Fragment>
-  ));
-}
 
 export function CardsGridItem({ card }: { card: Card }) {
-  const cardRef = useRef<HTMLElement>(null);
+  const cardRef = useRef<HTMLLIElement>(null);
+  const { separatorUrl } = useDivinationCardsData();
   const rewardContent = useMemo(
     () => renderRewardHtml(card.rewardHtml),
     [card.rewardHtml],
@@ -78,9 +16,9 @@ export function CardsGridItem({ card }: { card: Card }) {
     useCardMouseEffects(cardRef);
 
   return (
-    <article
+    <li
       ref={cardRef}
-      className="relative w-80 h-119"
+      className="relative w-80 h-119 list-none"
       style={{
         transform: `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`,
         transition: isHovered
@@ -95,7 +33,7 @@ export function CardsGridItem({ card }: { card: Card }) {
           <img
             src={card.imageUrl}
             alt={card.name}
-            loading="lazy"
+            loading="eager"
             className="h-full w-full object-cover object-top"
           />
         ) : (
@@ -131,7 +69,11 @@ export function CardsGridItem({ card }: { card: Card }) {
 
           {card.flavourText && (
             <div className="flex justify-center w-full">
-              <img src={SEPARATOR_URL} alt="" className="h-0.5" />
+              <img
+                src={separatorUrl}
+                alt={`${card.name} separator`}
+                className="h-0.5"
+              />
             </div>
           )}
 
@@ -150,6 +92,6 @@ export function CardsGridItem({ card }: { card: Card }) {
         posX={mousePos.x}
         posY={mousePos.y}
       />
-    </article>
+    </li>
   );
 }
