@@ -2,10 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import type { SortingState } from "@tanstack/react-table";
 import clsx from "clsx";
 import { Button } from "../../components/buttons";
-import {
-  CardsFilters,
-  CardsResults,
-} from "../../features/cards/components/DivinationCard";
+import { CardsFilters, CardsResults } from "../../features/cards/components";
 
 export const Route = createFileRoute("/cards/")({
   validateSearch: (search: Record<string, unknown>) => ({

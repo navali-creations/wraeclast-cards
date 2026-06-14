@@ -27,13 +27,13 @@ export function PageJump({ page, totalPages, onChange }: PageJumpProps) {
     onChange(clampPage(parsed));
   }
 
-  function handleCommit() {
+  function handleBlur() {
     commitPage(value);
   }
 
   function handleKeyDown(event: React.KeyboardEvent<HTMLInputElement>) {
     if (event.key === "Enter") {
-      handleCommit();
+      handleBlur();
     }
   }
 
@@ -43,11 +43,13 @@ export function PageJump({ page, totalPages, onChange }: PageJumpProps) {
       <input
         type="text"
         inputMode="numeric"
+        min={1}
+        max={totalPages}
         value={value}
         onChange={handleInputChange}
-        onBlur={handleCommit}
+        onBlur={handleBlur}
         onKeyDown={handleKeyDown}
-        className="h-6 w-10 rounded border border-(--wc-border) bg-[color-mix(in_oklch,var(--wc-card-darker)_84%,black)] px-1 text-center text-xs font-cinzel text-(--wc-text-80) shadow-[inset_0_0_0_1px_color-mix(in_oklch,var(--wc-gold-dim)_8%,transparent)] outline-none transition-colors focus:border-(--wc-gold-dim) focus:ring-1 focus:ring-[color-mix(in_oklch,var(--wc-gold-dim)_20%,transparent)]"
+        className="h-6 w-10 rounded border border-(--wc-border) bg-(--wc-card-darker) px-1 text-center text-xs font-cinzel text-(--wc-text-80) shadow-[inset_0_0_0_1px_var(--wc-border)] outline-none transition-colors focus:border-(--wc-gold-dim) focus:ring-1 focus:ring-(--wc-gold-dim)"
       />
       of {totalPages}
     </div>

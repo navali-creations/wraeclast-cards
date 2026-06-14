@@ -3,12 +3,12 @@ import clsx from "clsx";
 import { type ButtonVariant, baseClass, variantClasses } from "./styles";
 
 interface ButtonLinkProps extends LinkProps {
-  variant: ButtonVariant;
+  variant?: ButtonVariant;
   className?: string;
 }
 
 export function ButtonInternalLink({
-  variant,
+  variant = "unstyled",
   className,
   ...props
 }: ButtonLinkProps) {

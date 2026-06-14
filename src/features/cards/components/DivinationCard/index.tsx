@@ -1,11 +1,12 @@
 import { useMemo, useRef } from "react";
-import { useCardMouseEffects, useDivinationCardsData } from "../../../hooks";
-import type { Card } from "../../../types";
-import { CardEffects } from "../effects/CardEffects";
-import { renderRewardHtml } from "../grid/renderRewardHtml";
-import { CardFrame } from "./CardFrame";
+import { useDivinationCardsData } from "../../hooks";
+import type { Card } from "../../types";
+import { CardFrame } from "./components/CardFrame";
+import { RarityEffects } from "./effects/RarityEffects";
+import { useCardMouseEffects } from "./hooks/useCardMouseEffects";
+import { renderRewardHtml } from "./utils/renderRewardHtml";
 
-export function CardsGridItem({ card }: { card: Card }) {
+export function DivinationCard({ card }: { card: Card }) {
   const cardRef = useRef<HTMLLIElement>(null);
   const { separatorUrl } = useDivinationCardsData();
   const rewardContent = useMemo(
@@ -33,7 +34,6 @@ export function CardsGridItem({ card }: { card: Card }) {
           <img
             src={card.imageUrl}
             alt={card.name}
-            loading="eager"
             className="h-full w-full object-cover object-top"
           />
         ) : (
@@ -85,7 +85,7 @@ export function CardsGridItem({ card }: { card: Card }) {
         </div>
       </div>
 
-      <CardEffects
+      <RarityEffects
         stackSize={card.stackSize}
         mousePos={mousePos}
         isHovered={isHovered}

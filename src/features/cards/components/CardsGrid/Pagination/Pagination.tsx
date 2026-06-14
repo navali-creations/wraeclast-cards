@@ -1,36 +1,7 @@
 import { HiChevronLeft, HiChevronRight } from "react-icons/hi2";
-import { Button } from "../../../../../../components/buttons";
-import { NavButton } from "./NavButton";
+import { ActionIcon, Button } from "../../../../../components/buttons";
 import { PageJump } from "./PageJump";
-
-type PageToken =
-  | { type: "page"; value: number }
-  | { type: "ellipsis"; id: "left" | "right" };
-
-// Max tokens = [first] [ellipsis] [prev] [current] [next] [ellipsis] [last]
-const MAX_PAGE_TOKENS = 7;
-
-function buildPageRange(current: number, total: number): PageToken[] {
-  if (total <= MAX_PAGE_TOKENS) {
-    return Array.from({ length: total }, (_, index) => ({
-      type: "page" as const,
-      value: index + 1,
-    }));
-  }
-
-  const range: PageToken[] = [{ type: "page", value: 1 }];
-  if (current > 3) range.push({ type: "ellipsis", id: "left" });
-
-  const start = Math.max(2, current - 1);
-  const end = Math.min(total - 1, current + 1);
-  for (let page = start; page <= end; page++)
-    range.push({ type: "page", value: page });
-
-  if (current < total - 2) range.push({ type: "ellipsis", id: "right" });
-  range.push({ type: "page", value: total });
-
-  return range;
-}
+import { buildPageRange } from "./Pagination.utils";
 
 export function Pagination({
   page,
@@ -60,13 +31,13 @@ export function Pagination({
   return (
     <div className="flex flex-col items-center gap-3">
       <div className="flex items-center gap-1">
-        <NavButton
+        <ActionIcon
           label="Previous page"
           disabled={page === 1}
           onClick={pageActions.previous}
         >
           <HiChevronLeft className="size-4" />
-        </NavButton>
+        </ActionIcon>
 
         <div className="flex items-center gap-1 mx-1">
           {buildPageRange(page, totalPages).map((token) =>
@@ -80,7 +51,7 @@ export function Pagination({
             ) : (
               <Button
                 key={token.value}
-                variant={token.value === page ? "pageActive" : "page"}
+                variant={token.value === page ? "secondaryActive" : "secondary"}
                 aria-label={`Page ${token.value}`}
                 aria-current={token.value === page ? "page" : undefined}
                 data-page={token.value}
@@ -92,13 +63,13 @@ export function Pagination({
           )}
         </div>
 
-        <NavButton
+        <ActionIcon
           label="Next page"
           disabled={page === totalPages}
           onClick={pageActions.next}
         >
           <HiChevronRight className="size-4" />
-        </NavButton>
+        </ActionIcon>
       </div>
 
       <PageJump

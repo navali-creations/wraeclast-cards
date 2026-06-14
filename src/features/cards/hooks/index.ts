@@ -1,4 +1,3 @@
-export { useCardMouseEffects } from "./useCardMouseEffects";
 export { useCardsQuery } from "./useCardsQuery";
 export {
   DIVINATION_CARDS_DATA,

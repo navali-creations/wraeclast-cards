@@ -1,6 +1,6 @@
-import { Button } from "../../../../../../components/buttons";
+import { Button } from "./Button";
 
-export function NavButton({
+export function ActionIcon({
   label,
   disabled,
   onClick,
@@ -13,7 +13,7 @@ export function NavButton({
 }) {
   return (
     <Button
-      variant="page"
+      variant="secondary"
       aria-label={label}
       disabled={disabled}
       onClick={onClick}

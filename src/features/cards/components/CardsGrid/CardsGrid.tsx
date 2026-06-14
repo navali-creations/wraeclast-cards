@@ -1,44 +1,30 @@
 import { useState } from "react";
 import { preload } from "react-dom";
-import type { Card } from "../../../types";
-import { CardsGridItem } from "../item/CardsGridItem";
+import { useCardsQuery } from "../../hooks";
+import type { Card } from "../../types";
+import { DivinationCard } from "../DivinationCard";
+import { CardsGridSkeleton } from "./CardsGridSkeleton";
 import { EmptyMessage } from "./EmptyMessage";
 import { Pagination } from "./Pagination/Pagination";
-
-const SKELETON_COUNT = 24;
-
-const SKELETON_IDS = Array.from(
-  { length: SKELETON_COUNT },
-  (_, i) => `grid-skeleton-${i}`,
-);
-
-function CardsGridSkeleton() {
-  return (
-    <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4">
-      {SKELETON_IDS.map((id) => (
-        <div
-          key={id}
-          className="animate-pulse rounded-sm border border-(--wc-gold-dim) bg-(--wc-card-darker) opacity-50"
-          style={{ aspectRatio: "3/4" }}
-        />
-      ))}
-    </div>
-  );
-}
+import { ScrollToTop } from "./Pagination/ScrollToTop";
 
 export const PAGE_SIZE = 24;
 
 interface CardsGridProps {
   data: Card[];
-  isLoading?: boolean;
-  error?: Error | null;
 }
 
-export function CardsGrid({ data, isLoading, error }: CardsGridProps) {
+export function CardsGrid({ data }: CardsGridProps) {
+  const { isLoading, error } = useCardsQuery();
   const [page, setPage] = useState(1);
 
   const totalPages = Math.max(1, Math.ceil(data.length / PAGE_SIZE));
   const safePage = Math.min(page, totalPages);
+
+  function handlePageChange(pageNumber: number) {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+    setPage(pageNumber);
+  }
 
   data
     .slice(safePage * PAGE_SIZE, (safePage + 1) * PAGE_SIZE)
@@ -57,12 +43,17 @@ export function CardsGrid({ data, isLoading, error }: CardsGridProps) {
 
   return (
     <div className="flex flex-col gap-6">
+      <ScrollToTop />
       <ul className="grid grid-cols-2 gap-x-40 gap-y-4 justify-items-center sm:grid-cols-3 md:grid-cols-4">
         {pageData.map((card) => (
-          <CardsGridItem key={card.id} card={card} />
+          <DivinationCard key={card.id} card={card} />
         ))}
       </ul>
-      <Pagination page={safePage} totalPages={totalPages} onChange={setPage} />
+      <Pagination
+        page={safePage}
+        totalPages={totalPages}
+        onChange={handlePageChange}
+      />
     </div>
   );
 }
