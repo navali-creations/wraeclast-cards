@@ -71,7 +71,6 @@ function CardsPage() {
               const isActive = activeSortLabel === label;
               return (
                 <Button
-                  variant="unstyled"
                   key={label}
                   onClick={() => handleSortChipClick(label)}
                   className={clsx(

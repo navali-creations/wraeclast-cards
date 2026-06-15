@@ -6,7 +6,7 @@ import { Button } from "../buttons";
 export function HeaderMobileNavigation() {
   return (
     <div className="dropdown lg:hidden">
-      <Button variant="unstyled" className="btn btn-ghost">
+      <Button variant="ghost">
         <FiMenu />
       </Button>
       <ul className="menu menu-sm dropdown-content bg-(--wc-nav-bg) border border-(--wc-border) rounded-box z-10 mt-3 w-52 p-2 shadow">

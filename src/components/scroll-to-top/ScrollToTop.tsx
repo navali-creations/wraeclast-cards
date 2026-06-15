@@ -1,7 +1,7 @@
 import { useSyncExternalStore } from "react";
 import { createPortal } from "react-dom";
 import { HiChevronUp } from "react-icons/hi2";
-import { Button } from "../../../../../../components/buttons";
+import { Button } from "../buttons";
 import {
   getBottomOffset,
   getVisible,

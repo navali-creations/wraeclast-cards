@@ -1,12 +1,12 @@
 import { useState } from "react";
 import { preload } from "react-dom";
+import { ScrollToTop } from "../../../../components/scroll-to-top/ScrollToTop";
 import { useCardsQuery } from "../../hooks";
 import type { Card } from "../../types";
 import { DivinationCard } from "../DivinationCard";
 import { CardsGridSkeleton } from "./CardsGridSkeleton";
 import { EmptyMessage } from "./EmptyMessage";
 import { Pagination } from "./Pagination/Pagination";
-import { ScrollToTop } from "./Pagination/ScrollToTop";
 
 export const PAGE_SIZE = 24;
 
@@ -22,7 +22,6 @@ export function CardsGrid({ data }: CardsGridProps) {
   const safePage = Math.min(page, totalPages);
 
   function handlePageChange(pageNumber: number) {
-    window.scrollTo({ top: 0, behavior: "smooth" });
     setPage(pageNumber);
   }
 

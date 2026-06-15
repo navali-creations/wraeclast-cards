@@ -7,13 +7,13 @@ interface ButtonExternalLinkProps
 }
 
 export function ButtonExternalLink({
-  variant = "unstyled",
+  variant,
   className,
   ...props
 }: ButtonExternalLinkProps) {
   return (
     <a
-      className={clsx(baseClass, variantClasses[variant], className)}
+      className={clsx(baseClass, variant && variantClasses[variant], className)}
       {...props}
     />
   );

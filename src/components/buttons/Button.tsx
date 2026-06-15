@@ -5,15 +5,11 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: ButtonVariant;
 }
 
-export function Button({
-  variant = "unstyled",
-  className,
-  ...props
-}: ButtonProps) {
+export function Button({ variant, className, ...props }: ButtonProps) {
   return (
     <button
       type="button"
-      className={clsx(baseClass, variantClasses[variant], className)}
+      className={clsx(baseClass, variant && variantClasses[variant], className)}
       {...props}
     />
   );

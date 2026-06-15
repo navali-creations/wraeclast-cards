@@ -28,7 +28,6 @@ export function HeaderActions() {
             const isChecked = game === gameVersion;
             return (
               <Button
-                variant="unstyled"
                 key={gameVersion}
                 aria-pressed={isChecked}
                 onClick={() => handleGameChange(gameVersion)}

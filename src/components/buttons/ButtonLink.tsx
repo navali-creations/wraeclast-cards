@@ -8,13 +8,13 @@ interface ButtonLinkProps extends LinkProps {
 }
 
 export function ButtonInternalLink({
-  variant = "unstyled",
+  variant,
   className,
   ...props
 }: ButtonLinkProps) {
   return (
     <Link
-      className={clsx(baseClass, variantClasses[variant], className)}
+      className={clsx(baseClass, variant && variantClasses[variant], className)}
       {...props}
     />
   );

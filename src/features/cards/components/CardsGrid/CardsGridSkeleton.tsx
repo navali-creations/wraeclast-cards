@@ -11,8 +11,7 @@ export function CardsGridSkeleton() {
       {SKELETON_IDS.map((id) => (
         <div
           key={id}
-          className="animate-pulse rounded-sm border border-(--wc-gold-dim) bg-(--wc-card-darker) opacity-50"
-          style={{ aspectRatio: "3/4" }}
+          className="aspect-3/4 animate-pulse rounded-sm border border-(--wc-gold-dim) bg-(--wc-card-darker) opacity-50"
         />
       ))}
     </div>
