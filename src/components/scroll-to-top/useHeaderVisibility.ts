@@ -4,16 +4,16 @@ export function useHeaderVisibility() {
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
-    const header = document.querySelector("header");
-    if (!header) return;
+    const h1 = document.querySelector("h1");
+    if (!h1) return;
 
     const observer = new IntersectionObserver(
       ([entry]) => setIsVisible(!entry.isIntersecting),
       { threshold: 0.1 },
     );
 
-    observer.observe(header);
-    return () => observer.unobserve(header);
+    observer.observe(h1);
+    return () => observer.unobserve(h1);
   }, []);
 
   return { isVisible };
