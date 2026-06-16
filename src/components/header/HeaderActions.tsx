@@ -3,6 +3,7 @@ import clsx from "clsx";
 import { FiDownload } from "react-icons/fi";
 import { useGame } from "../../app/game-context";
 import { EGame } from "../../enums";
+import { Button } from "../buttons";
 
 export function HeaderActions() {
   const { game, setGame } = useGame();
@@ -26,8 +27,7 @@ export function HeaderActions() {
           {Object.values(EGame).map((gameVersion) => {
             const isChecked = game === gameVersion;
             return (
-              <button
-                type="button"
+              <Button
                 key={gameVersion}
                 aria-pressed={isChecked}
                 onClick={() => handleGameChange(gameVersion)}
@@ -39,7 +39,7 @@ export function HeaderActions() {
                 )}
               >
                 {gameVersion === EGame.Poe1 ? "PoE 1" : "PoE 2"}
-              </button>
+              </Button>
             );
           })}
         </div>

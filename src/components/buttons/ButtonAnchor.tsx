@@ -3,7 +3,7 @@ import { type ButtonVariant, baseClass, variantClasses } from "./styles";
 
 interface ButtonExternalLinkProps
   extends React.AnchorHTMLAttributes<HTMLAnchorElement> {
-  variant: ButtonVariant;
+  variant?: ButtonVariant;
 }
 
 export function ButtonExternalLink({
@@ -13,7 +13,7 @@ export function ButtonExternalLink({
 }: ButtonExternalLinkProps) {
   return (
     <a
-      className={clsx(baseClass, variantClasses[variant], className)}
+      className={clsx(baseClass, variant && variantClasses[variant], className)}
       {...props}
     />
   );

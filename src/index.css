@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import "./styles/fonts.css";
 @plugin "daisyui" {
   themes: false;
 }
@@ -15,6 +16,7 @@
 html {
   scroll-behavior: smooth;
   scrollbar-gutter: stable;
+  overflow-x: hidden;
 }
 
 body {
@@ -40,18 +42,17 @@ body {
   background: var(--color-neutral-content);
 }
 
-/* ── Font helpers ─────────────────────────────────────────── */
-.font-cinzel {
-  font-family: "Cinzel", "Palatino Linotype", serif;
+/* ── Font theme tokens ────────────────────────────────────── */
+@theme {
+  --font-cinzel: "Cinzel", "Trajan Pro", serif;
 }
+
+/* ── Font helpers ─────────────────────────────────────────── */
 .font-crimson {
   font-family: "Crimson Text", Georgia, serif;
 }
 .font-inter {
   font-family: Inter, sans-serif;
-}
-.font-fontin {
-  font-family: "Fontin", "Cinzel", serif;
 }
 
 /* ============================================================
@@ -123,6 +124,7 @@ body {
   --wc-text-50: oklch(55% 0.04 85);
   --wc-text-40: oklch(45% 0.04 85);
   --wc-text-30: oklch(38% 0.04 85);
+  --wc-card-name: oklch(31.8% 0.02 60.6);
 }
 
 /* ============================================================
@@ -193,6 +195,7 @@ body {
   --wc-text-50: oklch(55% 0.04 85);
   --wc-text-40: oklch(45% 0.04 85);
   --wc-text-30: oklch(38% 0.04 85);
+  --wc-card-name: oklch(31.8% 0.02 60.6);
 }
 
 @source "../node_modules/@navali/fated-connections/dist/**/*.js";
