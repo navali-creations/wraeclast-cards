@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 
-const THRESHOLDS = Array.from({ length: 21 }, (_, i) => i / 20);
+const THRESHOLDS = [0, 0.25, 0.5, 0.75, 1];
 
 export function useFooterOffset() {
   const [bottomOffset, setBottomOffset] = useState(60);
