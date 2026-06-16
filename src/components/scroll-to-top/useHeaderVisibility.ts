@@ -4,20 +4,16 @@ export function useHeaderVisibility() {
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
-    const sentinel = document.createElement("div");
-    sentinel.style.cssText =
-      "position:absolute;top:300px;height:1px;width:1px;pointer-events:none;";
-    document.body.appendChild(sentinel);
+    const header = document.querySelector("header");
+    if (!header) return;
 
-    const observer = new IntersectionObserver(([entry]) =>
-      setIsVisible(!entry.isIntersecting),
+    const observer = new IntersectionObserver(
+      ([entry]) => setIsVisible(!entry.isIntersecting),
+      { threshold: 0.1 },
     );
 
-    observer.observe(sentinel);
-    return () => {
-      observer.disconnect();
-      sentinel.remove();
-    };
+    observer.observe(header);
+    return () => observer.unobserve(header);
   }, []);
 
   return { isVisible };

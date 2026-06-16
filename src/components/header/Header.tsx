@@ -5,15 +5,17 @@ import { HeaderMobileNavigation } from "./HeaderMobileNavigation";
 
 export function Header() {
   return (
-    <nav className="sticky top-0 z-50 bg-(--wc-nav-bg) border-b border-(--wc-border)">
-      <div className="navbar mx-auto max-w-300 px-4">
-        <div className="navbar-start items-center gap-1">
-          <HeaderMobileNavigation />
-          <HeaderBrand />
+    <header>
+      <nav className="sticky top-0 z-50 bg-(--wc-nav-bg) border-b border-(--wc-border)">
+        <div className="navbar mx-auto max-w-300 px-4">
+          <div className="navbar-start items-center gap-1">
+            <HeaderMobileNavigation />
+            <HeaderBrand />
+          </div>
+          <HeaderDesktopNavigation />
+          <HeaderActions />
         </div>
-        <HeaderDesktopNavigation />
-        <HeaderActions />
-      </div>
-    </nav>
+      </nav>
+    </header>
   );
 }
