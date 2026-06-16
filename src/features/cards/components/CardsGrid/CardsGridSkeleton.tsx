@@ -7,7 +7,7 @@ const SKELETON_IDS = Array.from(
 
 export function CardsGridSkeleton() {
   return (
-    <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4">
+    <div className="grid grid-cols-[repeat(auto-fill,minmax(20rem,1fr))] gap-4">
       {SKELETON_IDS.map((id) => (
         <div
           key={id}

@@ -3,12 +3,6 @@ export function subscribe(callback: () => void) {
   return () => window.removeEventListener("scroll", callback);
 }
 
-export function getVisible() {
-  const scrollRoot = document.scrollingElement ?? document.documentElement;
-  const scrollable = scrollRoot.scrollHeight - scrollRoot.clientHeight;
-  return scrollable > 0 && scrollRoot.scrollTop >= scrollable / 3;
-}
-
 export function getBottomOffset() {
   const footer = document.querySelector("footer");
   if (!footer) return 60;

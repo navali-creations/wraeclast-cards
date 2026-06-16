@@ -2,15 +2,15 @@ import { useSyncExternalStore } from "react";
 import { createPortal } from "react-dom";
 import { HiChevronUp } from "react-icons/hi2";
 import { Button } from "../buttons";
-import {
-  getBottomOffset,
-  getVisible,
-  scrollToTop,
-  subscribe,
-} from "./ScrollToTop.utils";
+import { getBottomOffset, scrollToTop, subscribe } from "./ScrollToTop.offset";
+import { getVisible, subscribeToHeader } from "./ScrollToTop.visibility";
 
 export function ScrollToTop() {
-  const visible = useSyncExternalStore(subscribe, getVisible, () => false);
+  const visible = useSyncExternalStore(
+    subscribeToHeader,
+    getVisible,
+    () => false,
+  );
   const bottomOffset = useSyncExternalStore(
     subscribe,
     getBottomOffset,

@@ -1,6 +1,5 @@
 import { HiChevronLeft, HiChevronRight } from "react-icons/hi2";
 import { ActionIcon, Button } from "../../../../../components/buttons";
-import { PageJump } from "./PageJump";
 import { buildPageRange } from "./Pagination.utils";
 
 export function Pagination({
@@ -71,13 +70,6 @@ export function Pagination({
           <HiChevronRight className="size-4" />
         </ActionIcon>
       </div>
-
-      <PageJump
-        key={page}
-        page={page}
-        totalPages={totalPages}
-        onChange={changePage}
-      />
     </div>
   );
 }
