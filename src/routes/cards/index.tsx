@@ -58,7 +58,7 @@ function CardsPage() {
     <div className="-mx-4 -mt-6 -mb-6 flex flex-1 flex-col min-h-0">
       <div className="space-y-4 border-b border-[color-mix(in_oklch,var(--wc-border)_65%,black)] px-4 pt-5 pb-4 shadow-[inset_0_-16px_36px_-28px_black]">
         <div>
-          <h1 className="font-cinzel text-4xl leading-none font-bold tracking-tight text-[color-mix(in_oklch,var(--wc-gold)_88%,white)] sm:text-5xl">
+          <h1 className="font-fontin text-4xl leading-none font-bold tracking-tight text-[color-mix(in_oklch,var(--wc-gold)_88%,white)] sm:text-5xl">
             Divination Cards
           </h1>
         </div>
