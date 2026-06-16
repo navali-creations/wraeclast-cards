@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { preload } from "react-dom";
-import { ScrollToTop } from "../../../../components/scroll-to-top/ScrollToTop";
 import { useCardsQuery } from "../../hooks";
 import type { Card } from "../../types";
+import { ScrollToTop } from "..";
 import { DivinationCard } from "../DivinationCard";
 import { CardsGridSkeleton } from "./CardsGridSkeleton";
 import { EmptyMessage } from "./EmptyMessage";
