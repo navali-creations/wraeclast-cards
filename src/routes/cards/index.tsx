@@ -91,7 +91,7 @@ function CardsPage() {
         </div>
       </div>
 
-      <div className="relative left-1/2 mt-3 flex w-screen -translate-x-1/2 flex-1 flex-col bg-[#e8dcc8] min-h-0">
+      <div className="relative left-1/2 mt-3 flex w-screen -translate-x-1/2 flex-1 flex-col bg-primary-content min-h-0">
         <div className="mx-auto flex w-full max-w-300 flex-1 flex-col px-4 py-6 min-h-0">
           <CardsResults
             searchTerm={searchTerm}

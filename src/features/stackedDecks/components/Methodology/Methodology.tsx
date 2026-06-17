@@ -1,20 +1,28 @@
+import { Text } from "../../../../components/text";
+
 export function Methodology() {
   return (
-    <section className="rounded-lg border border-[color-mix(in_oklch,var(--wc-gold-dim)_36%,transparent)] bg-[color-mix(in_oklch,var(--wc-text-90)_80%,var(--wc-gold)_20%)] px-4 py-3.5">
-      <p className="text-sm leading-6 text-[color-mix(in_oklch,var(--wc-text-30)_70%,var(--color-primary)_30%)]">
-        <span className="font-semibold">Methodology:</span> Drop rates are
-        observed from real stacked deck openings captured by Soothsayer. Weight
-        data sourced from the Prohibited Library spreadsheet by{" "}
+    <section className="rounded-lg border border-(--wc-gold-dim)/36 bg-(--color-base-content)/70 px-4 py-3.5">
+      <Text size="sm" className="leading-6 text-(--wc-text-30)">
+        <Text as="span" weight="semibold">
+          Methodology:
+        </Text>{" "}
+        Drop rates are observed from real stacked deck openings captured by
+        Soothsayer. Weight data sourced from the{" "}
         <a
-          href="https://github.com/nerdyjoe"
+          href="https://docs.google.com/spreadsheets/d/1PmGES_e1on6K7O5ghHuoorEjruAVb7dQ5m7PGrW7t80/edit?gid=272334906#gid=272334906"
           target="_blank"
           rel="noopener noreferrer"
-          className="font-semibold text-[color-mix(in_oklch,var(--color-primary)_88%,black)] hover:underline"
+          className="font-semibold text-(--color-primary) hover:underline"
         >
+          Prohibited Library
+        </a>{" "}
+        spreadsheet by{" "}
+        <Text as="span" weight="semibold" className="text-(--color-primary)">
           @nerdyjoe
-        </a>
+        </Text>
         . Rates may vary across leagues.
-      </p>
+      </Text>
     </section>
   );
 }
