@@ -13,8 +13,6 @@ dist-ssr
 public/data/drop-rates
 .tanstack
 .wrangler
-.env
-.env.*
 !.env.example
 *.local
 .dev.vars
