@@ -125,6 +125,9 @@ body {
   --wc-text-40: oklch(45% 0.04 85);
   --wc-text-30: oklch(38% 0.04 85);
   --wc-card-name: oklch(31.8% 0.02 60.6);
+  --wc-border-dimmed: oklch(70% 0.08 70 / 36%);
+  --wc-bg-dimmed: oklch(82% 0.03 85 / 70%);
+  --wc-text-dimmed: oklch(38% 0.04 85);
 }
 
 /* ============================================================
@@ -196,6 +199,9 @@ body {
   --wc-text-40: oklch(45% 0.04 85);
   --wc-text-30: oklch(38% 0.04 85);
   --wc-card-name: oklch(31.8% 0.02 60.6);
+  --wc-border-dimmed: oklch(70% 0.08 70 / 36%);
+  --wc-bg-dimmed: oklch(82% 0.03 85 / 70%);
+  --wc-text-dimmed: oklch(38% 0.04 85);
 }
 
 @source "../node_modules/@navali/fated-connections/dist/**/*.js";
