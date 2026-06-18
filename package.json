@@ -7,6 +7,8 @@
     "dev": "vite",
     "build": "vite build",
     "check": "biome check .",
+    "drop-rates:generate": "node scripts/generate-drop-rate-static-data.mjs",
+    "drop-rates:generate:dev": "node scripts/generate-drop-rate-static-data.mjs --output-dir=public/data/drop-rates --public-base-url=http://localhost:5173/data/drop-rates --no-headers",
     "preview": "vite preview",
     "format": "biome format . --write",
     "prepare": "lefthook install"
@@ -14,8 +16,8 @@
   "dependencies": {
     "@navali/fated-connections": "^0.2.5",
     "@navali/poe1-divination-cards": "^3.28.2",
-    "@tanstack/react-query": "^5.99.0",
-    "@tanstack/react-router": "^1.168.22",
+    "@tanstack/react-query": "^5.101.0",
+    "@tanstack/react-router": "^1.170.15",
     "@tanstack/react-table": "^8.21.3",
     "clsx": "^2.1.1",
     "daisyui": "^5.5.19",
@@ -29,13 +31,13 @@
   "devDependencies": {
     "@biomejs/biome": "^2.4.12",
     "@tailwindcss/vite": "^4.2.2",
-    "@tanstack/router-plugin": "^1.167.22",
+    "@tanstack/router-plugin": "^1.168.18",
     "@types/node": "^24.12.2",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^6.0.1",
-    "lefthook": "^2.1.5",
+    "lefthook": "^2.1.9",
     "typescript": "~6.0.2",
-    "vite": "^8.0.4"
+    "vite": "^8.0.16"
   }
 }

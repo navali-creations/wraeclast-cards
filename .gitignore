@@ -10,8 +10,14 @@ lerna-debug.log*
 node_modules
 dist
 dist-ssr
+public/data/drop-rates
 .tanstack
+.wrangler
+!.env.example
 *.local
+.dev.vars
+.dev.vars.*
+!.dev.vars.example
 .env*
 
 # Editor directories and files
