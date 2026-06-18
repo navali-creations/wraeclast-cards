@@ -2,7 +2,7 @@ import { Text } from "../../../../components/text";
 
 export function Methodology() {
   return (
-    <section className="rounded-lg border border-(--wc-gold-dim)/36 bg-(--color-base-content)/70 px-4 py-3.5">
+    <section className="rounded-lg border border-(--wc-border-dimmed) bg-(--wc-bg-dimmed) px-4 py-3.5">
       <Text size="sm" className="leading-6 text-(--wc-text-30)">
         <Text as="span" weight="semibold">
           Methodology:

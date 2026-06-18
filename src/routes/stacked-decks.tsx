@@ -1,5 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
+import { Heading } from "../components/headings";
+import { Text } from "../components/text";
 import {
   Methodology,
   StackedDecksFilters,
@@ -15,18 +17,25 @@ function StackedDecksPage() {
 
   return (
     <div className="-mx-4 -mt-6 -mb-6 flex flex-1 flex-col min-h-0">
-      <div className="border-b border-(--color-base-100) px-4 pt-5 pb-4">
+      <div className="border-b border-base-100 px-4 pt-5 pb-4">
         <div className="flex flex-row items-center justify-between gap-3">
           <div>
             <div className="flex items-center gap-2.5">
-              <h1 className="font-fontin text-4xl leading-none font-bold tracking-tight text-(--wc-gold-bright) sm:text-5xl">
+              <Heading
+                as="h1"
+                font="fontin"
+                size="3xl"
+                className="leading-none tracking-tight text-(--wc-gold-bright) sm:text-5xl"
+              >
                 Stacked Decks
-              </h1>
+              </Heading>
             </div>
-            <p className="mt-1 text-sm text-(--wc-text-70)">
-              <span className="font-semibold text-(--wc-gold)">29,919</span>{" "}
+            <Text size="sm" className="mt-1 text-(--wc-text-70)">
+              <Text as="span" weight="semibold" className="text-(--wc-gold)">
+                29,919
+              </Text>{" "}
               stacked deck openings · Mirage league
-            </p>
+            </Text>
           </div>
 
           <div className="shrink-0">
