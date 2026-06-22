@@ -1,12 +1,12 @@
 import { useRef, useState } from "react";
 import { preload } from "react-dom";
 import { DivinationCard } from "../../../../components/DivinationCard";
+import { Pagination } from "../../../../components/pagination";
 import { useCardsQuery } from "../../hooks";
 import type { Card } from "../../types";
 import { ScrollToTop } from "..";
 import { CardsGridSkeleton } from "./CardsGridSkeleton";
 import { EmptyMessage } from "./EmptyMessage";
-import { Pagination } from "./Pagination/Pagination";
 
 export const PAGE_SIZE = 24;
 

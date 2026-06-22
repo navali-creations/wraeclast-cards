@@ -1,5 +1,5 @@
 import { HiChevronLeft, HiChevronRight } from "react-icons/hi2";
-import { ActionIcon, Button } from "../../../../../components/buttons";
+import { ActionIcon, Button } from "../buttons";
 import { buildPageRange } from "./Pagination.utils";
 
 export function Pagination({

@@ -7,7 +7,9 @@ export function AppLayout() {
     select: (location) => location.pathname,
   });
   const isFullWidthRoute =
-    pathname === "/soothsayer" || pathname.startsWith("/soothsayer/");
+    pathname === "/soothsayer" ||
+    pathname.startsWith("/soothsayer/") ||
+    pathname === "/stacked-decks";
   const isHomepage = pathname === "/";
 
   return (

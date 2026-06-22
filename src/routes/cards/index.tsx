@@ -3,6 +3,13 @@ import type { SortingState } from "@tanstack/react-table";
 import clsx from "clsx";
 import { Button } from "../../components/buttons";
 import { CardsFilters, CardsResults } from "../../features/cards/components";
+import { createSearchUpdater } from "../../lib/searchNavigation";
+
+type CardsSearchParams = {
+  name?: string;
+  sortBy?: string;
+  sortDesc?: boolean;
+};
 
 export const Route = createFileRoute("/cards/")({
   validateSearch: (search: Record<string, unknown>) => ({
@@ -21,24 +28,23 @@ const SORT_FIELDS: Record<string, string> = {
 function CardsPage() {
   const { name, sortBy, sortDesc } = Route.useSearch();
   const navigate = Route.useNavigate();
+  const updateSearch = createSearchUpdater<CardsSearchParams>(navigate);
 
   const searchTerm = name ?? "";
   const activeDesc = sortDesc ?? false;
 
-  const setSearchTerm = (value: string) =>
-    navigate({ search: (prev) => ({ ...prev, name: value || undefined }) });
+  const setSearchTerm = (value: string) => {
+    updateSearch({ name: value || undefined });
+  };
 
   const setSorting = (newSorting: SortingState) => {
     const sortEntry = newSorting[0];
-    navigate({
-      search: (prev) => ({
-        ...prev,
-        sortBy:
-          sortEntry?.id === "name" && !sortEntry?.desc
-            ? undefined
-            : sortEntry?.id,
-        sortDesc: sortEntry?.desc || undefined,
-      }),
+    updateSearch({
+      sortBy:
+        sortEntry?.id === "name" && !sortEntry?.desc
+          ? undefined
+          : sortEntry?.id,
+      sortDesc: sortEntry?.desc || undefined,
     });
   };
 
