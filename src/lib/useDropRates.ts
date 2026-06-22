@@ -39,10 +39,22 @@ async function fetchDropRates<T>(url: string): Promise<T> {
   return response.json();
 }
 
+function getDropRatesBaseUrl() {
+  const configuredBaseUrl = import.meta.env.VITE_DROP_RATES_BASE_URL;
+  if (configuredBaseUrl) return configuredBaseUrl;
+
+  if (
+    typeof window !== "undefined" &&
+    window.location.hostname.endsWith(".wraeclast-cards.pages.dev")
+  ) {
+    return "https://wraeclast.cards/data/drop-rates";
+  }
+
+  return "/data/drop-rates";
+}
+
 function buildDropRatesUrl(...segments: string[]) {
-  const baseUrl = (
-    import.meta.env.VITE_DROP_RATES_BASE_URL || "/data/drop-rates"
-  ).replace(/\/+$/, "");
+  const baseUrl = getDropRatesBaseUrl().replace(/\/+$/, "");
 
   return `${baseUrl}/${segments.map(encodeURIComponent).join("/")}`;
 }
