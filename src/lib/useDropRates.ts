@@ -39,11 +39,19 @@ async function fetchDropRates<T>(url: string): Promise<T> {
   return response.json();
 }
 
+function buildDropRatesUrl(...segments: string[]) {
+  const baseUrl = (
+    import.meta.env.VITE_DROP_RATES_BASE_URL || "/data/drop-rates"
+  ).replace(/\/+$/, "");
+
+  return `${baseUrl}/${segments.map(encodeURIComponent).join("/")}`;
+}
+
 export function useGameDropRates(game: "poe1" | "poe2") {
   return useQuery({
     queryKey: ["drop-rates", game],
     queryFn: () =>
-      fetchDropRates<GameDropRates>(`/data/drop-rates/${game}/index.json`),
+      fetchDropRates<GameDropRates>(buildDropRatesUrl(game, "index.json")),
     staleTime: 1000 * 60 * 60,
   });
 }
@@ -56,7 +64,7 @@ export function useLeagueDropRates(
     queryKey: ["drop-rates", game, leagueId],
     queryFn: () =>
       fetchDropRates<LeagueDropRates>(
-        `/data/drop-rates/${game}/${leagueId}.json`,
+        buildDropRatesUrl(game, `${leagueId}.json`),
       ),
     enabled: !!leagueId,
     staleTime: 1000 * 60 * 60,

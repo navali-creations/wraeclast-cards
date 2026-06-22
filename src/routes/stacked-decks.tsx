@@ -59,7 +59,7 @@ function StackedDecksPage() {
                     weight="semibold"
                     className="text-(--wc-gold)"
                   >
-                    {leagueData.total_count.toLocaleString()}
+                    {leagueData.total_count?.toLocaleString()}
                   </Text>{" "}
                   observations · {league?.name} league
                 </>
