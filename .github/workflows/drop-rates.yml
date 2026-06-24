@@ -3,7 +3,7 @@ name: Publish drop-rate data
 on:
   schedule:
     # GitHub cron is UTC. These two slots cover 23:00 Europe/Warsaw across DST.
-    - cron: "0 21,22 * * 1"
+    - cron: "0 21,22 * * *"
   workflow_dispatch:
     inputs:
       backfill_historical:
@@ -29,7 +29,7 @@ jobs:
             exit 0
           fi
 
-          if [ "$(TZ=Europe/Warsaw date +%u)" = "1" ] && [ "$(TZ=Europe/Warsaw date +%H)" = "23" ]; then
+          if [ "$(TZ=Europe/Warsaw date +%H)" = "23" ]; then
             echo "run=true" >> "$GITHUB_OUTPUT"
           else
             echo "run=false" >> "$GITHUB_OUTPUT"
@@ -64,6 +64,7 @@ jobs:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           WRAECLAST_CARDS_API_KEY: ${{ secrets.WRAECLAST_CARDS_API_KEY }}
           DROP_RATES_PUBLIC_BASE_URL: https://wraeclast.cards/data/drop-rates
+          DROP_RATES_RESEARCH_DATA_BASE_URL: https://raw.githubusercontent.com/navali-creations/fateweaver/main/packages/poe1-divination-cards/data
           DROP_RATES_BACKFILL_HISTORICAL: ${{ github.event.inputs.backfill_historical || 'false' }}
 
       - name: Deploy to Cloudflare Pages
