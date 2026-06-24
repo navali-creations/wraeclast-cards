@@ -1,2 +1,2 @@
-export { barCell } from "./barCell";
-export { dropRateBadgeCell } from "./dropRateBadgeCell";
+export { BarCell } from "./BarCell";
+export { DropRateBadgeCell } from "./DropRateBadgeCell";

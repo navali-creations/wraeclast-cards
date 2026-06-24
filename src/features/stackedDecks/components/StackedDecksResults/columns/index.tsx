@@ -1,4 +1,4 @@
-import { barCell, dropRateBadgeCell } from "./cells";
+import { BarCell, DropRateBadgeCell } from "./cells";
 import { col, columnHelper } from "./helper";
 
 export function createColumns() {
@@ -27,12 +27,12 @@ export function createColumns() {
     }),
     col("ratio", "Drop Rate %", {
       align: "right",
-      cell: dropRateBadgeCell,
+      cell: DropRateBadgeCell,
     }),
     col("weight", "Weight", {
       align: "right",
       tdClassName: "tabular-nums text-(--wc-text-30)",
-      cell: barCell,
+      cell: BarCell,
     }),
   ];
 }

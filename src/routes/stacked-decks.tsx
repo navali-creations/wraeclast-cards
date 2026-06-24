@@ -1,5 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { Heading } from "../components/headings";
 import { Text } from "../components/text";
 import {
@@ -12,6 +11,7 @@ import { useStackedDecksData } from "../features/stackedDecks/hooks";
 type StackedDecksSearchParams = {
   sortBy?: string;
   sortAsc?: true;
+  search?: string;
 };
 
 export const Route = createFileRoute("/stacked-decks")({
@@ -21,18 +21,27 @@ export const Route = createFileRoute("/stacked-decks")({
     sortBy: typeof search.sortBy === "string" ? search.sortBy : undefined,
     sortAsc:
       search.sortAsc === true || search.sortAsc === "true" ? true : undefined,
+    search: typeof search.search === "string" ? search.search : undefined,
   }),
   component: StackedDecksPage,
 });
 
 function StackedDecksPage() {
-  const [searchTerm, setSearchTerm] = useState("");
+  const { search: searchTerm = "" } = Route.useSearch();
+  const navigate = useNavigate();
   const { league, leagueData } = useStackedDecksData("poe1");
+
+  function setSearchTerm(value: string) {
+    navigate({
+      to: ".",
+      search: (prev) => ({ ...prev, search: value || undefined }),
+    });
+  }
 
   return (
     <div className="flex flex-1 flex-col min-h-0">
       <div className="border-b border-base-100 pt-5 pb-4">
-        <div className="mx-auto flex w-full max-w-300 flex-row items-center justify-between gap-3 px-4">
+        <div className="mx-auto flex w-full max-w-300 flex-col gap-3 px-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <div className="flex items-center gap-2.5">
               <Heading

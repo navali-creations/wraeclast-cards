@@ -6,8 +6,8 @@ import { HeaderMobileNavigation } from "./HeaderMobileNavigation";
 export function Header() {
   return (
     <nav className="sticky top-0 z-50 bg-(--wc-nav-bg) border-b border-(--wc-border)">
-      <div className="navbar mx-auto max-w-300 px-4">
-        <div className="navbar-start items-center gap-1">
+      <div className="flex flex-wrap items-center mx-auto max-w-300 px-4">
+        <div className="flex flex-1 items-center gap-1 min-w-full xs:min-w-0 h-14 xs:h-16">
           <HeaderMobileNavigation />
           <HeaderBrand />
         </div>

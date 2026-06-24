@@ -69,10 +69,10 @@ function CardsPage() {
           </h1>
         </div>
 
-        <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
+        <div className="flex flex-col gap-3 xs:flex-row xs:items-center xs:justify-between">
           <CardsFilters value={searchTerm} onChange={setSearchTerm} />
 
-          <div className="flex items-center gap-2 self-start">
+          <div className="flex items-center gap-2 self-end xs:self-auto">
             {Object.keys(SORT_FIELDS).map((label) => {
               const isActive = activeSortLabel === label;
               return (

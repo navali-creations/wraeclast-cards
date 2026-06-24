@@ -18,14 +18,15 @@ export function useResponsiveColumnVisibility() {
 
   useEffect(() => {
     const update = () => setColumnVisibility(getVisibilityForViewport());
-    const queries = BREAKPOINT_QUERIES.map((q) => window.matchMedia(q));
-    queries.forEach((mediaQuery) => {
+    const queries = BREAKPOINT_QUERIES.map((q) => {
+      const mediaQuery = window.matchMedia(q);
       mediaQuery.addEventListener("change", update);
+      return mediaQuery;
     });
     return () => {
-      queries.forEach((mediaQuery) => {
+      for (const mediaQuery of queries) {
         mediaQuery.removeEventListener("change", update);
-      });
+      }
     };
   }, []);
 

@@ -1,5 +1,6 @@
 import cardsJson from "@navali/poe1-divination-cards/data/cards.json";
 import { useMemo } from "react";
+import { useLeague } from "../../../app/league-context";
 import type { DropRateCard } from "../../../lib/useDropRates";
 import {
   useGameDropRates,
@@ -17,10 +18,15 @@ export interface StackedDecksRow extends DropRateCard {
 }
 
 export function useStackedDecksData(game: "poe1" | "poe2") {
+  const { leagueId } = useLeague();
   const gameQuery = useGameDropRates(game);
-  const latestLeague = gameQuery.data?.leagues[0];
 
-  const leagueQuery = useLeagueDropRates(game, latestLeague?.id);
+  const selectedLeagueId = leagueId ?? gameQuery.data?.leagues[0]?.id;
+  const selectedLeague = gameQuery.data?.leagues.find(
+    (l) => l.id === selectedLeagueId,
+  );
+
+  const leagueQuery = useLeagueDropRates(game, selectedLeagueId);
 
   const rows = useMemo(
     () =>
@@ -31,11 +37,18 @@ export function useStackedDecksData(game: "poe1" | "poe2") {
     [leagueQuery.data],
   );
 
+  const totalCount = useMemo(
+    () => leagueQuery.data?.cards.reduce((sum, c) => sum + c.count, 0) ?? 0,
+    [leagueQuery.data],
+  );
+
   return {
-    league: latestLeague,
+    league: selectedLeague,
     leagueData: leagueQuery.data,
     rows,
-    isLoading: gameQuery.isLoading || (!!latestLeague && leagueQuery.isLoading),
+    totalCount,
+    isLoading:
+      gameQuery.isLoading || (!!selectedLeagueId && leagueQuery.isLoading),
     error: gameQuery.error ?? leagueQuery.error,
   };
 }

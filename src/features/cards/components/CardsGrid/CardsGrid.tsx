@@ -45,7 +45,7 @@ export function CardsGrid({ data }: CardsGridProps) {
   return (
     <div className="flex flex-col gap-6">
       <ScrollToTop />
-      <ul className="grid grid-cols-2 gap-x-40 gap-y-4 justify-items-center sm:grid-cols-3 md:grid-cols-4">
+      <ul className="grid grid-cols-1 gap-x-40 gap-y-4 justify-items-center sm:grid-cols-2 md:grid-cols-2 md:gap-x-0 lg:grid-cols-3 lg:gap-x-4 xl:grid-cols-4 xl:gap-x-40">
         {pageData.map((card) => (
           <DivinationCard key={card.id} card={card} />
         ))}

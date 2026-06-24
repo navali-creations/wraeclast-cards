@@ -133,6 +133,7 @@ body {
   --wc-table-odd: oklch(90% 0.03 85);
   --wc-skeleton: oklch(84% 0.03 85);
   --wc-skeleton-highlight: oklch(88% 0.05 15 / 50%);
+  --wc-hover-glow: oklch(58% 0.18 15 / 55%);
 }
 
 /* ============================================================

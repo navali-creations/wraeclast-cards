@@ -1,7 +1,7 @@
 import type { CellContext } from "@tanstack/react-table";
 import type { StackedDecksRow } from "../../../../hooks";
 
-export function barCell({
+export function BarCell({
   getValue,
   table,
 }: CellContext<StackedDecksRow, number>) {

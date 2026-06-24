@@ -47,6 +47,14 @@ interface ColumnVisibilityTogglesProps {
 export function ColumnVisibilityToggles({
   table,
 }: ColumnVisibilityTogglesProps) {
+  function handleMobileColumnClick(id: string) {
+    table.setColumnVisibility({
+      count: id === "count",
+      ratio: id === "ratio",
+      weight: id === "weight",
+    });
+  }
+
   return (
     <>
       {/* Mobile (≤424px): radio — one secondary column alongside Card Name */}
@@ -56,31 +64,21 @@ export function ColumnVisibilityToggles({
             key={id}
             label={label}
             isActive={table.getColumn(id)?.getIsVisible() ?? false}
-            onClick={() =>
-              table.setColumnVisibility({
-                count: id === "count",
-                ratio: id === "ratio",
-                weight: id === "weight",
-              })
-            }
+            onClick={() => handleMobileColumnClick(id)}
           />
         ))}
       </div>
 
       {/* Tablet (425px–767px): independent toggles */}
       <div className="hidden xs:flex md:hidden border-b border-(--wc-border-dimmed) bg-(--wc-glow)">
-        {TABLET_COLUMNS.map(({ id, label }) => {
-          const column = table.getColumn(id);
-          if (!column) return null;
-          return (
-            <ToggleButton
-              key={id}
-              label={label}
-              isActive={column.getIsVisible()}
-              onClick={() => column.toggleVisibility()}
-            />
-          );
-        })}
+        {TABLET_COLUMNS.map(({ id, label }) => (
+          <ToggleButton
+            key={id}
+            label={label}
+            isActive={table.getColumn(id)?.getIsVisible() ?? false}
+            onClick={() => handleMobileColumnClick(id)}
+          />
+        ))}
       </div>
     </>
   );

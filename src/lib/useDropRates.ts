@@ -3,10 +3,15 @@ import { useQuery } from "@tanstack/react-query";
 export interface DropRateLeague {
   id: string;
   name: string;
+  historical: boolean;
+  url: string;
+  card_count: number;
+  generated_at: string;
 }
 
 export interface GameDropRates {
-  game: string;
+  url: string;
+  league_count: number;
   leagues: DropRateLeague[];
 }
 

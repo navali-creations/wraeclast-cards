@@ -24,6 +24,7 @@ export function useStackedDecksTable({ searchTerm }: { searchTerm: string }) {
     league,
     leagueData,
     rows: allRows,
+    totalCount,
     isLoading,
     error,
   } = useStackedDecksData("poe1");
@@ -78,5 +79,5 @@ export function useStackedDecksTable({ searchTerm }: { searchTerm: string }) {
     getPaginationRowModel: paginationRowModel,
   });
 
-  return { table, league, leagueData, allRows, isLoading, error };
+  return { table, league, leagueData, allRows, totalCount, isLoading, error };
 }

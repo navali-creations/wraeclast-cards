@@ -11,7 +11,7 @@ interface StackedDecksResultsProps {
 }
 
 export function StackedDecksResults(props: StackedDecksResultsProps) {
-  const { table, league, leagueData, allRows, isLoading, error } =
+  const { table, league, leagueData, allRows, totalCount, isLoading, error } =
     useStackedDecksTable(props);
 
   if (isLoading) return <Skeleton />;
@@ -32,29 +32,31 @@ export function StackedDecksResults(props: StackedDecksResultsProps) {
       <section className="overflow-hidden rounded-lg border border-(--wc-border-dimmed) bg-(--wc-bg-dimmed)">
         <ColumnVisibilityToggles table={table} />
 
-        <table className="w-full border-collapse text-sm text-(--wc-text-dimmed)">
-          <thead>
-            <tr className="bg-(--wc-glow) text-(--wc-text-80)">
-              {headers.map((header) => (
-                <SortableHeaderCell key={header.id} header={header} />
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {rows.length === 0 ? (
-              <tr>
-                <td
-                  colSpan={headers.length}
-                  className="py-12 text-center text-sm text-(--wc-text-50)"
-                >
-                  No cards match your search.
-                </td>
+        <div className="overflow-x-auto">
+          <table className="w-full border-collapse text-sm text-(--wc-text-dimmed)">
+            <thead>
+              <tr className="bg-(--wc-glow) text-(--wc-text-80)">
+                {headers.map((header) => (
+                  <SortableHeaderCell key={header.id} header={header} />
+                ))}
               </tr>
-            ) : (
-              rows.map((row) => <DataRow key={row.id} row={row} />)
-            )}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {rows.length === 0 ? (
+                <tr>
+                  <td
+                    colSpan={headers.length}
+                    className="py-12 text-center text-sm text-(--wc-text-50)"
+                  >
+                    No cards match your search.
+                  </td>
+                </tr>
+              ) : (
+                rows.map((row) => <DataRow key={row.id} row={row} />)
+              )}
+            </tbody>
+          </table>
+        </div>
 
         <div className="flex items-center justify-between border-t border-(--wc-accent-border) bg-(--wc-glow) px-3 py-2 text-[11px] text-(--wc-text-70)">
           <span className="leading-none">
@@ -80,6 +82,9 @@ export function StackedDecksResults(props: StackedDecksResultsProps) {
               </>
             )}
             {" · "}
+            <span className="tabular-nums">
+              {totalCount.toLocaleString()} observations
+            </span>
           </span>
           <span className="leading-none rounded border border-(--wc-border-dimmed) px-1.5 py-0.5 text-(--wc-text-70)">
             {league?.name}

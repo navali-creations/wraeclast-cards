@@ -2,13 +2,16 @@ import type { QueryClient } from "@tanstack/react-query";
 import { createRootRouteWithContext } from "@tanstack/react-router";
 import { GameProvider } from "../app/game-context";
 import { AppLayout } from "../app/layout/AppLayout";
+import { LeagueProvider } from "../app/league-context";
 import { ButtonInternalLink } from "../components/buttons/ButtonLink";
 import { Text } from "../components/text";
 
 function RootComponent() {
   return (
     <GameProvider>
-      <AppLayout />
+      <LeagueProvider>
+        <AppLayout />
+      </LeagueProvider>
     </GameProvider>
   );
 }
