@@ -4,6 +4,11 @@ import path from "node:path";
 const DEFAULT_GAMES = ["poe1", "poe2"];
 const DEFAULT_OUTPUT_DIR = "dist/data/drop-rates";
 const DEFAULT_PUBLIC_BASE_URL = "https://wraeclast.cards/data/drop-rates";
+const DEFAULT_RESEARCH_DATA_BASE_URL =
+  "https://raw.githubusercontent.com/navali-creations/fateweaver/main/packages/poe1-divination-cards/data";
+const SCHEMA_VERSION = 2;
+const COMMUNITY_WEIGHT_ANCHOR_CARD = "Rain of Chaos";
+const COMMUNITY_WEIGHT_ANCHOR_WEIGHT = 121400;
 const CACHE_SECONDS = 7 * 24 * 60 * 60;
 const BROWSER_CACHE_SECONDS = 60 * 60;
 
@@ -133,6 +138,36 @@ async function fetchOptionalJson(url) {
   }
 }
 
+async function fetchOptionalRawJson(url) {
+  let response;
+  try {
+    response = await fetch(url, {
+      headers: { Accept: "application/json" },
+    });
+  } catch {
+    console.warn(`[drop-rates] Could not fetch optional JSON from ${url}`);
+    return null;
+  }
+
+  if (response.status === 404) {
+    return null;
+  }
+
+  if (!response.ok) {
+    console.warn(
+      `[drop-rates] Could not fetch optional JSON from ${url}: ${response.status}`,
+    );
+    return null;
+  }
+
+  try {
+    return await response.json();
+  } catch {
+    console.warn(`[drop-rates] Optional JSON at ${url} is not valid JSON`);
+    return null;
+  }
+}
+
 function validateDropRatePayload(game, payload) {
   if (!payload || payload.game !== game) {
     throw new Error(`Unexpected drop-rate payload for ${game}`);
@@ -162,6 +197,243 @@ async function fetchDropRates({ supabaseUrl, apiKey, game, includeInactive }) {
 
   validateDropRatePayload(game, payload);
   return payload;
+}
+
+function roundRatio(value) {
+  if (!Number.isFinite(value)) return null;
+  return Number(value.toFixed(12));
+}
+
+function roundCount(value) {
+  if (!Number.isFinite(value)) return null;
+  return Number(value.toFixed(3));
+}
+
+function communityWeightScale(anchorCount) {
+  if (!Number.isFinite(anchorCount) || anchorCount <= 0) return null;
+  return anchorCount ** 1.5 / COMMUNITY_WEIGHT_ANCHOR_WEIGHT;
+}
+
+function estimateCommunityWeight(count, scale) {
+  if (!Number.isFinite(count) || count <= 0 || !scale) return null;
+  return roundCount(count ** 1.5 / scale);
+}
+
+function researchFileUrl(baseUrl, leagueName) {
+  const normalizedBaseUrl = normalizeBaseUrl(baseUrl);
+  return `${normalizedBaseUrl}/cards-${encodeURIComponent(leagueName)}.json`;
+}
+
+function validateResearchCards(cards, leagueName) {
+  if (!Array.isArray(cards)) {
+    throw new Error(`Invalid research card payload for ${leagueName}`);
+  }
+
+  for (const [index, card] of cards.entries()) {
+    if (
+      !card ||
+      typeof card !== "object" ||
+      typeof card.name !== "string" ||
+      typeof card.weight !== "number" ||
+      (card.is_disabled !== undefined &&
+        typeof card.is_disabled !== "boolean") ||
+      typeof card.from_boss !== "boolean"
+    ) {
+      throw new Error(
+        `Invalid research card row for ${leagueName} at index ${index}`,
+      );
+    }
+  }
+}
+
+function isResearchCardDisabled(card) {
+  return card.is_disabled === true;
+}
+
+function isResearchCardFromBoss(card) {
+  return card.from_boss === true;
+}
+
+async function fetchResearchData({ game, leagueName, researchDataBaseUrl }) {
+  if (game !== "poe1") return null;
+
+  const sourceUrl = researchFileUrl(researchDataBaseUrl, leagueName);
+  const cards = await fetchOptionalRawJson(sourceUrl);
+
+  if (!cards) {
+    console.warn(
+      `[drop-rates] No research weights found for ${game}/${leagueName}`,
+    );
+    return null;
+  }
+
+  validateResearchCards(cards, leagueName);
+
+  const eligibleCards = cards.filter(
+    (card) =>
+      !isResearchCardDisabled(card) &&
+      !isResearchCardFromBoss(card) &&
+      card.weight > 0,
+  );
+  const totalWeight = eligibleCards.reduce((sum, card) => sum + card.weight, 0);
+
+  if (totalWeight <= 0) {
+    console.warn(
+      `[drop-rates] Research weights for ${game}/${leagueName} have no eligible cards`,
+    );
+    return null;
+  }
+
+  const cardByName = new Map(cards.map((card) => [card.name, card]));
+  const eligibleCardNames = new Set(eligibleCards.map((card) => card.name));
+
+  return {
+    source: "fateweaver",
+    source_url: sourceUrl,
+    total_weight: totalWeight,
+    eligible_card_count: eligibleCards.length,
+    card_count: cards.length,
+    cardByName,
+    eligibleCardNames,
+  };
+}
+
+function publicResearchMetadata(researchData) {
+  if (!researchData) return null;
+
+  return {
+    source: researchData.source,
+    source_url: researchData.source_url,
+    total_weight: researchData.total_weight,
+    eligible_card_count: researchData.eligible_card_count,
+    card_count: researchData.card_count,
+  };
+}
+
+function enrichCardsWithResearch(cards, researchData) {
+  if (!researchData) return { cards, metadata: null };
+
+  const cardsByName = new Map(cards.map((card) => [card.name, card]));
+
+  for (const cardName of researchData.eligibleCardNames) {
+    if (cardsByName.has(cardName)) continue;
+
+    const missingCard = {
+      name: cardName,
+      count: 0,
+      ratio: 0,
+      contributors: 0,
+      verified_count: 0,
+      verified_contributors: 0,
+    };
+    cardsByName.set(cardName, missingCard);
+    cards.push(missingCard);
+  }
+
+  const observedTotal = cards.reduce((sum, card) => {
+    if (!researchData.eligibleCardNames.has(card.name)) return sum;
+    return sum + card.count;
+  }, 0);
+  const verifiedObservedTotal = cards.reduce((sum, card) => {
+    if (!researchData.eligibleCardNames.has(card.name)) return sum;
+    return sum + card.verified_count;
+  }, 0);
+  const anchorCard = cardsByName.get(COMMUNITY_WEIGHT_ANCHOR_CARD);
+  const observedAnchorCount = anchorCard?.count ?? 0;
+  const verifiedObservedAnchorCount = anchorCard?.verified_count ?? 0;
+  const observedWeightScale = communityWeightScale(observedAnchorCount);
+  const verifiedObservedWeightScale = communityWeightScale(
+    verifiedObservedAnchorCount,
+  );
+
+  return {
+    cards: cards
+      .map((card) => {
+        const researchCard = researchData.cardByName.get(card.name);
+        const researchEligible =
+          researchCard !== undefined &&
+          researchData.eligibleCardNames.has(card.name);
+        const researchChance = researchEligible
+          ? researchCard.weight / researchData.total_weight
+          : null;
+        const playersSaw =
+          researchEligible && observedTotal > 0
+            ? card.count / observedTotal
+            : null;
+        const verifiedPlayersSaw =
+          researchEligible && verifiedObservedTotal > 0
+            ? card.verified_count / verifiedObservedTotal
+            : null;
+        const expectedDrops =
+          researchChance !== null ? researchChance * observedTotal : null;
+        const verifiedExpectedDrops =
+          researchChance !== null && verifiedObservedTotal > 0
+            ? researchChance * verifiedObservedTotal
+            : null;
+        const communityEstimatedWeight = estimateCommunityWeight(
+          card.count,
+          observedWeightScale,
+        );
+        const verifiedCommunityEstimatedWeight = estimateCommunityWeight(
+          card.verified_count,
+          verifiedObservedWeightScale,
+        );
+
+        return {
+          ...card,
+          research_weight: researchCard?.weight ?? null,
+          research_eligible: researchEligible,
+          research_chance: roundRatio(researchChance),
+          players_saw: roundRatio(playersSaw),
+          seen_vs_research:
+            researchChance && playersSaw !== null
+              ? roundRatio(playersSaw / researchChance)
+              : null,
+          expected_drops: roundCount(expectedDrops),
+          drop_difference:
+            expectedDrops !== null
+              ? roundCount(card.count - expectedDrops)
+              : null,
+          verified_players_saw: roundRatio(verifiedPlayersSaw),
+          verified_seen_vs_research:
+            researchChance && verifiedPlayersSaw !== null
+              ? roundRatio(verifiedPlayersSaw / researchChance)
+              : null,
+          verified_expected_drops: roundCount(verifiedExpectedDrops),
+          verified_drop_difference:
+            verifiedExpectedDrops !== null
+              ? roundCount(card.verified_count - verifiedExpectedDrops)
+              : null,
+          community_estimated_weight: communityEstimatedWeight,
+          community_estimated_weight_vs_research:
+            researchCard?.weight > 0 && communityEstimatedWeight !== null
+              ? roundRatio(communityEstimatedWeight / researchCard.weight)
+              : null,
+          verified_community_estimated_weight: verifiedCommunityEstimatedWeight,
+          verified_community_estimated_weight_vs_research:
+            researchCard?.weight > 0 &&
+            verifiedCommunityEstimatedWeight !== null
+              ? roundRatio(
+                  verifiedCommunityEstimatedWeight / researchCard.weight,
+                )
+              : null,
+        };
+      })
+      .sort((a, b) => a.name.localeCompare(b.name)),
+    metadata: {
+      ...publicResearchMetadata(researchData),
+      observed_total: observedTotal,
+      verified_observed_total: verifiedObservedTotal,
+      community_weight_anchor: {
+        card: COMMUNITY_WEIGHT_ANCHOR_CARD,
+        weight: COMMUNITY_WEIGHT_ANCHOR_WEIGHT,
+        observed_count: observedAnchorCount,
+        verified_observed_count: verifiedObservedAnchorCount,
+        observed_scale: roundRatio(observedWeightScale),
+        verified_observed_scale: roundRatio(verifiedObservedWeightScale),
+      },
+    },
+  };
 }
 
 function splitCardsByLeague(payload) {
@@ -217,9 +489,10 @@ async function writeLeagueFile({
   league,
   cards,
   historical,
+  research,
 }) {
   const body = {
-    schema_version: 1,
+    schema_version: SCHEMA_VERSION,
     generated_at: generatedAt,
     game,
     league: {
@@ -227,6 +500,7 @@ async function writeLeagueFile({
       name: league.name,
       historical,
     },
+    research,
     cards,
   };
 
@@ -281,7 +555,7 @@ async function preservePreviousLeague({
 
 async function writeGameIndex({ outputDir, generatedAt, game, leagues }) {
   const body = {
-    schema_version: 1,
+    schema_version: SCHEMA_VERSION,
     generated_at: generatedAt,
     game,
     leagues,
@@ -294,7 +568,7 @@ async function writeGameIndex({ outputDir, generatedAt, game, leagues }) {
 
 async function writeRootIndex({ outputDir, generatedAt, games }) {
   const body = {
-    schema_version: 1,
+    schema_version: SCHEMA_VERSION,
     generated_at: generatedAt,
     games,
   };
@@ -345,6 +619,10 @@ async function main() {
       process.env.DROP_RATES_PUBLIC_BASE_URL ??
       DEFAULT_PUBLIC_BASE_URL,
   );
+  const researchDataBaseUrl = normalizeBaseUrl(
+    process.env.DROP_RATES_RESEARCH_DATA_BASE_URL ??
+      DEFAULT_RESEARCH_DATA_BASE_URL,
+  );
   const games = (process.env.DROP_RATES_GAMES ?? DEFAULT_GAMES.join(","))
     .split(",")
     .map((game) => game.trim())
@@ -376,14 +654,22 @@ async function main() {
     for (const { league, cards } of activeByLeague.values()) {
       if (cards.length === 0) continue;
 
+      const researchData = await fetchResearchData({
+        game,
+        leagueName: league.name,
+        researchDataBaseUrl,
+      });
+      const enriched = enrichCardsWithResearch(cards, researchData);
+
       leagueEntries.push(
         await writeLeagueFile({
           outputDir,
           generatedAt,
           game,
           league,
-          cards,
+          cards: enriched.cards,
           historical: false,
+          research: enriched.metadata,
         }),
       );
       generatedLeagueIds.add(league.id);
@@ -405,14 +691,22 @@ async function main() {
       for (const { league, cards } of allByLeague.values()) {
         if (generatedLeagueIds.has(league.id) || cards.length === 0) continue;
 
+        const researchData = await fetchResearchData({
+          game,
+          leagueName: league.name,
+          researchDataBaseUrl,
+        });
+        const enriched = enrichCardsWithResearch(cards, researchData);
+
         leagueEntries.push(
           await writeLeagueFile({
             outputDir,
             generatedAt,
             game,
             league,
-            cards,
+            cards: enriched.cards,
             historical: true,
+            research: enriched.metadata,
           }),
         );
         generatedLeagueIds.add(league.id);
