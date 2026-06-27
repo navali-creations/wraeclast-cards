@@ -5,5 +5,6 @@ export function useCardsQuery() {
   return useQuery({
     queryKey: ["cards"],
     queryFn: getCards,
+    staleTime: Infinity,
   });
 }

@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
-import { Heading } from "../components/headings";
+import { H1 } from "../components/headings";
 import { Text } from "../components/text";
 import {
   Methodology,
@@ -21,14 +21,9 @@ function StackedDecksPage() {
         <div className="flex flex-row items-center justify-between gap-3">
           <div>
             <div className="flex items-center gap-2.5">
-              <Heading
-                as="h1"
-                font="fontin"
-                size="3xl"
-                className="leading-none tracking-tight text-(--wc-gold-bright) sm:text-5xl"
-              >
+              <H1 className="leading-none tracking-tight text-(--wc-gold-bright) sm:text-5xl">
                 Stacked Decks
-              </Heading>
+              </H1>
             </div>
             <Text size="sm" className="mt-1 text-(--wc-text-70)">
               <Text as="span" weight="semibold" className="text-(--wc-gold)">

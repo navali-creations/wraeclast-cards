@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { preload } from "react-dom";
 import { useCardsQuery } from "../../hooks";
 import type { Card } from "../../types";
@@ -17,19 +17,21 @@ interface CardsGridProps {
 export function CardsGrid({ data }: CardsGridProps) {
   const { isLoading, error } = useCardsQuery();
   const [page, setPage] = useState(1);
+  const prevDataRef = useRef(data);
+  if (prevDataRef.current !== data) {
+    prevDataRef.current = data;
+    setPage(1);
+  }
 
   const totalPages = Math.max(1, Math.ceil(data.length / PAGE_SIZE));
   const safePage = Math.min(page, totalPages);
 
-  function handlePageChange(pageNumber: number) {
-    setPage(pageNumber);
+  for (const card of data.slice(
+    (safePage - 1) * PAGE_SIZE,
+    (safePage + 1) * PAGE_SIZE,
+  )) {
+    if (card.imageUrl) preload(card.imageUrl, { as: "image" });
   }
-
-  data
-    .slice(safePage * PAGE_SIZE, (safePage + 1) * PAGE_SIZE)
-    .forEach((card) => {
-      if (card.imageUrl) preload(card.imageUrl, { as: "image" });
-    });
 
   if (error) return <EmptyMessage>Failed to load cards.</EmptyMessage>;
 
@@ -48,11 +50,7 @@ export function CardsGrid({ data }: CardsGridProps) {
           <DivinationCard key={card.id} card={card} />
         ))}
       </ul>
-      <Pagination
-        page={safePage}
-        totalPages={totalPages}
-        onChange={handlePageChange}
-      />
+      <Pagination page={safePage} totalPages={totalPages} onChange={setPage} />
     </div>
   );
 }

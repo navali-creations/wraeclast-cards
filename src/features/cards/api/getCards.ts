@@ -1,5 +1,7 @@
-import cardsData from "@navali/poe1-divination-cards/data/cards.json";
-import { DIVINATION_CARDS_IMAGES_BASE_URL } from "../hooks/useDivinationCardsData";
+import {
+  DIVINATION_CARDS_DATA_CDN,
+  DIVINATION_CARDS_IMAGES_BASE_URL,
+} from "../hooks/useDivinationCardsData";
 import type { Card } from "../types";
 
 type RawCard = {
@@ -32,7 +34,7 @@ function cleanRewardHtml(html: string): string {
   while (prev !== result) {
     prev = result;
     result = result.replace(
-      /<span[^>]*class="(?!tc\s)[^"]*"[^>]*>([\s\S]*?)<\/span>/g,
+      /<span[^>]*class="(?!tc[\s"])[^"]*"[^>]*>([\s\S]*?)<\/span>/g,
       "$1",
     );
   }
@@ -40,9 +42,9 @@ function cleanRewardHtml(html: string): string {
   return result.trim();
 }
 
-function toCard(raw: RawCard, index: number): Card {
+function toCard(raw: RawCard): Card {
   return {
-    id: `${index}-${raw.name}`,
+    id: raw.name,
     name: raw.name,
     imageUrl: raw.art_src
       ? `${DIVINATION_CARDS_IMAGES_BASE_URL}/${raw.art_src}`
@@ -58,5 +60,8 @@ function toCard(raw: RawCard, index: number): Card {
 }
 
 export async function getCards(): Promise<Card[]> {
-  return (cardsData as RawCard[]).map(toCard);
+  const res = await fetch(`${DIVINATION_CARDS_DATA_CDN}/cards.json`);
+  if (!res.ok) throw new Error(`Failed to fetch cards: ${res.status}`);
+  const data: RawCard[] = await res.json();
+  return data.map(toCard);
 }
