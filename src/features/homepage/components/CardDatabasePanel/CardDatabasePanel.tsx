@@ -1,10 +1,9 @@
-import { Link } from "@tanstack/react-router";
 import { preload } from "react-dom";
-import { H2 } from "../../../../components/headings";
+import { Heading } from "../../../../components/headings";
 import { Text } from "../../../../components/text";
-import type { Card } from "../../../cards/types";
+import { useCardsQuery } from "../../../cards/hooks";
 import { useRandomCards } from "../../hooks/useRandomCards";
-import { StaticDivinationCard } from "./StaticDivinationCard";
+import { SCALE, ScaledCard } from "./ScaledCard";
 
 const CARD_COUNT = 4;
 const SKELETON_KEYS = Array.from(
@@ -13,36 +12,9 @@ const SKELETON_KEYS = Array.from(
 );
 const CARD_W = 320;
 const CARD_H = 476;
-const SCALE = 0.55;
-
-function ScaledCard({ card }: { card: Card }) {
-  return (
-    <Link
-      to="/cards"
-      search={{ name: undefined, sortBy: undefined, sortDesc: undefined }}
-      className="block"
-      style={{
-        width: CARD_W * SCALE,
-        height: CARD_H * SCALE,
-        overflow: "hidden",
-      }}
-    >
-      <div
-        style={{
-          transform: `scale(${SCALE})`,
-          transformOrigin: "top left",
-          width: CARD_W,
-          height: CARD_H,
-          pointerEvents: "none",
-        }}
-      >
-        <StaticDivinationCard card={card} />
-      </div>
-    </Link>
-  );
-}
 
 export function CardDatabasePanel() {
+  const { data: allCards } = useCardsQuery();
   const cards = useRandomCards(CARD_COUNT);
 
   for (const card of cards) {
@@ -60,12 +32,13 @@ export function CardDatabasePanel() {
         >
           Card Database
         </Text>
-        <H2 size="xl" className="text-(--wc-text-90)">
-          451+ divination cards
-        </H2>
+        <Heading as="h2" size="xl" className="text-(--wc-text-90)">
+          {allCards
+            ? `${allCards.length} divination cards`
+            : "Divination cards"}
+        </Heading>
         <Text size="sm" className="text-(--wc-text-60)">
-          Live chaos &amp; divine pricing, drop locations, and full card
-          metadata updated each league.
+          Full card metadata updated each league.
         </Text>
       </div>
 

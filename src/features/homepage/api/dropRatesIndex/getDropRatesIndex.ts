@@ -1,5 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
-import type { DropRatesLeague } from "../types";
+import type { DropRatesLeague } from "../../types";
 
 type GameIndex = {
   url: string;
@@ -7,7 +6,7 @@ type GameIndex = {
   leagues: DropRatesLeague[];
 };
 
-type DropRatesIndex = {
+export type DropRatesIndex = {
   schema_version: number;
   generated_at: string;
   games: {
@@ -25,13 +24,4 @@ export async function getDropRatesIndex(): Promise<DropRatesIndex> {
     throw new Error("Unexpected drop rates index shape");
   }
   return data as DropRatesIndex;
-}
-
-export function useDropRatesIndex() {
-  return useQuery({
-    queryKey: ["drop-rates-index"],
-    queryFn: getDropRatesIndex,
-    staleTime: Infinity,
-    gcTime: Infinity,
-  });
 }

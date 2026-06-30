@@ -1,11 +1,11 @@
 import { ButtonInternalLink } from "../../../components/buttons/ButtonLink";
-import { H2 } from "../../../components/headings";
+import { Heading } from "../../../components/headings";
 import { Text } from "../../../components/text";
 import { topDropRates } from "../api/homepageStats";
 
 export function StackedDecksPanel() {
   return (
-    <div className="flex-1 rounded-xl border border-(--wc-border) bg-base-300 p-5">
+    <div className="rounded-xl border border-(--wc-border) bg-base-300 p-5">
       <div className="flex flex-col gap-3">
         <div className="flex flex-col gap-1">
           <Text
@@ -16,9 +16,9 @@ export function StackedDecksPanel() {
           >
             Stacked Decks
           </Text>
-          <H2 size="lg" className="text-(--wc-text-90)">
+          <Heading as="h2" size="lg" className="text-(--wc-text-90)">
             Observed drop rates
-          </H2>
+          </Heading>
         </div>
 
         <ul className="flex flex-col divide-y divide-(--wc-border)">
