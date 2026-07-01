@@ -15,7 +15,7 @@ export type DropRatesIndex = {
   };
 };
 
-export async function getDropRatesIndex(): Promise<DropRatesIndex> {
+export async function getDropRatesIndex() {
   const res = await fetch("/data/drop-rates/index.json");
   if (!res.ok)
     throw new Error(`Failed to fetch drop rates index: ${res.status}`);

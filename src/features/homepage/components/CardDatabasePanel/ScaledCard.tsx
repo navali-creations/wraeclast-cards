@@ -24,7 +24,6 @@ export function ScaledCard({ card }: { card: Card }) {
           transformOrigin: "top left",
           width: CARD_W,
           height: CARD_H,
-          pointerEvents: "none",
         }}
       >
         <DivinationCard card={card} />

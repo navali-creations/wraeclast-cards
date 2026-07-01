@@ -7,11 +7,9 @@ export function useRandomCards(count = 4): Card[] {
 
   return useMemo(() => {
     if (!cards) return [];
-    const shuffled = cards.filter((c) => c.imageUrl);
-    for (let idx = shuffled.length - 1; idx > 0; idx--) {
-      const swapIdx = Math.floor(Math.random() * (idx + 1));
-      [shuffled[idx], shuffled[swapIdx]] = [shuffled[swapIdx], shuffled[idx]];
-    }
-    return shuffled.slice(0, count);
+    return cards
+      .filter((c) => c.imageUrl)
+      .sort(() => Math.random() - 0.5)
+      .slice(0, count);
   }, [cards, count]);
 }

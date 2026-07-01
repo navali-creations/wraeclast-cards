@@ -1,8 +1,8 @@
 import {
   CardDatabasePanel,
-  DownloadsPanel,
+  // DownloadsPanel,
   HeroSection,
-  SoothsayerPanel,
+  // SoothsayerPanel,
   StackedDecksPanel,
 } from "../components";
 
@@ -16,7 +16,7 @@ export function HomepagePage() {
 
       {/* Right — feature panels */}
       <div className="flex flex-1 flex-col gap-4">
-        <SoothsayerPanel />
+        {/* <SoothsayerPanel /> */}
 
         <div className="flex flex-col gap-4 md:flex-row md:items-stretch">
           {/* Card database (wider) */}
@@ -27,7 +27,7 @@ export function HomepagePage() {
           {/* Stacked Decks + Downloads (narrower, stacked) */}
           <div className="flex flex-col gap-4 md:flex-1">
             <StackedDecksPanel />
-            <DownloadsPanel />
+            {/* <DownloadsPanel /> */}
           </div>
         </div>
       </div>

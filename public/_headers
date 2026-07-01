@@ -1,3 +1,13 @@
-# Vite-built assets — content-hashed filenames, safe to cache indefinitely
-/assets/*
+# Fonts only — content-hashed, never change without a filename change, safe to cache indefinitely.
+# JS/CSS bundles are intentionally excluded so users get updates without clearing their cache.
+/assets/Fontin-Bold-CXYiGwr7.woff
+  Cache-Control: public, max-age=31536000, immutable
+
+/assets/Fontin-Italic-C-qnzBdA.woff
+  Cache-Control: public, max-age=31536000, immutable
+
+/assets/Fontin-Regular-B2P7R-I7.woff
+  Cache-Control: public, max-age=31536000, immutable
+
+/assets/Fontin-SmallCaps-BEKbYJV5.woff
   Cache-Control: public, max-age=31536000, immutable

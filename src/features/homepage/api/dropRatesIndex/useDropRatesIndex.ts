@@ -4,8 +4,8 @@ import { getDropRatesIndex } from "./getDropRatesIndex";
 export const dropRatesIndexQueryOptions = queryOptions({
   queryKey: ["drop-rates-index"],
   queryFn: getDropRatesIndex,
-  staleTime: Infinity,
-  gcTime: Infinity,
+  staleTime: 1000 * 60 * 60 * 24,
+  gcTime: 1000 * 60 * 60 * 24,
 });
 
 export function useDropRatesIndex() {
