@@ -1,2 +1,2 @@
 export { Heading } from "./Heading";
-export type { HeadingFont, HeadingSize } from "./styles";
+export type { HeadingSize } from "./styles";

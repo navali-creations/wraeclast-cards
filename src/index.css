@@ -20,7 +20,7 @@ html {
 }
 
 body {
-  font-family: Inter, sans-serif;
+  font-family: "Geist", sans-serif;
   background-color: var(--color-base-100);
   color: var(--color-base-content);
   -webkit-font-smoothing: antialiased;
@@ -45,6 +45,7 @@ body {
 /* ── Font theme tokens ────────────────────────────────────── */
 @theme {
   --font-cinzel: "Cinzel", "Trajan Pro", serif;
+  --breakpoint-xs: 426px;
 }
 
 /* ── Font helpers ─────────────────────────────────────────── */
@@ -205,6 +206,17 @@ body {
 }
 
 @source "../node_modules/@navali/fated-connections/dist/**/*.js";
+
+/* ── Page background gradient ────────────────────────────── */
+.wc-page-gradient {
+  background:
+    radial-gradient(
+      ellipse 100% 60% at 50% 0%,
+      var(--wc-glow) 0%,
+      transparent 70%
+    ),
+    var(--color-base-100);
+}
 
 /* ── Prose (markdown typography) ─────────────────────────── */
 .prose {

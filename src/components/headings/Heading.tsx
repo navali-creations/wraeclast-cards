@@ -1,38 +1,32 @@
 import clsx from "clsx";
-import type { ElementType, HTMLAttributes } from "react";
-import {
-  fontClasses,
-  type HeadingFont,
-  type HeadingSize,
-  headingBaseClass,
-  sizeClasses,
-} from "./styles";
+import type { HTMLAttributes } from "react";
+import { type HeadingSize, headingBaseClass, sizeClasses } from "./styles";
+
+type HeadingTag = "h1" | "h2" | "h3" | "h4" | "h5" | "h6";
+
+const defaultSizeByTag: Record<HeadingTag, HeadingSize> = {
+  h1: "3xl",
+  h2: "2xl",
+  h3: "xl",
+  h4: "lg",
+  h5: "md",
+  h6: "sm",
+};
 
 interface HeadingProps extends HTMLAttributes<HTMLHeadingElement> {
-  as?: ElementType;
+  as: HeadingTag;
   size?: HeadingSize;
-  font?: HeadingFont;
 }
 
-export function Heading({
-  as: Tag = "h2",
-  size = "lg",
-  font = "cinzel",
-  className,
-  children,
-  ...props
-}: HeadingProps) {
+export function Heading({ as: Tag, size, className, ...props }: HeadingProps) {
   return (
     <Tag
       className={clsx(
         headingBaseClass,
-        fontClasses[font],
-        sizeClasses[size],
+        sizeClasses[size ?? defaultSizeByTag[Tag]],
         className,
       )}
       {...props}
-    >
-      {children}
-    </Tag>
+    />
   );
 }

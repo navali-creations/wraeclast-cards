@@ -1,6 +1,6 @@
 import { useMemo, useRef } from "react";
-import { useDivinationCardsData } from "../../hooks";
-import type { Card } from "../../types";
+import { useDivinationCardsData } from "../../features/cards/hooks";
+import type { Card } from "../../features/cards/types";
 import { CardFrame } from "./components/CardFrame";
 import { RarityEffects } from "./effects/RarityEffects";
 import { useCardMouseEffects } from "./hooks/useCardMouseEffects";

@@ -23,8 +23,6 @@ function StackedDecksPage() {
             <div className="flex items-center gap-2.5">
               <Heading
                 as="h1"
-                font="fontin"
-                size="3xl"
                 className="leading-none tracking-tight text-(--wc-gold-bright) sm:text-5xl"
               >
                 Stacked Decks

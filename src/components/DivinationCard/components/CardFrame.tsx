@@ -1,4 +1,4 @@
-import { useDivinationCardsData } from "../../../hooks";
+import { useDivinationCardsData } from "../../../features/cards/hooks";
 
 export function CardFrame() {
   const { frameUrl } = useDivinationCardsData();

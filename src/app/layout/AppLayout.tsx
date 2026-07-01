@@ -7,17 +7,20 @@ export function AppLayout() {
     select: (location) => location.pathname,
   });
   const isFullWidthRoute = pathname === "/soothsayer/auth";
+  const isHomepage = pathname === "/";
 
   return (
-    <div className="min-h-screen flex flex-col bg-base-200">
+    <div className="min-h-screen flex flex-col">
       <Header />
 
-      <main className="flex-1 flex flex-col">
+      <main
+        className={`flex-1 flex flex-col${isHomepage ? " wc-page-gradient" : isFullWidthRoute ? "" : " bg-(--wc-header-bg)"}`}
+      >
         <div
           className={
             isFullWidthRoute
               ? "flex-1 flex flex-col"
-              : "flex-1 flex flex-col mx-auto w-full max-w-300 px-4 py-6"
+              : "flex-1 flex flex-col mx-auto w-full max-w-300 max-md:px-4 md:px-6 py-6"
           }
         >
           <Outlet />
