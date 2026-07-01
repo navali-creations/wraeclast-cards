@@ -617,6 +617,7 @@ async function main() {
   const publicBaseUrl = normalizeBaseUrl(
     args.publicBaseUrl ??
       process.env.DROP_RATES_PUBLIC_BASE_URL ??
+      process.env.VITE_DROP_RATES_BASE_URL ??
       DEFAULT_PUBLIC_BASE_URL,
   );
   const researchDataBaseUrl = normalizeBaseUrl(
