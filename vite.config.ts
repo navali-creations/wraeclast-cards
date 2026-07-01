@@ -42,4 +42,18 @@ function preloadCdnPlugin(): Plugin {
 
 export default defineConfig({
   plugins: [tailwindcss(), react(), tanstackRouter(), preloadCdnPlugin()],
+  build: {
+    rollupOptions: {
+      output: {
+        // Fonts get their own directory so the Cloudflare Pages _headers file
+        // can cache them with a single wildcard instead of per-filename rules.
+        assetFileNames: (assetInfo) => {
+          const name = assetInfo.names?.[0] ?? "";
+          return /\.(woff2?|ttf|otf|eot)$/.test(name)
+            ? "assets/fonts/[name]-[hash][extname]"
+            : "assets/[name]-[hash][extname]";
+        },
+      },
+    },
+  },
 });

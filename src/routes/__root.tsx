@@ -1,4 +1,5 @@
-import { createRootRoute } from "@tanstack/react-router";
+import type { QueryClient } from "@tanstack/react-query";
+import { createRootRouteWithContext } from "@tanstack/react-router";
 import { GameProvider } from "../app/game-context";
 import { AppLayout } from "../app/layout/AppLayout";
 import { ButtonInternalLink } from "../components/buttons/ButtonLink";
@@ -33,7 +34,9 @@ function NotFoundComponent() {
   );
 }
 
-export const Route = createRootRoute({
-  component: RootComponent,
-  notFoundComponent: NotFoundComponent,
-});
+export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
+  {
+    component: RootComponent,
+    notFoundComponent: NotFoundComponent,
+  },
+);
