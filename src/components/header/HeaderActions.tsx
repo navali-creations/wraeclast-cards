@@ -1,29 +1,16 @@
 import clsx from "clsx";
-import { useEffect } from "react";
 import { FiChevronDown } from "react-icons/fi";
-import { useGame } from "../../app/game-context";
-import { useLeague } from "../../app/league-context";
+import { useGameContext } from "../../app/game-context";
+import { useLeagueContext } from "../../app/league-context";
 import { EGame } from "../../enums";
-import { useGameDropRates } from "../../lib/dropRates";
 import { useDropdown } from "../../lib/useDropdown";
 import { Button } from "../buttons";
 
 export function HeaderActions() {
-  const { game, setGame } = useGame();
-  const { leagueId, setLeagueId } = useLeague();
-  const { data: gameRates } = useGameDropRates(game);
+  const { game, setGame } = useGameContext();
+  const { leagues, selectedLeague, selectedLeagueId, setSelectedLeague } =
+    useLeagueContext();
   const { open, containerRef, toggle, close } = useDropdown();
-
-  useEffect(() => {
-    if (!leagueId && gameRates?.leagues.length) {
-      const first =
-        gameRates.leagues.find((l) => !l.historical) ?? gameRates.leagues[0];
-      if (first) setLeagueId(first.id);
-    }
-  }, [gameRates, leagueId, setLeagueId]);
-
-  const leagues = gameRates?.leagues ?? [];
-  const selectedLeague = leagues.find((l) => l.id === leagueId);
 
   return (
     <div className="navbar-end gap-3 max-xs:flex-none max-xs:w-full max-xs:justify-between max-xs:px-6 max-xs:pb-4">
@@ -56,12 +43,12 @@ export function HeaderActions() {
             <Button
               key={league.id}
               onClick={() => {
-                setLeagueId(league.id);
+                setSelectedLeague(league.id);
                 close();
               }}
               className={clsx(
                 "block w-full px-4 py-2.5 text-left font-semibold cursor-pointer",
-                league.id === leagueId
+                league.id === selectedLeagueId
                   ? "bg-primary text-primary-content"
                   : "text-(--wc-text) hover:bg-(--wc-hover-glow) hover:text-(--wc-text-90)",
               )}

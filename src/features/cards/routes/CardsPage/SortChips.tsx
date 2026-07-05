@@ -1,4 +1,5 @@
 import clsx from "clsx";
+import { FiChevronDown, FiChevronUp } from "react-icons/fi";
 import { Button } from "../../../../components/buttons";
 
 interface SortChipsProps {
@@ -30,7 +31,11 @@ export function SortChips({
             )}
           >
             {label}
-            {isActive && <span className="ml-1">{activeDesc ? "↓" : "↑"}</span>}
+            {isActive && (
+              <span className="ml-1 inline-flex">
+                {activeDesc ? <FiChevronDown /> : <FiChevronUp />}
+              </span>
+            )}
           </Button>
         );
       })}

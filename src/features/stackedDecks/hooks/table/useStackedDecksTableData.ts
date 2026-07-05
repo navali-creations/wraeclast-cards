@@ -18,7 +18,7 @@ export function useStackedDecksTableData({
     totalCount,
     isLoading,
     error,
-  } = useStackedDecksData("poe1");
+  } = useStackedDecksData();
 
   const columnFilters: ColumnFiltersState = useMemo(
     () => (searchTerm ? [{ id: "name", value: searchTerm }] : []),

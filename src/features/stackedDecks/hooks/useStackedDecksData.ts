@@ -1,18 +1,15 @@
 import { useMemo } from "react";
-import { useLeague } from "../../../app/league-context";
+import { useGameContext } from "../../../app/game-context";
+import { useLeagueContext } from "../../../app/league-context";
 import type { DropRateCard } from "../../../lib/dropRates";
-import { useGameDropRates, useLeagueDropRates } from "../../../lib/dropRates";
+import { useLeagueDropRates } from "../../../lib/dropRates";
 
 export type StackedDecksRow = DropRateCard;
 
-export function useStackedDecksData(game: "poe1" | "poe2") {
-  const { leagueId } = useLeague();
-  const gameQuery = useGameDropRates(game);
-
-  const selectedLeagueId = leagueId ?? gameQuery.data?.leagues[0]?.id;
-  const selectedLeague = gameQuery.data?.leagues.find(
-    (l) => l.id === selectedLeagueId,
-  );
+export function useStackedDecksData() {
+  const { game } = useGameContext();
+  const { selectedLeague, selectedLeagueId, isLoadingLeagues, leaguesError } =
+    useLeagueContext();
 
   const leagueQuery = useLeagueDropRates(game, selectedLeagueId);
 
@@ -29,7 +26,7 @@ export function useStackedDecksData(game: "poe1" | "poe2") {
     rows,
     totalCount,
     isLoading:
-      gameQuery.isLoading || (!!selectedLeagueId && leagueQuery.isLoading),
-    error: gameQuery.error ?? leagueQuery.error,
+      isLoadingLeagues || (!!selectedLeagueId && leagueQuery.isLoading),
+    error: leaguesError ?? leagueQuery.error,
   };
 }

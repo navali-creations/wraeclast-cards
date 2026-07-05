@@ -1,8 +1,8 @@
-import { useNavigate, useSearch } from "@tanstack/react-router";
-import type { SortingState } from "@tanstack/react-table";
+import { useSearch } from "@tanstack/react-router";
 import { useMemo } from "react";
 import { useResponsiveColumnVisibility } from "../../../../components/columnVisibilityToggles";
-import { useStackedDecksTableCore } from "../../hooks";
+import { useDebounce } from "../../../../lib/useDebounce";
+import { useStackedDecksTableCore, useUrlSorting } from "../../hooks";
 import { createColumns } from "./columns";
 
 const BASIC_RESPONSIVE_COLUMNS = {
@@ -10,20 +10,16 @@ const BASIC_RESPONSIVE_COLUMNS = {
   mobileHidden: ["research_chance", "seen_vs_research", "count"],
 };
 
-export function useStackedDecksTable({
-  searchTerm,
-  verified,
-}: {
-  searchTerm: string;
-  verified: boolean;
-}) {
-  const { sortBy, sortAsc } = useSearch({ from: "/stacked-decks" });
-  const navigate = useNavigate({ from: "/stacked-decks" });
+export function useStackedDecksTable() {
+  const { search: searchTerm = "", verified = false } = useSearch({
+    from: "/stacked-decks",
+  });
+  const debouncedSearchTerm = useDebounce(searchTerm, 300);
 
-  const sorting: SortingState = useMemo(
-    () => [{ id: sortBy ?? "players_saw", desc: !sortAsc }],
-    [sortBy, sortAsc],
-  );
+  const { sorting, onSortingChange } = useUrlSorting("players_saw", {
+    sortByKey: "sortBy",
+    sortAscKey: "sortAsc",
+  });
 
   const columns = useMemo(() => createColumns(verified), [verified]);
 
@@ -32,24 +28,11 @@ export function useStackedDecksTable({
   );
 
   return useStackedDecksTableCore({
-    searchTerm,
+    searchTerm: debouncedSearchTerm,
     verified,
     columns,
     sorting,
-    onSortingChange: (updater) => {
-      const next = typeof updater === "function" ? updater(sorting) : updater;
-      const first = next[0];
-      const column = first?.id ?? "players_saw";
-      const desc = first?.desc ?? true;
-      const isDefault = column === "players_saw" && desc;
-      navigate({
-        search: (prev) => ({
-          ...prev,
-          sortBy: isDefault ? undefined : column,
-          sortAsc: desc ? undefined : true,
-        }),
-      });
-    },
+    onSortingChange,
     columnVisibility,
     onColumnVisibilityChange: setColumnVisibility,
   });

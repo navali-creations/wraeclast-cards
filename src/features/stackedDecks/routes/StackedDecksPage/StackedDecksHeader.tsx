@@ -2,7 +2,6 @@ import { Heading } from "../../../../components/headings";
 import { Text } from "../../../../components/text";
 import {
   StackedDecksFilters,
-  type StackedDecksView,
   VerifiedToggle,
   ViewToggle,
 } from "../../components";
@@ -15,25 +14,9 @@ interface StackedDecksSummary {
 interface StackedDecksHeaderProps {
   // undefined means "not loaded yet" — the count/league line is hidden until then.
   summary: StackedDecksSummary | undefined;
-  searchTerm: string;
-  onSearchTermChange: (value: string) => void;
-  suggestions: string[];
-  view: StackedDecksView;
-  onViewChange: (value: StackedDecksView) => void;
-  verified: boolean;
-  onVerifiedChange: (value: boolean) => void;
 }
 
-export function StackedDecksHeader({
-  summary,
-  searchTerm,
-  onSearchTermChange,
-  suggestions,
-  view,
-  onViewChange,
-  verified,
-  onVerifiedChange,
-}: StackedDecksHeaderProps) {
+export function StackedDecksHeader({ summary }: StackedDecksHeaderProps) {
   return (
     <div className="border-b border-base-100 pt-5 pb-4">
       <div className="mx-auto flex w-full max-w-300 flex-col gap-3 px-4 sm:flex-row sm:items-center sm:justify-between">
@@ -59,22 +42,10 @@ export function StackedDecksHeader({
         </div>
 
         <div className="flex shrink-0 flex-col gap-2 sm:flex-row sm:items-center">
-          <StackedDecksFilters
-            value={searchTerm}
-            onChange={onSearchTermChange}
-            suggestions={suggestions}
-          />
+          <StackedDecksFilters />
           <div className="flex items-center gap-2 sm:justify-end">
-            <ViewToggle
-              view={view}
-              onChange={onViewChange}
-              className="flex-1 justify-center sm:flex-none"
-            />
-            <VerifiedToggle
-              verified={verified}
-              onChange={onVerifiedChange}
-              className="flex-1 justify-center sm:flex-none"
-            />
+            <ViewToggle className="flex-1 justify-center sm:flex-none" />
+            <VerifiedToggle className="flex-1 justify-center sm:flex-none" />
           </div>
         </div>
       </div>

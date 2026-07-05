@@ -6,6 +6,8 @@ import { asString, asTrueFlag } from "../lib/searchParams";
 export type StackedDecksSearchParams = {
   sortBy?: string;
   sortAsc?: true;
+  advancedSortBy?: string;
+  advancedSortAsc?: true;
   search?: string;
   page?: number;
   verified?: true;
@@ -20,6 +22,8 @@ export const Route = createFileRoute("/stacked-decks")({
     return {
       sortBy: asString(search.sortBy),
       sortAsc: asTrueFlag(search.sortAsc),
+      advancedSortBy: asString(search.advancedSortBy),
+      advancedSortAsc: asTrueFlag(search.advancedSortAsc),
       search: asString(search.search),
       page: Number.isInteger(page) && page > 1 ? page : undefined,
       verified: asTrueFlag(search.verified),

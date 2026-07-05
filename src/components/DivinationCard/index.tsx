@@ -1,5 +1,5 @@
 import { useMemo, useRef } from "react";
-import { useDivinationCardsData } from "../../features/cards/hooks";
+import { DIVINATION_CARDS_DATA } from "../../features/cards/hooks";
 import type { Card } from "../../features/cards/types";
 import { CardFrame } from "./components/CardFrame";
 import { RarityEffects } from "./effects/RarityEffects";
@@ -8,7 +8,7 @@ import { renderRewardHtml } from "./utils/renderRewardHtml";
 
 export function DivinationCard({ card }: { card: Card }) {
   const cardRef = useRef<HTMLLIElement>(null);
-  const { separatorUrl } = useDivinationCardsData();
+  const { separatorUrl } = DIVINATION_CARDS_DATA;
   const rewardContent = useMemo(
     () => renderRewardHtml(card.rewardHtml),
     [card.rewardHtml],

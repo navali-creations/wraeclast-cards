@@ -1,7 +1,7 @@
-import { useDivinationCardsData } from "../../../features/cards/hooks";
+import { DIVINATION_CARDS_DATA } from "../../../features/cards/hooks";
 
 export function CardFrame() {
-  const { frameUrl } = useDivinationCardsData();
+  const { frameUrl } = DIVINATION_CARDS_DATA;
 
   return (
     <img

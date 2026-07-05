@@ -3,15 +3,8 @@ import { StackedDecksResultsTable } from "../StackedDecksResults/StackedDecksRes
 import { ADVANCED_SECONDARY_COLUMNS } from "./secondaryColumns";
 import { useAdvancedStackedDecksTable } from "./useAdvancedStackedDecksTable";
 
-interface StackedDecksAdvancedResultsProps {
-  searchTerm: string;
-  verified: boolean;
-}
-
-export function StackedDecksAdvancedResults(
-  props: StackedDecksAdvancedResultsProps,
-) {
-  const { table, ...data } = useAdvancedStackedDecksTable(props);
+export function StackedDecksAdvancedResults() {
+  const { table, ...data } = useAdvancedStackedDecksTable();
 
   return (
     <StackedDecksResultsTable

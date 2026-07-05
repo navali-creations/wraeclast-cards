@@ -1,53 +1,16 @@
-import { useMemo } from "react";
-import { getNameSuggestions } from "../../../../lib/nameSuggestions";
-import { createSearchUpdater } from "../../../../lib/searchNavigation";
-import { useDebounce } from "../../../../lib/useDebounce";
-import {
-  Route,
-  type StackedDecksSearchParams,
-} from "../../../../routes/stacked-decks";
+import { Route } from "../../../../routes/stacked-decks";
 import {
   Methodology,
   StackedDecksAdvancedResults,
   StackedDecksResults,
-  type StackedDecksView,
 } from "../../components";
 import { useStackedDecksData } from "../../hooks";
 import { StackedDecksHeader } from "./StackedDecksHeader";
 
 export function StackedDecksPage() {
-  const {
-    search: searchTerm = "",
-    verified = false,
-    view = "standard",
-  } = Route.useSearch();
-  const navigate = Route.useNavigate();
-  const updateSearch = createSearchUpdater<StackedDecksSearchParams>(navigate);
-  const debouncedSearchTerm = useDebounce(searchTerm, 300);
-  const { league, leagueData, rows, totalCount } = useStackedDecksData("poe1");
+  const { view = "standard" } = Route.useSearch();
+  const { league, leagueData, totalCount } = useStackedDecksData();
   const isAdvancedView = view === "advanced";
-
-  const suggestions = useMemo(
-    () =>
-      getNameSuggestions(
-        (rows ?? []).map((row) => row.name),
-        searchTerm,
-      ),
-    [rows, searchTerm],
-  );
-
-  function setSearchTerm(value: string) {
-    // Reset page so a new search doesn't strand the user past the last matching page.
-    updateSearch({ search: value || undefined, page: undefined });
-  }
-
-  function setVerified(value: boolean) {
-    updateSearch({ verified: value || undefined });
-  }
-
-  function setView(value: StackedDecksView) {
-    updateSearch({ view: value === "standard" ? undefined : value });
-  }
 
   return (
     <div className="flex flex-1 flex-col min-h-0">
@@ -57,13 +20,6 @@ export function StackedDecksPage() {
         summary={
           leagueData ? { totalCount, leagueName: league?.name } : undefined
         }
-        searchTerm={searchTerm}
-        onSearchTermChange={setSearchTerm}
-        suggestions={suggestions}
-        view={view}
-        onViewChange={setView}
-        verified={verified}
-        onVerifiedChange={setVerified}
       />
 
       <div className="mt-3 flex flex-1 flex-col bg-primary-content min-h-0">
@@ -75,16 +31,10 @@ export function StackedDecksPage() {
             sorting/scroll state or refetch its data.
           */}
           <div className={isAdvancedView ? "hidden" : "contents"}>
-            <StackedDecksResults
-              searchTerm={debouncedSearchTerm}
-              verified={verified}
-            />
+            <StackedDecksResults />
           </div>
           <div className={isAdvancedView ? "contents" : "hidden"}>
-            <StackedDecksAdvancedResults
-              searchTerm={debouncedSearchTerm}
-              verified={verified}
-            />
+            <StackedDecksAdvancedResults />
           </div>
         </div>
       </div>

@@ -1,2 +1,2 @@
 export { LeagueProvider } from "./LeagueProvider";
-export { useLeague } from "./useLeague";
+export { useLeagueContext } from "./useLeagueContext";

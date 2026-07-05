@@ -13,7 +13,7 @@ const SORT_FIELDS: Record<string, string> = {
 };
 
 export function CardsPage() {
-  const { name, sortBy, sortDesc } = Route.useSearch();
+  const { name, sortBy = "name", sortDesc } = Route.useSearch();
   const navigate = Route.useNavigate();
   const updateSearch = createSearchUpdater<CardsSearchParams>(navigate);
 
@@ -47,9 +47,8 @@ export function CardsPage() {
   };
 
   const activeSortLabel =
-    Object.keys(SORT_FIELDS).find(
-      (label) => SORT_FIELDS[label] === (sortBy ?? "name"),
-    ) ?? null;
+    Object.keys(SORT_FIELDS).find((label) => SORT_FIELDS[label] === sortBy) ??
+    null;
 
   const handleSortChipClick = (label: string) => {
     const fieldId = SORT_FIELDS[label];
@@ -87,7 +86,7 @@ export function CardsPage() {
         <div className="mx-auto flex w-full max-w-300 flex-1 flex-col px-4 py-6 min-h-0">
           <CardsResults
             searchTerm={debouncedSearchTerm}
-            sorting={[{ id: sortBy ?? "name", desc: activeDesc }]}
+            sorting={[{ id: sortBy, desc: activeDesc }]}
             onSortingChange={setSorting}
           />
         </div>

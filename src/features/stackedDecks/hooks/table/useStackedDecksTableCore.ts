@@ -21,7 +21,8 @@ const paginationRowModel = getPaginationRowModel();
 interface UseStackedDecksTableCoreOptions {
   searchTerm: string;
   verified: boolean;
-  columns: ColumnDef<StackedDecksRow, unknown>[];
+  // biome-ignore lint/suspicious/noExplicitAny: column defs mix per-field value types (string, number, ...), so the array can only be typed against TanStack's own any-based ColumnDef escape hatch
+  columns: ColumnDef<StackedDecksRow, any>[];
   sorting: SortingState;
   onSortingChange: OnChangeFn<SortingState>;
   columnVisibility?: VisibilityState;

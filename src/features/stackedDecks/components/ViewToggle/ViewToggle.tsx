@@ -1,21 +1,29 @@
 import { clsx } from "clsx";
 import { FiTable } from "react-icons/fi";
 import { Button } from "../../../../components/buttons";
+import { createSearchUpdater } from "../../../../lib/searchNavigation";
+import {
+  Route,
+  type StackedDecksSearchParams,
+} from "../../../../routes/stacked-decks";
 
 export type StackedDecksView = "standard" | "advanced";
 
 interface ViewToggleProps {
-  view: StackedDecksView;
-  onChange: (view: StackedDecksView) => void;
   className?: string;
 }
 
-export function ViewToggle({ view, onChange, className }: ViewToggleProps) {
+export function ViewToggle({ className }: ViewToggleProps) {
+  const { view = "standard" } = Route.useSearch();
+  const navigate = Route.useNavigate();
+  const updateSearch = createSearchUpdater<StackedDecksSearchParams>(navigate);
   const isAdvanced = view === "advanced";
 
   return (
     <Button
-      onClick={() => onChange(isAdvanced ? "standard" : "advanced")}
+      onClick={() =>
+        updateSearch({ view: isAdvanced ? undefined : "advanced" })
+      }
       className={clsx(
         "flex h-9 cursor-pointer items-center gap-1.5 rounded border px-3 font-medium duration-150 select-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--wc-gold)",
         isAdvanced
