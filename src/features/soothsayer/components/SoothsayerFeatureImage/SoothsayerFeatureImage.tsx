@@ -23,7 +23,7 @@ export function SoothsayerFeatureImage({
     return (
       <div
         className={clsx(
-          "flex h-full w-full items-center justify-center bg-[linear-gradient(135deg,var(--wc-card-darker),var(--wc-glow)_45%,var(--color-base-100))] px-3 text-center",
+          "flex h-full w-full items-center justify-center bg-base-100 px-3 text-center",
           variant === "hero"
             ? "min-h-[18rem] sm:min-h-[24rem] lg:min-h-full"
             : "min-h-14",
