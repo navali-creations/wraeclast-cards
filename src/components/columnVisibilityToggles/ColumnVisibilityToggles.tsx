@@ -21,6 +21,10 @@ export function ColumnVisibilityToggles<TData>({
     );
   }
 
+  function handleTabletColumnClick(id: string) {
+    table.getColumn(id)?.toggleVisibility();
+  }
+
   return (
     <>
       {/* Mobile (≤424px): radio — one secondary column alongside Card Name */}
@@ -42,7 +46,7 @@ export function ColumnVisibilityToggles<TData>({
             key={id}
             label={label}
             isActive={table.getColumn(id)?.getIsVisible() ?? false}
-            onClick={() => handleMobileColumnClick(id)}
+            onClick={() => handleTabletColumnClick(id)}
           />
         ))}
       </div>
