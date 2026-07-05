@@ -1,5 +1,6 @@
 import clsx from "clsx";
 import { useState } from "react";
+import { Text } from "../../../../components/text";
 import type { SoothsayerFeature } from "../../types";
 
 type SoothsayerFeatureImageProps = {
@@ -28,14 +29,16 @@ export function SoothsayerFeatureImage({
             : "min-h-14",
         )}
       >
-        <span
+        <Text
+          as="span"
+          weight="bold"
           className={clsx(
-            "font-fontin font-bold text-(--wc-gold-bright)",
+            "font-fontin text-(--wc-gold-bright)",
             variant === "hero" ? "text-2xl" : "text-xs",
           )}
         >
           {feature.title}
-        </span>
+        </Text>
       </div>
     );
   }
