@@ -30,3 +30,5 @@ public/data/drop-rates
 *.njsproj
 *.sln
 *.sw?
+
+.editorconfig

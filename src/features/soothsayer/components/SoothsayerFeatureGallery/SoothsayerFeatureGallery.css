@@ -1,0 +1,45 @@
+/* ── Soothsayer gallery view transitions ─────────────────── */
+.soothsayer-gallery-image-transition {
+  view-transition-name: soothsayer-gallery-image;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .soothsayer-gallery-image-transition {
+    view-transition-name: none;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  ::view-transition-group(soothsayer-gallery-image) {
+    animation-duration: 400ms;
+    animation-timing-function: ease-out;
+  }
+
+  ::view-transition-old(soothsayer-gallery-image) {
+    animation-name: soothsayer-gallery-fade-out;
+  }
+
+  ::view-transition-new(soothsayer-gallery-image) {
+    animation-name: soothsayer-gallery-fade-in;
+  }
+}
+
+@keyframes soothsayer-gallery-fade-out {
+  from {
+    opacity: 1;
+  }
+
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes soothsayer-gallery-fade-in {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}

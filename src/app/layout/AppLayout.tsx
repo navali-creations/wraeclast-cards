@@ -6,7 +6,8 @@ export function AppLayout() {
   const pathname = useLocation({
     select: (location) => location.pathname,
   });
-  const isFullWidthRoute = pathname === "/soothsayer/auth";
+  const isFullWidthRoute =
+    pathname === "/soothsayer" || pathname.startsWith("/soothsayer/");
   const isHomepage = pathname === "/";
 
   return (

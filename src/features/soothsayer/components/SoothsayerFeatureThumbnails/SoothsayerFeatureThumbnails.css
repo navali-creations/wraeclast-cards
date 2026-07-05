@@ -1,0 +1,4 @@
+.soothsayer-feature-thumbnails-scrollbar {
+  scrollbar-color: var(--wc-bg-dimmed) var(--wc-nav-bg);
+  scrollbar-width: thin;
+}
