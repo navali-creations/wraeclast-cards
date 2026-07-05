@@ -39,7 +39,7 @@ export function SoothsayerPage({
       </div>
 
       <div className="mt-3 flex flex-1 flex-col bg-primary-content min-h-0">
-        <div className="mx-auto flex w-full max-w-300 flex-1 flex-col px-4 py-6 min-h-0">
+        <div className="justify-center mx-auto flex w-full max-w-300 flex-1 flex-col pt-6 min-h-0">
           <SoothsayerGalleryProvider
             activeFeatureId={activeFeatureId}
             onFeatureSelect={onFeatureSelect}
