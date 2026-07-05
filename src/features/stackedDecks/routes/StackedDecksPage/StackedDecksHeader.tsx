@@ -58,14 +58,24 @@ export function StackedDecksHeader({
           </Text>
         </div>
 
-        <div className="flex shrink-0 items-center gap-2">
+        <div className="flex shrink-0 flex-col gap-2 sm:flex-row sm:items-center">
           <StackedDecksFilters
             value={searchTerm}
             onChange={onSearchTermChange}
             suggestions={suggestions}
           />
-          <ViewToggle view={view} onChange={onViewChange} />
-          <VerifiedToggle verified={verified} onChange={onVerifiedChange} />
+          <div className="flex items-center gap-2 sm:justify-end">
+            <ViewToggle
+              view={view}
+              onChange={onViewChange}
+              className="flex-1 justify-center sm:flex-none"
+            />
+            <VerifiedToggle
+              verified={verified}
+              onChange={onVerifiedChange}
+              className="flex-1 justify-center sm:flex-none"
+            />
+          </div>
         </div>
       </div>
     </div>

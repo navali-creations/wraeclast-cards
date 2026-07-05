@@ -7,9 +7,10 @@ export type StackedDecksView = "standard" | "advanced";
 interface ViewToggleProps {
   view: StackedDecksView;
   onChange: (view: StackedDecksView) => void;
+  className?: string;
 }
 
-export function ViewToggle({ view, onChange }: ViewToggleProps) {
+export function ViewToggle({ view, onChange, className }: ViewToggleProps) {
   const isAdvanced = view === "advanced";
 
   return (
@@ -20,6 +21,7 @@ export function ViewToggle({ view, onChange }: ViewToggleProps) {
         isAdvanced
           ? "border-(--wc-hero-accent) bg-(--wc-glow) text-(--wc-gold)"
           : "border-(--wc-border) bg-(--wc-glow)/80 text-(--wc-text-70) hover:border-(--wc-accent-border) hover:bg-(--wc-primary-hover) hover:text-(--wc-text-90)",
+        className,
       )}
     >
       <FiTable className="size-4 shrink-0 transition-colors duration-150" />

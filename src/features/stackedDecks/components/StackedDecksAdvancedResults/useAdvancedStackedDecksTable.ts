@@ -6,7 +6,12 @@ import { createAdvancedColumns } from "../StackedDecksResults/columns";
 
 const ADVANCED_RESPONSIVE_COLUMNS = {
   tabletHidden: ["research_weight"],
-  mobileHidden: ["research_weight", "community_estimated_weight", "count"],
+  mobileHidden: [
+    "research_weight",
+    "community_estimated_weight",
+    "expected_drops",
+    "count",
+  ],
 };
 
 export function useAdvancedStackedDecksTable({

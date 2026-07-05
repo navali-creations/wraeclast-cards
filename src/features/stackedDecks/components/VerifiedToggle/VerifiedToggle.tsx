@@ -5,9 +5,14 @@ import { Button } from "../../../../components/buttons";
 interface VerifiedToggleProps {
   verified: boolean;
   onChange: (verified: boolean) => void;
+  className?: string;
 }
 
-export function VerifiedToggle({ verified, onChange }: VerifiedToggleProps) {
+export function VerifiedToggle({
+  verified,
+  onChange,
+  className,
+}: VerifiedToggleProps) {
   return (
     <Button
       onClick={() => onChange(!verified)}
@@ -16,6 +21,7 @@ export function VerifiedToggle({ verified, onChange }: VerifiedToggleProps) {
         verified
           ? "border-(--wc-hero-accent) bg-(--wc-glow) text-(--wc-gold)"
           : "border-(--wc-border) bg-(--wc-glow)/80 text-(--wc-text-70) hover:border-(--wc-accent-border) hover:bg-(--wc-primary-hover) hover:text-(--wc-text-90)",
+        className,
       )}
     >
       <FiCheckCircle className="size-4 shrink-0 transition-colors duration-150" />
