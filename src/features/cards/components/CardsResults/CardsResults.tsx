@@ -1,3 +1,4 @@
+import { useQuery } from "@tanstack/react-query";
 import type { SortingState } from "@tanstack/react-table";
 import { useMemo } from "react";
 import { useCardsQuery } from "../../hooks";
@@ -10,30 +11,38 @@ interface CardsResultsProps {
   onSortingChange: (sorting: SortingState) => void;
 }
 
+function searchCards(cards: Card[], normalizedSearch: string): Card[] {
+  if (!normalizedSearch) return cards;
+
+  return cards.filter((card) => {
+    const haystack = [
+      card.name,
+      card.flavourText ?? "",
+      card.rewardText,
+      card.dropLocations.join(" "),
+    ]
+      .join(" ")
+      .toLowerCase();
+    return haystack.includes(normalizedSearch);
+  });
+}
+
 export function CardsResults({ searchTerm, sorting }: CardsResultsProps) {
   const { data } = useCardsQuery();
   const cards: Card[] = data ?? [];
 
   const normalizedSearch = searchTerm.trim().toLowerCase();
+  const { data: matchedCards = cards } = useQuery({
+    queryKey: ["cards", "search", normalizedSearch],
+    queryFn: () => searchCards(cards, normalizedSearch),
+    enabled: !!data,
+  });
+
   const filteredCards = useMemo(() => {
-    const filtered = !normalizedSearch
-      ? cards
-      : cards.filter((card) => {
-          const haystack = [
-            card.name,
-            card.flavourText ?? "",
-            card.rewardText,
-            card.dropLocations.join(" "),
-          ]
-            .join(" ")
-            .toLowerCase();
-          return haystack.includes(normalizedSearch);
-        });
-
     const sortEntry = sorting[0];
-    if (!sortEntry) return filtered;
+    if (!sortEntry) return matchedCards;
 
-    return [...filtered].sort((a, b) => {
+    return [...matchedCards].sort((a, b) => {
       const aVal = a[sortEntry.id as keyof Card];
       const bVal = b[sortEntry.id as keyof Card];
       if (aVal == null && bVal == null) return 0;
@@ -42,7 +51,7 @@ export function CardsResults({ searchTerm, sorting }: CardsResultsProps) {
       const cmp = aVal < bVal ? -1 : aVal > bVal ? 1 : 0;
       return sortEntry.desc ? -cmp : cmp;
     });
-  }, [cards, normalizedSearch, sorting]);
+  }, [matchedCards, sorting]);
 
   return (
     <div className="space-y-3">

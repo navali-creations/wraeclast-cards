@@ -1,2 +1,1 @@
-export { BarCell } from "./BarCell";
-export { DropRateBadgeCell } from "./DropRateBadgeCell";
+export { ComparedToResearchCell } from "./ComparedToResearchCell";

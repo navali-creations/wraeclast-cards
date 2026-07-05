@@ -1,21 +1,9 @@
-import cardsJson from "@navali/poe1-divination-cards/data/cards.json";
 import { useMemo } from "react";
 import { useLeague } from "../../../app/league-context";
-import type { DropRateCard } from "../../../lib/useDropRates";
-import {
-  useGameDropRates,
-  useLeagueDropRates,
-} from "../../../lib/useDropRates";
+import type { DropRateCard } from "../../../lib/dropRates";
+import { useGameDropRates, useLeagueDropRates } from "../../../lib/dropRates";
 
-type RawCard = { name: string; weight?: number };
-
-const weightByName: Record<string, number> = Object.fromEntries(
-  (cardsJson as RawCard[]).map((c) => [c.name, c.weight ?? 0]),
-);
-
-export interface StackedDecksRow extends DropRateCard {
-  weight: number;
-}
+export type StackedDecksRow = DropRateCard;
 
 export function useStackedDecksData(game: "poe1" | "poe2") {
   const { leagueId } = useLeague();
@@ -28,14 +16,7 @@ export function useStackedDecksData(game: "poe1" | "poe2") {
 
   const leagueQuery = useLeagueDropRates(game, selectedLeagueId);
 
-  const rows = useMemo(
-    () =>
-      leagueQuery.data?.cards.map((card: DropRateCard) => ({
-        ...card,
-        weight: weightByName[card.name] ?? 0,
-      })),
-    [leagueQuery.data],
-  );
+  const rows = leagueQuery.data?.cards;
 
   const totalCount = useMemo(
     () => leagueQuery.data?.cards.reduce((sum, c) => sum + c.count, 0) ?? 0,

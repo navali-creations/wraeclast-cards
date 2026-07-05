@@ -1,36 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
+import type { Game, GameDropRates, LeagueDropRates } from "./types";
 
-export interface DropRateLeague {
-  id: string;
-  name: string;
-  historical: boolean;
-  url: string;
-  card_count: number;
-  generated_at: string;
-}
-
-export interface GameDropRates {
-  url: string;
-  league_count: number;
-  leagues: DropRateLeague[];
-}
-
-export interface DropRateCard {
-  name: string;
-  count: number;
-  ratio: number;
-  contributors: number;
-  verified_count: number;
-  verified_contributors: number;
-}
-
-export interface LeagueDropRates {
-  league_id: string;
-  league_name: string;
-  total_count: number;
-  cards: DropRateCard[];
-}
-
+// Generic GET-and-parse-as-JSON used by both hooks below.
 async function fetchDropRates<T>(url: string): Promise<T> {
   const response = await fetch(url);
   if (!response.ok) {
@@ -39,6 +10,9 @@ async function fetchDropRates<T>(url: string): Promise<T> {
   return response.json();
 }
 
+// Where the static drop-rate JSON files are hosted: an env override for
+// local/preview builds, the production domain when running on a
+// *.wraeclast-cards.pages.dev preview deploy, otherwise a same-origin path.
 function getDropRatesBaseUrl() {
   const configuredBaseUrl = import.meta.env.VITE_DROP_RATES_BASE_URL;
   if (configuredBaseUrl) return configuredBaseUrl;
@@ -53,13 +27,17 @@ function getDropRatesBaseUrl() {
   return "/data/drop-rates";
 }
 
+// Joins the base URL with path segments (e.g. game, league id) into a full
+// drop-rates file URL, escaping each segment.
 function buildDropRatesUrl(...segments: string[]) {
   const baseUrl = getDropRatesBaseUrl().replace(/\/+$/, "");
 
   return `${baseUrl}/${segments.map(encodeURIComponent).join("/")}`;
 }
 
-export function useGameDropRates(game: "poe1" | "poe2") {
+// Fetches a game's league index (`<game>/index.json`), listing all leagues
+// with drop-rate data available for that game.
+export function useGameDropRates(game: Game) {
   return useQuery({
     queryKey: ["drop-rates", game],
     queryFn: () =>
@@ -68,10 +46,9 @@ export function useGameDropRates(game: "poe1" | "poe2") {
   });
 }
 
-export function useLeagueDropRates(
-  game: "poe1" | "poe2",
-  leagueId: string | undefined,
-) {
+// Fetches the card drop rates for one league (`<game>/<leagueId>.json`).
+// Disabled until a leagueId is known.
+export function useLeagueDropRates(game: Game, leagueId: string | undefined) {
   return useQuery({
     queryKey: ["drop-rates", game, leagueId],
     queryFn: () =>

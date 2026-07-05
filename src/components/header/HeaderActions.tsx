@@ -4,8 +4,8 @@ import { FiChevronDown } from "react-icons/fi";
 import { useGame } from "../../app/game-context";
 import { useLeague } from "../../app/league-context";
 import { EGame } from "../../enums";
+import { useGameDropRates } from "../../lib/dropRates";
 import { useDropdown } from "../../lib/useDropdown";
-import { useGameDropRates } from "../../lib/useDropRates";
 import { Button } from "../buttons";
 
 export function HeaderActions() {

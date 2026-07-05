@@ -1,24 +1,22 @@
-import type { ChangeEvent } from "react";
 import { HiMagnifyingGlass } from "react-icons/hi2";
-import { Input } from "../../../../components/input";
+import { SearchInput } from "../../../../components/input";
 
 interface StackedDecksFiltersProps {
   value: string;
   onChange: (value: string) => void;
+  suggestions: string[];
 }
 
 export function StackedDecksFilters({
   value,
   onChange,
+  suggestions,
 }: StackedDecksFiltersProps) {
-  const handleInputChange = (e: ChangeEvent<HTMLInputElement>) =>
-    onChange(e.currentTarget.value);
-
   return (
-    <Input
-      type="text"
+    <SearchInput
       value={value}
-      onChange={handleInputChange}
+      onChange={onChange}
+      suggestions={suggestions}
       placeholder="Search..."
       leftIcon={<HiMagnifyingGlass className="size-4" />}
       containerClassName="w-full sm:max-w-sm"

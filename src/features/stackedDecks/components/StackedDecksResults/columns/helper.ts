@@ -34,3 +34,35 @@ export function col<K extends keyof StackedDecksRow>(
     meta: { align, thClassName, tdClassName },
   });
 }
+
+/**
+ * Like `col`, but switches between a raw and a verified field depending on
+ * `verified`. The column id stays pinned to `rawKey` so sorting/visibility
+ * state doesn't reset when the verified toggle flips.
+ */
+export function dualCol<
+  RK extends keyof StackedDecksRow,
+  VK extends keyof StackedDecksRow,
+>(
+  rawKey: RK,
+  verifiedKey: VK,
+  verified: boolean,
+  header: string,
+  options: ColOptions<RK> = {},
+) {
+  const { align, thClassName, tdClassName, cell, filterFn, sortDescFirst } =
+    options;
+  return columnHelper.accessor(
+    (row) => (verified ? row[verifiedKey] : row[rawKey]),
+    {
+      id: rawKey,
+      header,
+      ...(filterFn !== undefined && { filterFn }),
+      ...(cell !== undefined && {
+        cell: cell as (ctx: CellContext<StackedDecksRow, unknown>) => ReactNode,
+      }),
+      ...(sortDescFirst !== undefined && { sortDescFirst }),
+      meta: { align, thClassName, tdClassName },
+    },
+  );
+}
