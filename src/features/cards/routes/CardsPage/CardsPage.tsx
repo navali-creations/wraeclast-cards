@@ -32,17 +32,16 @@ export function CardsPage() {
   );
 
   const setSearchTerm = (value: string) => {
-    updateSearch({ name: value || undefined });
+    updateSearch({ name: value || undefined, page: undefined });
   };
 
   const setSorting = (newSorting: SortingState) => {
     const sortEntry = newSorting[0];
     updateSearch({
       sortBy:
-        sortEntry?.id === "name" && !sortEntry?.desc
-          ? undefined
-          : sortEntry?.id,
+        sortEntry?.id !== "name" || sortEntry?.desc ? sortEntry?.id : undefined,
       sortDesc: sortEntry?.desc || undefined,
+      page: undefined,
     });
   };
 

@@ -1,3 +1,4 @@
+import { useNavigate, useSearch } from "@tanstack/react-router";
 import {
   type ColumnDef,
   getCoreRowModel,
@@ -5,13 +6,17 @@ import {
   getPaginationRowModel,
   getSortedRowModel,
   type OnChangeFn,
+  type PaginationState,
   type SortingState,
   useReactTable,
   type VisibilityState,
 } from "@tanstack/react-table";
+import { useUrlPagination } from "../../../../lib/useUrlPagination";
+import type { StackedDecksSearchParams } from "../../../../routes/stacked-decks";
 import type { StackedDecksRow } from "../useStackedDecksData";
-import { useUrlPagination } from "../useUrlPagination";
 import { useStackedDecksTableData } from "./useStackedDecksTableData";
+
+const PAGE_SIZE = 20;
 
 const coreRowModel = getCoreRowModel();
 const sortedRowModel = getSortedRowModel();
@@ -49,7 +54,22 @@ export function useStackedDecksTableCore({
     error,
   } = useStackedDecksTableData({ searchTerm, verified });
 
-  const { pagination, onPaginationChange } = useUrlPagination();
+  const search = useSearch({ from: "/stacked-decks" });
+  const navigate = useNavigate({ from: "/stacked-decks" });
+  const { page, setPage } = useUrlPagination<StackedDecksSearchParams>({
+    page: search.page,
+    navigate,
+  });
+
+  const pagination: PaginationState = {
+    pageIndex: page - 1,
+    pageSize: PAGE_SIZE,
+  };
+
+  const onPaginationChange: OnChangeFn<PaginationState> = (updater) => {
+    const next = typeof updater === "function" ? updater(pagination) : updater;
+    setPage(next.pageIndex + 1);
+  };
 
   const table = useReactTable({
     data: data ?? [],

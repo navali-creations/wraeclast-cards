@@ -58,7 +58,7 @@ export function CardsResults({ searchTerm, sorting }: CardsResultsProps) {
       <p className="text-sm font-medium text-[#6d5b44]">
         {filteredCards.length} cards
       </p>
-      <CardsGrid key={normalizedSearch} data={filteredCards} />
+      <CardsGrid data={filteredCards} />
     </div>
   );
 }

@@ -1,11 +1,12 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { CardsPage } from "../../features/cards/routes";
-import { asString, asTrueFlag } from "../../lib/searchParams";
+import { asPage, asString, asTrueFlag } from "../../lib/searchParams";
 
 export type CardsSearchParams = {
   name?: string;
   sortBy?: string;
   sortDesc?: true;
+  page?: number;
 };
 
 export const Route = createFileRoute("/cards/")({
@@ -13,6 +14,7 @@ export const Route = createFileRoute("/cards/")({
     name: asString(search.name),
     sortBy: asString(search.sortBy),
     sortDesc: asTrueFlag(search.sortDesc),
+    page: asPage(search.page),
   }),
   component: CardsPage,
 });

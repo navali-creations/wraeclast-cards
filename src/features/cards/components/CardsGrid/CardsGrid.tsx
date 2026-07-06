@@ -1,7 +1,8 @@
-import { useRef, useState } from "react";
 import { preload } from "react-dom";
 import { DivinationCard } from "../../../../components/DivinationCard";
 import { Pagination } from "../../../../components/pagination";
+import { useUrlPagination } from "../../../../lib/useUrlPagination";
+import { type CardsSearchParams, Route } from "../../../../routes/cards";
 import { useCardsQuery } from "../../hooks";
 import type { Card } from "../../types";
 import { ScrollToTop } from "..";
@@ -16,12 +17,12 @@ interface CardsGridProps {
 
 export function CardsGrid({ data }: CardsGridProps) {
   const { isLoading, error } = useCardsQuery();
-  const [page, setPage] = useState(1);
-  const prevDataRef = useRef(data);
-  if (prevDataRef.current !== data) {
-    prevDataRef.current = data;
-    setPage(1);
-  }
+  const search = Route.useSearch();
+  const navigate = Route.useNavigate();
+  const { page, setPage } = useUrlPagination<CardsSearchParams>({
+    page: search.page,
+    navigate,
+  });
 
   const totalPages = Math.max(1, Math.ceil(data.length / PAGE_SIZE));
   const safePage = Math.min(page, totalPages);
