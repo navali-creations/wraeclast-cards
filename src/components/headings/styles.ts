@@ -1,4 +1,4 @@
-export const headingBaseClass = "font-bold";
+export const headingBaseClass = "font-fontin font-bold";
 
 export const sizeClasses = {
   sm: "text-base",

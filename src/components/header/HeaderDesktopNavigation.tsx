@@ -3,7 +3,7 @@ import { navigationRoutes } from "../../config/navigation";
 
 export function HeaderDesktopNavigation() {
   return (
-    <div className="navbar-center hidden lg:flex">
+    <div className="hidden xl:flex items-center">
       <ul className="menu menu-horizontal px-1">
         {navigationRoutes.map((item) => (
           <li key={item?.path}>

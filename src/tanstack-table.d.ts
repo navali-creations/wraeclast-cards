@@ -1,0 +1,9 @@
+import "@tanstack/react-table";
+
+declare module "@tanstack/react-table" {
+  interface ColumnMeta<TData extends RowData, TValue> {
+    align?: "left" | "right";
+    tdClassName?: string;
+    thClassName?: string;
+  }
+}

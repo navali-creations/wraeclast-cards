@@ -8,8 +8,10 @@ export function useRandomCards(count = 4): Card[] {
   return useMemo(() => {
     if (!cards) return [];
     return cards
-      .filter((c) => c.imageUrl)
-      .sort(() => Math.random() - 0.5)
+      .filter((card) => card.imageUrl)
+      .map((card) => ({ card, sortKey: Math.random() }))
+      .sort((left, right) => left.sortKey - right.sortKey)
+      .map(({ card }) => card)
       .slice(0, count);
   }, [cards, count]);
 }

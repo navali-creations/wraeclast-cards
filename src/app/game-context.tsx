@@ -8,18 +8,27 @@ interface GameContextValue {
 
 function applyGame(selectedGame: EGame): EGame {
   document.documentElement.setAttribute("data-theme", selectedGame);
-  localStorage.setItem("game", selectedGame);
+  try {
+    localStorage.setItem("game", selectedGame);
+  } catch {
+    // ignore storage errors (e.g. Safari private mode, blocked iframe)
+  }
   return selectedGame;
 }
 
-const GameContext = createContext<GameContextValue>({
-  game: EGame.Poe1,
-  setGame: () => undefined,
-});
+function loadStoredGame(): string | null {
+  try {
+    return localStorage.getItem("game");
+  } catch {
+    return null;
+  }
+}
+
+const GameContext = createContext<GameContextValue | null>(null);
 
 export function GameProvider({ children }: { children: React.ReactNode }) {
   const [game, setGame] = useState<EGame>(() => {
-    const stored = localStorage.getItem("game");
+    const stored = loadStoredGame();
     return applyGame(stored === EGame.Poe2 ? EGame.Poe2 : EGame.Poe1);
   });
 
@@ -35,9 +44,10 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
   );
 }
 
-export function useGame(): GameContextValue {
+export function useGameContext(): GameContextValue {
   const context = useContext(GameContext);
-  if (!context) throw new Error("useGame must be used within a GameProvider");
+  if (!context)
+    throw new Error("useGameContext must be used within a GameProvider");
   return context;
 }
 
