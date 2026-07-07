@@ -45,7 +45,7 @@ jobs:
           WRAECLAST_CARDS_API_KEY: ${{ secrets.WRAECLAST_CARDS_API_KEY }}
           DROP_RATES_PUBLIC_BASE_URL: https://wraeclast.cards/data/drop-rates
           DROP_RATES_RESEARCH_DATA_BASE_URL: https://raw.githubusercontent.com/navali-creations/fateweaver/main/packages/poe1-divination-cards/data
-          DROP_RATES_BACKFILL_HISTORICAL: ${{ github.event_name == 'schedule' && 'true' || github.event.inputs.backfill_historical || 'true' }}
+          DROP_RATES_BACKFILL_HISTORICAL: ${{ github.event.inputs.backfill_historical || 'false' }}
 
       - name: Deploy to Cloudflare Pages
         run: pnpm dlx wrangler@4.100.0 pages deploy dist --project-name wraeclast-cards
