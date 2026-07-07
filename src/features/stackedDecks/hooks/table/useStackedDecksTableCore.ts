@@ -1,4 +1,3 @@
-import { useNavigate, useSearch } from "@tanstack/react-router";
 import {
   type ColumnDef,
   getCoreRowModel,
@@ -12,7 +11,6 @@ import {
   type VisibilityState,
 } from "@tanstack/react-table";
 import { useUrlPagination } from "../../../../lib/useUrlPagination";
-import type { StackedDecksSearchParams } from "../../../../routes/stacked-decks";
 import type { StackedDecksRow } from "../useStackedDecksData";
 import { useStackedDecksTableData } from "./useStackedDecksTableData";
 
@@ -54,12 +52,7 @@ export function useStackedDecksTableCore({
     error,
   } = useStackedDecksTableData({ searchTerm, verified });
 
-  const search = useSearch({ from: "/stacked-decks" });
-  const navigate = useNavigate({ from: "/stacked-decks" });
-  const { page, setPage } = useUrlPagination<StackedDecksSearchParams>({
-    page: search.page,
-    navigate,
-  });
+  const { page, setPage } = useUrlPagination("/stacked-decks");
 
   const pagination: PaginationState = {
     pageIndex: page - 1,

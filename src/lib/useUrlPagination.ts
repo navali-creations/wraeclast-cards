@@ -1,23 +1,21 @@
-import type { NavigateOptions } from "@tanstack/react-router";
+import { useNavigate, useSearch } from "@tanstack/react-router";
+import type { FileRouteTypes } from "../routeTree.gen";
 
-interface UseUrlPaginationOptions {
-  page: number | undefined;
-  navigate: (options: NavigateOptions) => void;
-}
+export function useUrlPagination<TFrom extends FileRouteTypes["fullPaths"]>(
+  from: TFrom,
+) {
+  const search = useSearch({ strict: false });
+  const navigate = useNavigate({ from });
 
-export function useUrlPagination<TSearch extends { page?: number }>({
-  page,
-  navigate,
-}: UseUrlPaginationOptions) {
   function setPage(next: number) {
     navigate({
-      search: (prev) => ({
-        ...(prev as TSearch),
+      search: (prev: { page?: number }) => ({
+        ...prev,
         page: next === 1 ? undefined : next,
       }),
       resetScroll: false,
-    });
+    } as Parameters<typeof navigate>[0]);
   }
 
-  return { page: page ?? 1, setPage };
+  return { page: search.page ?? 1, setPage };
 }
