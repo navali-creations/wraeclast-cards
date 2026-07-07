@@ -10,10 +10,6 @@ const DIVINATION_CARDS_DATA = {
   separatorUrl: `${DIVINATION_CARDS_DATA_CDN}/Divination_card_separator.png`,
 } as const;
 
-export function useDivinationCardsData() {
-  return DIVINATION_CARDS_DATA;
-}
-
 export {
   DIVINATION_CARDS_DATA,
   DIVINATION_CARDS_DATA_CDN,

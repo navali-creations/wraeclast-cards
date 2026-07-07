@@ -1,5 +1,5 @@
 import { FiArrowRight } from "react-icons/fi";
-import { useGame } from "../../../app/game-context";
+import { useGameContext } from "../../../app/game-context";
 import { ButtonInternalLink } from "../../../components/buttons/ButtonLink";
 import { Heading } from "../../../components/headings";
 import { Text } from "../../../components/text";
@@ -12,7 +12,7 @@ const CURRENT_LEAGUE: Record<EGame, string> = {
 };
 
 export function HeroSection() {
-  const { game } = useGame();
+  const { game } = useGameContext();
   const { data } = useDropRatesIndex();
   const leaguesArchived =
     (data?.games.poe1.league_count ?? 0) + (data?.games.poe2.league_count ?? 0);

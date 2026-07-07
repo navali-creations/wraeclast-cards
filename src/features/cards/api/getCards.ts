@@ -1,7 +1,7 @@
 import {
   DIVINATION_CARDS_DATA_CDN,
   DIVINATION_CARDS_IMAGES_BASE_URL,
-} from "../hooks/useDivinationCardsData";
+} from "../hooks/divinationCardsData";
 import type { Card } from "../types";
 
 type RawCard = {

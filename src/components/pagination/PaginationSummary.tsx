@@ -1,5 +1,5 @@
 import { HiChevronLeft, HiChevronRight } from "react-icons/hi2";
-import { ActionIcon } from "../../../../../components/buttons";
+import { ActionIcon } from "../buttons";
 
 type PaginationSummaryProps = {
   page: number;

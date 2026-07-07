@@ -1,15 +1,18 @@
-import { Heading } from "../../../../components/headings";
-import { Text } from "../../../../components/text";
+import { ColumnVisibilityToggles } from "../../../../components/columnVisibilityToggles";
+import { SECONDARY_COLUMNS } from "./columns/toggles/secondaryColumns";
+import { StackedDecksResultsTable } from "./StackedDecksResultsTable";
+import { useStackedDecksTable } from "./useStackedDecksTable";
 
 export function StackedDecksResults() {
+  const { table, ...data } = useStackedDecksTable();
+
   return (
-    <section>
-      <Heading as="h2" className="text-(--wc-hero-accent) mb-3">
-        Results Table
-      </Heading>
-      <div className="border border-(--wc-border-dimmed) rounded-lg p-4 bg-(--wc-bg-dimmed) text-(--wc-text-dimmed)">
-        <Text size="sm">Table data will be populated here</Text>
-      </div>
-    </section>
+    <StackedDecksResultsTable
+      table={table}
+      {...data}
+      toggles={
+        <ColumnVisibilityToggles table={table} columns={SECONDARY_COLUMNS} />
+      }
+    />
   );
 }
