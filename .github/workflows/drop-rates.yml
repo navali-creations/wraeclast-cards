@@ -10,7 +10,7 @@ on:
       backfill_historical:
         description: "Fetch inactive leagues that are missing from the current static manifest"
         required: false
-        default: "false"
+        default: "true"
         type: choice
         options:
           - "false"
@@ -45,7 +45,7 @@ jobs:
           WRAECLAST_CARDS_API_KEY: ${{ secrets.WRAECLAST_CARDS_API_KEY }}
           DROP_RATES_PUBLIC_BASE_URL: https://wraeclast.cards/data/drop-rates
           DROP_RATES_RESEARCH_DATA_BASE_URL: https://raw.githubusercontent.com/navali-creations/fateweaver/main/packages/poe1-divination-cards/data
-          DROP_RATES_BACKFILL_HISTORICAL: ${{ github.event.inputs.backfill_historical || 'false' }}
+          DROP_RATES_BACKFILL_HISTORICAL: ${{ github.event_name == 'schedule' && 'true' || github.event.inputs.backfill_historical || 'true' }}
 
       - name: Deploy to Cloudflare Pages
         run: pnpm dlx wrangler@4.100.0 pages deploy dist --project-name wraeclast-cards

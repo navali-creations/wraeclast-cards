@@ -666,13 +666,15 @@ async function main() {
   );
   const hasBackfillOverride =
     args.backfillHistorical !== null || envBackfillHistorical !== null;
+  const forceBackfill =
+    args.backfillHistorical === true || envBackfillHistorical === true;
   const generatedAt = new Date().toISOString();
 
-  const previousManifest = await fetchOptionalJson(
-    `${publicBaseUrl}/index.json`,
-  );
+  const previousManifest = forceBackfill
+    ? null
+    : await fetchOptionalJson(`${publicBaseUrl}/index.json`);
   const shouldBackfill = hasBackfillOverride
-    ? args.backfillHistorical === true || envBackfillHistorical === true
+    ? forceBackfill
     : !previousManifest;
 
   if (!previousManifest && !shouldBackfill) {
