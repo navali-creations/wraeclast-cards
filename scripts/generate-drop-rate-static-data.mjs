@@ -98,6 +98,14 @@ function parseBoolean(value) {
   return ["1", "true", "yes", "on"].includes(String(value).toLowerCase());
 }
 
+function parseOptionalBoolean(value) {
+  if (value === undefined || value === null || String(value).trim() === "") {
+    return null;
+  }
+
+  return parseBoolean(value);
+}
+
 function normalizeBaseUrl(url) {
   return url.replace(/\/+$/, "");
 }
@@ -653,15 +661,26 @@ async function main() {
     .split(",")
     .map((game) => game.trim())
     .filter(Boolean);
-  const forceBackfill =
-    args.backfillHistorical ||
-    parseBoolean(process.env.DROP_RATES_BACKFILL_HISTORICAL);
+  const envBackfillHistorical = parseOptionalBoolean(
+    process.env.DROP_RATES_BACKFILL_HISTORICAL,
+  );
+  const hasBackfillOverride =
+    args.backfillHistorical !== null || envBackfillHistorical !== null;
   const generatedAt = new Date().toISOString();
 
   const previousManifest = await fetchOptionalJson(
     `${publicBaseUrl}/index.json`,
   );
-  const shouldBackfill = forceBackfill || !previousManifest;
+  const shouldBackfill = hasBackfillOverride
+    ? args.backfillHistorical === true || envBackfillHistorical === true
+    : !previousManifest;
+
+  if (!previousManifest && !shouldBackfill) {
+    console.warn(
+      "[drop-rates] Previous manifest unavailable; historical backfill is disabled",
+    );
+  }
+
   const rootGames = {};
 
   for (const game of games) {
