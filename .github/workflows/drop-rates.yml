@@ -2,8 +2,9 @@ name: Publish drop-rate data
 
 on:
   schedule:
-    # GitHub cron is UTC. These two slots cover 23:00 Europe/Warsaw across DST.
-    - cron: "0 21,22 * * *"
+    # GitHub schedules can be delayed at the top of the hour; use a non-zero minute.
+    - cron: "17 23 * * *"
+      timezone: "Europe/Warsaw"
   workflow_dispatch:
     inputs:
       backfill_historical:
@@ -20,45 +21,24 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Check scheduled local time
-        id: schedule
-        shell: bash
-        run: |
-          if [ "${{ github.event_name }}" != "schedule" ]; then
-            echo "run=true" >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
-
-          if [ "$(TZ=Europe/Warsaw date +%H)" = "23" ]; then
-            echo "run=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "run=false" >> "$GITHUB_OUTPUT"
-          fi
-
       - uses: actions/checkout@v6
-        if: steps.schedule.outputs.run == 'true'
 
       - uses: pnpm/action-setup@v6
-        if: steps.schedule.outputs.run == 'true'
         with:
           version: 11.3.0
 
       - uses: actions/setup-node@v6
-        if: steps.schedule.outputs.run == 'true'
         with:
           node-version: 24
           cache: pnpm
 
       - name: Install dependencies
-        if: steps.schedule.outputs.run == 'true'
         run: pnpm install --frozen-lockfile
 
       - name: Build site
-        if: steps.schedule.outputs.run == 'true'
         run: pnpm build
 
       - name: Generate drop-rate JSON
-        if: steps.schedule.outputs.run == 'true'
         run: pnpm drop-rates:generate
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
@@ -68,7 +48,6 @@ jobs:
           DROP_RATES_BACKFILL_HISTORICAL: ${{ github.event.inputs.backfill_historical || 'false' }}
 
       - name: Deploy to Cloudflare Pages
-        if: steps.schedule.outputs.run == 'true'
         run: pnpm dlx wrangler@4.100.0 pages deploy dist --project-name wraeclast-cards
         env:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}

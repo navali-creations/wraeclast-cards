@@ -11,6 +11,19 @@ const COMMUNITY_WEIGHT_ANCHOR_CARD = "Rain of Chaos";
 const COMMUNITY_WEIGHT_ANCHOR_WEIGHT = 121400;
 const CACHE_SECONDS = 7 * 24 * 60 * 60;
 const BROWSER_CACHE_SECONDS = 60 * 60;
+const LEAGUE_STAT_FIELDS = [
+  "upload_count",
+  "observed_total",
+  "card_observed_total",
+  "contributors",
+  "verified_observed_total",
+  "verified_card_observed_total",
+  "verified_contributors",
+  "excluded_suspicious_upload_count",
+  "excluded_suspicious_observed_total",
+  "unresolved_card_row_count",
+  "unresolved_card_observed_total",
+];
 
 function parseArgs(argv) {
   const args = {
@@ -176,6 +189,23 @@ function validateDropRatePayload(game, payload) {
   if (!Array.isArray(payload.leagues) || !Array.isArray(payload.cards)) {
     throw new Error(`Invalid drop-rate payload shape for ${game}`);
   }
+}
+
+function publicLeagueMetadata(league, historical) {
+  const metadata = {
+    id: league.id,
+    name: league.name,
+    historical,
+  };
+
+  for (const field of LEAGUE_STAT_FIELDS) {
+    const value = league[field];
+    if (Number.isFinite(value)) {
+      metadata[field] = value;
+    }
+  }
+
+  return metadata;
 }
 
 async function fetchDropRates({ supabaseUrl, apiKey, game, includeInactive }) {
@@ -458,6 +488,7 @@ function splitCardsByLeague(payload) {
         ratio: stats.ratio,
         contributors: stats.contributors,
         verified_count: stats.verified_count,
+        verified_ratio: stats.verified_ratio,
         verified_contributors: stats.verified_contributors,
       });
     }
@@ -495,11 +526,7 @@ async function writeLeagueFile({
     schema_version: SCHEMA_VERSION,
     generated_at: generatedAt,
     game,
-    league: {
-      id: league.id,
-      name: league.name,
-      historical,
-    },
+    league: publicLeagueMetadata(league, historical),
     research,
     cards,
   };
@@ -509,9 +536,7 @@ async function writeLeagueFile({
   await writeFile(target, jsonStringify(body));
 
   return {
-    id: league.id,
-    name: league.name,
-    historical,
+    ...publicLeagueMetadata(league, historical),
     url: leagueUrl(game, league.id),
     card_count: cards.length,
     generated_at: generatedAt,
