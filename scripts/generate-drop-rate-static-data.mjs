@@ -262,6 +262,11 @@ function researchFileUrl(baseUrl, leagueName) {
   return `${normalizedBaseUrl}/cards-${encodeURIComponent(leagueName)}.json`;
 }
 
+function latestResearchFileUrl(baseUrl) {
+  const normalizedBaseUrl = normalizeBaseUrl(baseUrl);
+  return `${normalizedBaseUrl}/cards.json`;
+}
+
 function validateResearchCards(cards, leagueName) {
   if (!Array.isArray(cards)) {
     throw new Error(`Invalid research card payload for ${leagueName}`);
@@ -296,13 +301,24 @@ async function fetchResearchData({ game, leagueName, researchDataBaseUrl }) {
   if (game !== "poe1") return null;
 
   const sourceUrl = researchFileUrl(researchDataBaseUrl, leagueName);
-  const cards = await fetchOptionalRawJson(sourceUrl);
+  let resolvedSourceUrl = sourceUrl;
+  let cards = await fetchOptionalRawJson(sourceUrl);
 
   if (!cards) {
+    const fallbackUrl = latestResearchFileUrl(researchDataBaseUrl);
+    cards = await fetchOptionalRawJson(fallbackUrl);
+
+    if (!cards) {
+      console.warn(
+        `[drop-rates] No research weights found for ${game}/${leagueName}`,
+      );
+      return null;
+    }
+
+    resolvedSourceUrl = fallbackUrl;
     console.warn(
-      `[drop-rates] No research weights found for ${game}/${leagueName}`,
+      `[drop-rates] No league-specific research weights found for ${game}/${leagueName}; using latest weights from ${fallbackUrl}`,
     );
-    return null;
   }
 
   validateResearchCards(cards, leagueName);
@@ -327,7 +343,7 @@ async function fetchResearchData({ game, leagueName, researchDataBaseUrl }) {
 
   return {
     source: "fateweaver",
-    source_url: sourceUrl,
+    source_url: resolvedSourceUrl,
     total_weight: totalWeight,
     eligible_card_count: eligibleCards.length,
     card_count: cards.length,

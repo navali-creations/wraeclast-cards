@@ -8,7 +8,7 @@ function formatPercent(value: number | null) {
 function formatNumber(value: number | null) {
   return value === null
     ? "—"
-    : value.toLocaleString(undefined, { maximumFractionDigits: 3 });
+    : Number(value).toLocaleString(undefined, { maximumFractionDigits: 3 });
 }
 
 function formatSignedNumber(value: number | null) {

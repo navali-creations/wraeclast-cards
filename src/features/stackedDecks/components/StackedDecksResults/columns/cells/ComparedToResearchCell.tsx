@@ -14,5 +14,7 @@ export function ComparedToResearchCell({
     return <span className="tabular-nums">About expected</span>;
   }
 
-  return <span className="tabular-nums">{value.toFixed(2)}x as often</span>;
+  return (
+    <span className="tabular-nums">{Number(value).toFixed(2)}x as often</span>
+  );
 }
