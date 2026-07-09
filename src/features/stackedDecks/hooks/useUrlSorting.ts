@@ -2,7 +2,7 @@ import { useNavigate, useSearch } from "@tanstack/react-router";
 import type { OnChangeFn, SortingState } from "@tanstack/react-table";
 import { useMemo } from "react";
 
-interface UrlSortingKeys {
+export interface UrlSortingKeys {
   sortByKey: "sortBy" | "advancedSortBy";
   sortAscKey: "sortAsc" | "advancedSortAsc";
 }
@@ -11,8 +11,8 @@ export function useUrlSorting(
   defaultColumn: string,
   { sortByKey, sortAscKey }: UrlSortingKeys,
 ) {
-  const search = useSearch({ from: "/stacked-decks" });
-  const navigate = useNavigate({ from: "/stacked-decks" });
+  const search = useSearch({ from: "/$game/stacked-decks" });
+  const navigate = useNavigate({ from: "/$game/stacked-decks" });
   const sortBy = search[sortByKey];
   const sortAsc = search[sortAscKey];
 
@@ -26,11 +26,10 @@ export function useUrlSorting(
     const first = next[0];
     const column = first?.id ?? defaultColumn;
     const desc = first?.desc ?? true;
-    const isDefault = column === defaultColumn && desc;
     navigate({
       search: (prev) => ({
         ...prev,
-        [sortByKey]: isDefault ? undefined : column,
+        [sortByKey]: column === defaultColumn ? undefined : column,
         [sortAscKey]: desc ? undefined : true,
       }),
     });

@@ -6,7 +6,7 @@ import { createSearchUpdater } from "../../../../lib/searchNavigation";
 import {
   Route,
   type StackedDecksSearchParams,
-} from "../../../../routes/stacked-decks";
+} from "../../../../routes/$game/stacked-decks";
 import { useStackedDecksData } from "../../hooks";
 
 export function StackedDecksFilters() {

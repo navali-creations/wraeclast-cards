@@ -1,9 +1,12 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { dropRatesIndexQueryOptions } from "../features/homepage/api/dropRatesIndex";
-import { HomepagePage } from "../features/homepage/routes/homepage";
+import { createFileRoute, redirect } from "@tanstack/react-router";
+import { resolveStoredGame } from "../app/game-context";
+import { gameToSlug } from "../lib/gameSlug";
 
 export const Route = createFileRoute("/")({
-  component: HomepagePage,
-  loader: ({ context: { queryClient } }) =>
-    queryClient.prefetchQuery(dropRatesIndexQueryOptions),
+  beforeLoad: () => {
+    throw redirect({
+      to: "/$game",
+      params: { game: gameToSlug(resolveStoredGame()) },
+    });
+  },
 });

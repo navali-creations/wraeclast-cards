@@ -1,3 +1,4 @@
+import { FiDownload } from "react-icons/fi";
 import { ButtonInternalLink } from "../../../components/buttons";
 import { Heading } from "../../../components/headings";
 import { Text } from "../../../components/text";
@@ -64,7 +65,7 @@ export function DownloadsPanel() {
           to="/downloads"
           className="mt-auto flex w-full items-center gap-2 rounded-lg border border-(--wc-accent-border) bg-(--wc-glow) px-4 py-2 text-sm font-medium text-(--wc-text-90) transition-colors hover:brightness-110"
         >
-          <span>⬇</span>
+          <FiDownload aria-hidden="true" />
           Browse all archives
         </ButtonInternalLink>
       </div>

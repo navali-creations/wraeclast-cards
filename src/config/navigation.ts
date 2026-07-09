@@ -6,21 +6,26 @@ type StaticRoutePath = Exclude<
   `${string}$${string}` | "." | ".."
 >;
 
-type NavigationItem = {
-  label: string;
-  path: StaticRoutePath;
-};
+// /$game-prefixed routes with no further dynamic segments (e.g. excludes /$game/cards/$cardId)
+type GameScopedCandidate = Extract<FileRouteTypes["to"], `/$game/${string}`>;
+type GameScopedRoutePath = Exclude<
+  GameScopedCandidate,
+  `/$game/${string}$${string}`
+>;
+
+type NavigationItem =
+  | { label: string; path: GameScopedRoutePath; gameScoped: true }
+  | { label: string; path: StaticRoutePath; gameScoped?: false };
 
 type FooterNavigationItem = {
   label: string;
   path: StaticRoutePath;
-  active?: boolean;
 };
 
 export const navigationRoutes: NavigationItem[] = [
-  { label: "Cards", path: "/cards" },
-  { label: "Stacked Decks", path: "/stacked-decks" },
-  { label: "Soothsayer", path: "/soothsayer" },
+  { label: "Cards", path: "/$game/cards", gameScoped: true },
+  { label: "Stacked Decks", path: "/$game/stacked-decks", gameScoped: true },
+  { label: "Soothsayer", path: "/$game/soothsayer", gameScoped: true },
   { label: "Downloads", path: "/downloads" },
 ] as const;
 

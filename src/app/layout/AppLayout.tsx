@@ -1,30 +1,35 @@
-import { Outlet, useLocation } from "@tanstack/react-router";
+import { Outlet, useMatches } from "@tanstack/react-router";
+import clsx from "clsx";
 import { Footer } from "../../components/footer/Footer";
 import { Header } from "../../components/header/Header";
 
+const FULL_WIDTH_ROUTE_IDS = new Set([
+  "/$game/soothsayer",
+  "/$game/soothsayer/",
+  "/$game/stacked-decks",
+]);
+
 export function AppLayout() {
-  const pathname = useLocation({
-    select: (location) => location.pathname,
-  });
-  const isFullWidthRoute =
-    pathname === "/soothsayer" ||
-    pathname.startsWith("/soothsayer/") ||
-    pathname === "/stacked-decks";
-  const isHomepage = pathname === "/";
+  const matches = useMatches();
+  const routeId = matches[matches.length - 1]?.routeId;
+  const isFullWidthRoute = routeId ? FULL_WIDTH_ROUTE_IDS.has(routeId) : false;
+  const isHomepage = routeId === "/$game/";
 
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
 
       <main
-        className={`flex-1 flex flex-col${isHomepage ? " wc-page-gradient" : isFullWidthRoute ? "" : " bg-(--wc-header-bg)"}`}
+        className={clsx("flex-1 flex flex-col", {
+          "wc-page-gradient": isHomepage,
+          "bg-(--wc-header-bg)": !isHomepage && !isFullWidthRoute,
+        })}
       >
         <div
-          className={
-            isFullWidthRoute
-              ? "flex-1 flex flex-col"
-              : "flex-1 flex flex-col mx-auto w-full max-w-300 max-md:px-4 md:px-6 py-6"
-          }
+          className={clsx("flex-1 flex flex-col", {
+            "mx-auto w-full max-w-300 max-md:px-4 md:px-6 py-6":
+              !isFullWidthRoute,
+          })}
         >
           <Outlet />
         </div>

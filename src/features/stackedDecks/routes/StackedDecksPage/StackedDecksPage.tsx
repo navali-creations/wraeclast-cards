@@ -1,4 +1,4 @@
-import { Route } from "../../../../routes/stacked-decks";
+import { Route } from "../../../../routes/$game/stacked-decks";
 import {
   Methodology,
   StackedDecksAdvancedResults,

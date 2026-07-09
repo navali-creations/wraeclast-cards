@@ -28,8 +28,8 @@ interface UseStackedDecksTableCoreOptions {
   columns: ColumnDef<StackedDecksRow, any>[];
   sorting: SortingState;
   onSortingChange: OnChangeFn<SortingState>;
-  columnVisibility?: VisibilityState;
-  onColumnVisibilityChange?: OnChangeFn<VisibilityState>;
+  columnVisibility: VisibilityState;
+  onColumnVisibilityChange: OnChangeFn<VisibilityState>;
 }
 
 export function useStackedDecksTableCore({
@@ -52,7 +52,7 @@ export function useStackedDecksTableCore({
     error,
   } = useStackedDecksTableData({ searchTerm, verified });
 
-  const { page, setPage } = useUrlPagination("/stacked-decks");
+  const { page, setPage } = useUrlPagination("/$game/stacked-decks");
 
   const pagination: PaginationState = {
     pageIndex: page - 1,

@@ -1,8 +1,10 @@
+import { useNavigate, useParams } from "@tanstack/react-router";
 import clsx from "clsx";
 import { FiChevronDown } from "react-icons/fi";
 import { useGameContext } from "../../app/game-context";
 import { useLeagueContext } from "../../app/league-context";
 import { EGame } from "../../enums";
+import { gameToLabel, gameToSlug } from "../../lib/gameSlug";
 import { useDropdown } from "../../lib/useDropdown";
 import { Button } from "../buttons";
 
@@ -11,6 +13,19 @@ export function HeaderActions() {
   const { leagues, selectedLeague, selectedLeagueId, setSelectedLeague } =
     useLeagueContext();
   const { open, containerRef, toggle, close } = useDropdown();
+  const { game: gameParam } = useParams({ strict: false });
+  const navigate = useNavigate();
+
+  function handleSelectGame(nextGame: EGame) {
+    if (gameParam) {
+      navigate({
+        to: ".",
+        params: (prev) => ({ ...prev, game: gameToSlug(nextGame) }),
+      });
+      return;
+    }
+    setGame(nextGame);
+  }
 
   return (
     <div className="navbar-end gap-3 max-xs:flex-none max-xs:w-full max-xs:justify-between max-xs:px-6 max-xs:pb-4">
@@ -79,13 +94,13 @@ export function HeaderActions() {
               <Button
                 key={gameVersion}
                 aria-pressed={isChecked}
-                onClick={() => setGame(gameVersion)}
+                onClick={() => handleSelectGame(gameVersion)}
                 className={clsx(
                   "h-8 min-w-16 px-3.5 flex items-center justify-center rounded-md text-sm font-semibold tracking-wide transition-colors duration-200 cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--wc-gold)",
                   isChecked ? "text-primary-content" : "text-(--wc-text-60)/92",
                 )}
               >
-                {gameVersion === EGame.Poe1 ? "PoE 1" : "PoE 2"}
+                {gameToLabel(gameVersion)}
               </Button>
             );
           })}

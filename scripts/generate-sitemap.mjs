@@ -13,6 +13,22 @@ const POE1_CARDS_DATA_DIR = path.join(
   "node_modules/@navali/poe1-divination-cards/data",
 );
 const PRIVATE_PATH_SEGMENTS = new Set(["auth"]);
+const GAME_SLUGS = ["path-of-exile", "path-of-exile-2"];
+// These now only redirect to their /$game-prefixed equivalent, so they
+// shouldn't be listed as canonical URLs themselves.
+const LEGACY_REDIRECT_PATHS = new Set([
+  "/",
+  "/cards",
+  "/stacked-decks",
+  "/soothsayer",
+]);
+// Static leaf paths nested under the /$game/ segment (relative to it).
+const GAME_SCOPED_STATIC_PATHS = [
+  "/",
+  "/cards",
+  "/stacked-decks",
+  "/soothsayer",
+];
 
 function slugify(name) {
   return name
@@ -56,7 +72,9 @@ async function loadStaticRoutePaths() {
       if (typeof fullPath !== "string") continue;
       if (isDynamicRoute(fullPath)) continue;
       if (isPrivateRoute(fullPath)) continue;
-      paths.add(normalizeTrailingSlash(fullPath));
+      const normalized = normalizeTrailingSlash(fullPath);
+      if (LEGACY_REDIRECT_PATHS.has(normalized)) continue;
+      paths.add(normalized);
     }
 
     return paths;
@@ -179,10 +197,19 @@ async function main() {
   }
 
   for (const pathname of staticPaths) {
-    // Only /stacked-decks renders generated drop-rate data today, so it is
-    // the only static page with a truthful <lastmod>.
-    const lastmod = pathname === "/stacked-decks" ? dropRatesGeneratedAt : null;
-    addEntry(pathname, lastmod);
+    addEntry(pathname, null);
+  }
+
+  for (const slug of GAME_SLUGS) {
+    for (const gameScopedPath of GAME_SCOPED_STATIC_PATHS) {
+      const pathname =
+        gameScopedPath === "/" ? `/${slug}` : `/${slug}${gameScopedPath}`;
+      // Only /stacked-decks renders generated drop-rate data today, so it is
+      // the only page with a truthful <lastmod>.
+      const lastmod =
+        gameScopedPath === "/stacked-decks" ? dropRatesGeneratedAt : null;
+      addEntry(pathname, lastmod);
+    }
   }
 
   for (const slug of slugToName.keys()) {

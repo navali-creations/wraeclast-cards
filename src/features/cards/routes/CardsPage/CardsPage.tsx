@@ -3,7 +3,7 @@ import { useMemo } from "react";
 import { getNameSuggestions } from "../../../../lib/nameSuggestions";
 import { createSearchUpdater } from "../../../../lib/searchNavigation";
 import { useDebounce } from "../../../../lib/useDebounce";
-import { type CardsSearchParams, Route } from "../../../../routes/cards";
+import { type CardsSearchParams, Route } from "../../../../routes/$game/cards";
 import { CardsFilters, CardsResults } from "../../components";
 import { useCardsQuery } from "../../hooks";
 import { SortChips } from "./SortChips";
@@ -86,7 +86,6 @@ export function CardsPage() {
           <CardsResults
             searchTerm={debouncedSearchTerm}
             sorting={[{ id: sortBy, desc: activeDesc }]}
-            onSortingChange={setSorting}
           />
         </div>
       </div>

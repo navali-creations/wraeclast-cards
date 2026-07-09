@@ -1,9 +1,13 @@
 import { Link } from "@tanstack/react-router";
 import { FiGithub } from "react-icons/fi";
+import { useGameContext } from "../../app/game-context";
 import { footerNavigation, navigationRoutes } from "../../config/navigation";
+import { gameToSlug } from "../../lib/gameSlug";
 import { Text } from "../text";
 
 export function FooterNavigation() {
+  const { game } = useGameContext();
+
   return (
     <div className="flex gap-8 sm:gap-12">
       <div>
@@ -21,6 +25,9 @@ export function FooterNavigation() {
             <li key={item.path}>
               <Link
                 to={item.path}
+                params={
+                  item.gameScoped ? { game: gameToSlug(game) } : undefined
+                }
                 className="text-sm link link-hover text-(--wc-text-50)"
               >
                 {item.label}
