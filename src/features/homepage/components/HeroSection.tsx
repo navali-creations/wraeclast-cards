@@ -3,19 +3,18 @@ import { useGameContext } from "../../../app/game-context";
 import { ButtonInternalLink } from "../../../components/buttons/ButtonLink";
 import { Heading } from "../../../components/headings";
 import { Text } from "../../../components/text";
-import { EGame } from "../../../enums";
+import { gameToLabel } from "../../../lib/gameSlug";
 import { useDropRatesIndex } from "../api/dropRatesIndex";
-
-const CURRENT_LEAGUE: Record<EGame, string> = {
-  [EGame.Poe1]: "Mirage League",
-  [EGame.Poe2]: "Return of the Ancients",
-};
 
 export function HeroSection() {
   const { game } = useGameContext();
   const { data } = useDropRatesIndex();
   const leaguesArchived =
     (data?.games.poe1.league_count ?? 0) + (data?.games.poe2.league_count ?? 0);
+  const leagues = data?.games[game].leagues;
+  const currentLeagueName = (
+    leagues?.find((league) => !league.historical) ?? leagues?.[0]
+  )?.name;
 
   const heroStats = [
     { value: "451+", label: "Divination Cards" },
@@ -31,7 +30,7 @@ export function HeroSection() {
       {/* League badge */}
       <div className="inline-flex items-center gap-1.5 self-start rounded-full border border-(--wc-border) bg-base-300 px-3 py-1 text-sm text-(--wc-text-60)">
         <span className="h-1.5 w-1.5 rounded-full bg-(--wc-live-dot)" />
-        {game === EGame.Poe1 ? "PoE 1" : "PoE 2"} · {CURRENT_LEAGUE[game]}
+        {gameToLabel(game)} · {currentLeagueName ?? "…"}
       </div>
 
       {/* At md: heading+subtitle left, CTAs+stats right. At lg: back to single column. */}
@@ -63,12 +62,14 @@ export function HeroSection() {
         <div className="flex flex-col gap-6 md:shrink-0">
           <div className="flex items-center gap-4">
             <ButtonInternalLink
+              gameScoped
               to="/cards"
               className="inline-flex h-12 w-40 items-center justify-center rounded-lg bg-primary px-5 text-sm font-semibold text-primary-content hover:bg-(--wc-primary-hover)"
             >
               Browse Cards
             </ButtonInternalLink>
             <ButtonInternalLink
+              gameScoped
               to="/stacked-decks"
               className="inline-flex h-12 w-40 items-center justify-center rounded-lg border border-(--wc-border) bg-(--wc-glow)/20 px-5 text-sm font-medium text-(--wc-text-70) hover:border-(--wc-accent-border) hover:bg-(--wc-glow)/45 hover:text-(--wc-text-90)"
             >

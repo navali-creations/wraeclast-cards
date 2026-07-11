@@ -5,7 +5,7 @@ import { createSearchUpdater } from "../../../../lib/searchNavigation";
 import {
   Route,
   type StackedDecksSearchParams,
-} from "../../../../routes/stacked-decks";
+} from "../../../../routes/$game/$league/stacked-decks";
 
 interface VerifiedToggleProps {
   className?: string;
@@ -19,6 +19,7 @@ export function VerifiedToggle({ className }: VerifiedToggleProps) {
   return (
     <Button
       onClick={() => updateSearch({ verified: !verified || undefined })}
+      aria-pressed={verified}
       className={clsx(
         "flex h-9 cursor-pointer items-center gap-1.5 rounded border px-3 font-medium duration-150 select-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--wc-gold)",
         verified

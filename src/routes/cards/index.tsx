@@ -1,20 +1,19 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { CardsPage } from "../../features/cards/routes";
-import { asPage, asString, asTrueFlag } from "../../lib/searchParams";
-
-export type CardsSearchParams = {
-  name?: string;
-  sortBy?: string;
-  sortDesc?: true;
-  page?: number;
-};
+import { createFileRoute, redirect } from "@tanstack/react-router";
+import { resolveStoredGame } from "../../app/game-context";
+import { resolveDefaultLeagueSlug } from "../../app/league-context";
+import { gameToSlug } from "../../lib/gameSlug";
+import { validateCardsSearch } from "../$game/$league/cards";
 
 export const Route = createFileRoute("/cards/")({
-  validateSearch: (search: Record<string, unknown>) => ({
-    name: asString(search.name),
-    sortBy: asString(search.sortBy),
-    sortDesc: asTrueFlag(search.sortDesc),
-    page: asPage(search.page),
-  }),
-  component: CardsPage,
+  validateSearch: validateCardsSearch,
+  beforeLoad: async ({ context: { queryClient }, search }) => {
+    const game = resolveStoredGame();
+    const league = await resolveDefaultLeagueSlug(queryClient, game);
+
+    throw redirect({
+      to: "/$game/$league/cards",
+      params: { game: gameToSlug(game), league },
+      search,
+    });
+  },
 });

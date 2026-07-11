@@ -1,5 +1,7 @@
-import { useQuery } from "@tanstack/react-query";
+import { queryOptions, useQuery } from "@tanstack/react-query";
 import type { Game, GameDropRates, LeagueDropRates } from "./types";
+
+const ONE_HOUR_MS = 1000 * 60 * 60;
 
 // Generic GET-and-parse-as-JSON used by both hooks below.
 async function fetchDropRates<T>(url: string): Promise<T> {
@@ -36,14 +38,19 @@ function buildDropRatesUrl(...segments: string[]) {
 }
 
 // Fetches a game's league index (`<game>/index.json`), listing all leagues
-// with drop-rate data available for that game.
-export function useGameDropRates(game: Game) {
-  return useQuery({
+// with drop-rate data available for that game. Shared between the hook below
+// and route loaders that need to resolve a league slug via queryClient.ensureQueryData.
+export function gameDropRatesQueryOptions(game: Game) {
+  return queryOptions({
     queryKey: ["drop-rates", game],
     queryFn: () =>
       fetchDropRates<GameDropRates>(buildDropRatesUrl(game, "index.json")),
-    staleTime: 1000 * 60 * 60,
+    staleTime: ONE_HOUR_MS,
   });
+}
+
+export function useGameDropRates(game: Game) {
+  return useQuery(gameDropRatesQueryOptions(game));
 }
 
 // Fetches the card drop rates for one league (`<game>/<leagueId>.json`).
@@ -56,6 +63,6 @@ export function useLeagueDropRates(game: Game, leagueId: string | undefined) {
         buildDropRatesUrl(game, `${leagueId}.json`),
       ),
     enabled: !!leagueId,
-    staleTime: 1000 * 60 * 60,
+    staleTime: ONE_HOUR_MS,
   });
 }

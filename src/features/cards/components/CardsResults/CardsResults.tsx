@@ -8,7 +8,6 @@ import { CardsGrid } from "../CardsGrid/CardsGrid";
 interface CardsResultsProps {
   searchTerm: string;
   sorting: SortingState;
-  onSortingChange: (sorting: SortingState) => void;
 }
 
 function searchCards(cards: Card[], normalizedSearch: string): Card[] {

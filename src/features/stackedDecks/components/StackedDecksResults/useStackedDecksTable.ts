@@ -1,8 +1,4 @@
-import { useSearch } from "@tanstack/react-router";
-import { useMemo } from "react";
-import { useResponsiveColumnVisibility } from "../../../../components/columnVisibilityToggles";
-import { useDebounce } from "../../../../lib/useDebounce";
-import { useStackedDecksTableCore, useUrlSorting } from "../../hooks";
+import { useStackedDecksTableVariant } from "../../hooks";
 import { createColumns } from "./columns";
 
 const BASIC_RESPONSIVE_COLUMNS = {
@@ -11,29 +7,11 @@ const BASIC_RESPONSIVE_COLUMNS = {
 };
 
 export function useStackedDecksTable() {
-  const { search: searchTerm = "", verified = false } = useSearch({
-    from: "/stacked-decks",
-  });
-  const debouncedSearchTerm = useDebounce(searchTerm, 300);
-
-  const { sorting, onSortingChange } = useUrlSorting("players_saw", {
+  return useStackedDecksTableVariant({
+    defaultSort: "players_saw",
     sortByKey: "sortBy",
     sortAscKey: "sortAsc",
-  });
-
-  const columns = useMemo(() => createColumns(verified), [verified]);
-
-  const [columnVisibility, setColumnVisibility] = useResponsiveColumnVisibility(
-    BASIC_RESPONSIVE_COLUMNS,
-  );
-
-  return useStackedDecksTableCore({
-    searchTerm: debouncedSearchTerm,
-    verified,
-    columns,
-    sorting,
-    onSortingChange,
-    columnVisibility,
-    onColumnVisibilityChange: setColumnVisibility,
+    createColumns,
+    responsiveColumns: BASIC_RESPONSIVE_COLUMNS,
   });
 }

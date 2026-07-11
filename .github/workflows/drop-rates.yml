@@ -48,6 +48,11 @@ jobs:
           DROP_RATES_RESEARCH_DATA_BASE_URL: https://raw.githubusercontent.com/navali-creations/fateweaver/main/packages/poe1-divination-cards/data
           DROP_RATES_BACKFILL_HISTORICAL: ${{ github.event.inputs.backfill_historical || 'false' }}
 
+      - name: Generate sitemap
+        run: pnpm sitemap:generate
+        env:
+          SITE_URL: https://wraeclast.cards
+
       - name: Deploy to Cloudflare Pages
         run: pnpm dlx wrangler@4.100.0 pages deploy dist --project-name wraeclast-cards
         env:

@@ -3,15 +3,13 @@ import { Heading } from "../../../../components/headings";
 import { Text } from "../../../../components/text";
 import { useCardsQuery } from "../../../cards/hooks";
 import { useRandomCards } from "../../hooks/useRandomCards";
-import { SCALE, ScaledCard } from "./ScaledCard";
+import { CARD_H, CARD_W, SCALE, ScaledCard } from "./ScaledCard";
 
 const CARD_COUNT = 4;
 const SKELETON_KEYS = Array.from(
   { length: CARD_COUNT },
   (_, idx) => `skeleton-card-${idx}`,
 );
-const CARD_W = 320;
-const CARD_H = 476;
 
 export function CardDatabasePanel() {
   const { data: allCards } = useCardsQuery();
