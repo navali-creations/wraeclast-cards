@@ -3,10 +3,11 @@ import { HiMagnifyingGlass } from "react-icons/hi2";
 import { SearchInput } from "../../../../components/input";
 import { getNameSuggestions } from "../../../../lib/nameSuggestions";
 import { createSearchUpdater } from "../../../../lib/searchNavigation";
+import { useDebounce } from "../../../../lib/useDebounce";
 import {
   Route,
   type StackedDecksSearchParams,
-} from "../../../../routes/stacked-decks";
+} from "../../../../routes/$game/$league/stacked-decks";
 import { useStackedDecksData } from "../../hooks";
 
 export function StackedDecksFilters() {
@@ -14,14 +15,15 @@ export function StackedDecksFilters() {
   const navigate = Route.useNavigate();
   const updateSearch = createSearchUpdater<StackedDecksSearchParams>(navigate);
   const { rows } = useStackedDecksData();
+  const debouncedSearchTerm = useDebounce(searchTerm, 300);
 
   const suggestions = useMemo(
     () =>
       getNameSuggestions(
         (rows ?? []).map((row) => row.name),
-        searchTerm,
+        debouncedSearchTerm,
       ),
-    [rows, searchTerm],
+    [rows, debouncedSearchTerm],
   );
 
   function handleChange(value: string) {

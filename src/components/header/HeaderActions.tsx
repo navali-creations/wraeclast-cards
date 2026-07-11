@@ -1,8 +1,12 @@
+import { useNavigate, useParams } from "@tanstack/react-router";
 import clsx from "clsx";
 import { FiChevronDown } from "react-icons/fi";
 import { useGameContext } from "../../app/game-context";
 import { useLeagueContext } from "../../app/league-context";
 import { EGame } from "../../enums";
+import type { DropRateLeague } from "../../lib/dropRates";
+import { gameToLabel, gameToSlug } from "../../lib/gameSlug";
+import { leagueToSlug } from "../../lib/leagueSlug";
 import { useDropdown } from "../../lib/useDropdown";
 import { Button } from "../buttons";
 
@@ -11,6 +15,33 @@ export function HeaderActions() {
   const { leagues, selectedLeague, selectedLeagueId, setSelectedLeague } =
     useLeagueContext();
   const { open, containerRef, toggle, close } = useDropdown();
+  const { game: gameParam, league: leagueParam } = useParams({
+    strict: false,
+  });
+  const navigate = useNavigate();
+
+  function handleSelectGame(nextGame: EGame) {
+    if (gameParam) {
+      navigate({
+        to: ".",
+        params: (prev) => ({ ...prev, game: gameToSlug(nextGame) }),
+      });
+      return;
+    }
+    setGame(nextGame);
+  }
+
+  function handleSelectLeague(league: DropRateLeague) {
+    if (league.id === selectedLeagueId) return;
+    if (leagueParam) {
+      navigate({
+        to: ".",
+        params: (prev) => ({ ...prev, league: leagueToSlug(league) }),
+      });
+      return;
+    }
+    setSelectedLeague(league);
+  }
 
   return (
     <div className="navbar-end gap-3 max-xs:flex-none max-xs:w-full max-xs:justify-between max-xs:px-6 max-xs:pb-4">
@@ -18,10 +49,12 @@ export function HeaderActions() {
         <Button
           onClick={toggle}
           disabled={!leagues.length}
+          aria-haspopup="listbox"
+          aria-expanded={open}
           className="h-9 min-w-32 max-xs:min-w-40 sm:min-w-40 rounded-lg border-0 bg-primary px-3 text-left shadow-md hover:bg-(--wc-primary-hover) focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--wc-gold) cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
         >
           <span className="flex items-center justify-between font-semibold text-primary-content">
-            {selectedLeague?.name ?? "—"}
+            {selectedLeague.name}
             <FiChevronDown
               className={clsx(
                 "ml-2 transition-transform duration-200",
@@ -32,6 +65,7 @@ export function HeaderActions() {
         </Button>
 
         <div
+          role="listbox"
           className={clsx(
             "absolute right-0 top-full z-50 mt-1.5 min-w-full overflow-hidden rounded-lg border border-(--wc-border) bg-(--wc-card-darker) shadow-lg transition-all duration-200 ease-out",
             open
@@ -42,8 +76,10 @@ export function HeaderActions() {
           {leagues.map((league) => (
             <Button
               key={league.id}
+              role="option"
+              aria-selected={league.id === selectedLeagueId}
               onClick={() => {
-                setSelectedLeague(league.id);
+                handleSelectLeague(league);
                 close();
               }}
               className={clsx(
@@ -79,13 +115,13 @@ export function HeaderActions() {
               <Button
                 key={gameVersion}
                 aria-pressed={isChecked}
-                onClick={() => setGame(gameVersion)}
+                onClick={() => handleSelectGame(gameVersion)}
                 className={clsx(
                   "h-8 min-w-16 px-3.5 flex items-center justify-center rounded-md text-sm font-semibold tracking-wide transition-colors duration-200 cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--wc-gold)",
                   isChecked ? "text-primary-content" : "text-(--wc-text-60)/92",
                 )}
               >
-                {gameVersion === EGame.Poe1 ? "PoE 1" : "PoE 2"}
+                {gameToLabel(gameVersion)}
               </Button>
             );
           })}

@@ -38,6 +38,7 @@ export function StackedDecksPanel() {
         </ul>
 
         <ButtonInternalLink
+          gameScoped
           to="/stacked-decks"
           className="flex items-center gap-2 rounded-lg border border-(--wc-accent-border) bg-(--wc-glow) px-4 py-2 text-sm font-medium text-(--wc-text-90) transition-colors hover:brightness-110"
         >
