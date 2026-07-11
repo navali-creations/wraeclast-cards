@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import { createContext, useMemo, useState } from "react";
 import { EGame } from "../../enums";
 import { slugToGame } from "../../lib/gameSlug";
+import { safeGetItem, safeSetItem } from "../../lib/safeLocalStorage";
 
 export interface GameContextValue {
   game: EGame;
@@ -12,20 +13,12 @@ export const GameContext = createContext<GameContextValue | null>(null);
 
 function applyGame(selectedGame: EGame): EGame {
   document.documentElement.setAttribute("data-theme", selectedGame);
-  try {
-    localStorage.setItem("game", selectedGame);
-  } catch {
-    // ignore storage errors (e.g. Safari private mode, blocked iframe)
-  }
+  safeSetItem("game", selectedGame);
   return selectedGame;
 }
 
 function loadStoredGame(): string | null {
-  try {
-    return localStorage.getItem("game");
-  } catch {
-    return null;
-  }
+  return safeGetItem("game");
 }
 
 function resolveGameFromLocation(): EGame | undefined {

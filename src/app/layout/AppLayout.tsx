@@ -4,16 +4,16 @@ import { Footer } from "../../components/footer/Footer";
 import { Header } from "../../components/header/Header";
 
 const FULL_WIDTH_ROUTE_IDS = new Set([
-  "/$game/soothsayer",
-  "/$game/soothsayer/",
-  "/$game/stacked-decks",
+  "/$game/$league/soothsayer",
+  "/$game/$league/soothsayer/",
+  "/$game/$league/stacked-decks",
 ]);
 
 export function AppLayout() {
   const matches = useMatches();
   const routeId = matches[matches.length - 1]?.routeId;
   const isFullWidthRoute = routeId ? FULL_WIDTH_ROUTE_IDS.has(routeId) : false;
-  const isHomepage = routeId === "/$game/";
+  const isHomepage = routeId === "/$game/$league/";
 
   return (
     <div className="min-h-screen flex flex-col">

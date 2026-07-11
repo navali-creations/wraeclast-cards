@@ -17,13 +17,14 @@ import { Route as GameRouteImport } from './routes/$game'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as SoothsayerIndexRouteImport } from './routes/soothsayer/index'
 import { Route as CardsIndexRouteImport } from './routes/cards/index'
-import { Route as GameIndexRouteImport } from './routes/$game/index'
 import { Route as SoothsayerAuthRouteImport } from './routes/soothsayer/auth'
 import { Route as CardsCardIdRouteImport } from './routes/cards/$cardId'
-import { Route as GameStackedDecksRouteImport } from './routes/$game/stacked-decks'
-import { Route as GameSoothsayerIndexRouteImport } from './routes/$game/soothsayer/index'
-import { Route as GameCardsIndexRouteImport } from './routes/$game/cards/index'
-import { Route as GameCardsCardIdRouteImport } from './routes/$game/cards/$cardId'
+import { Route as GameLeagueRouteImport } from './routes/$game/$league'
+import { Route as GameLeagueIndexRouteImport } from './routes/$game/$league/index'
+import { Route as GameLeagueStackedDecksRouteImport } from './routes/$game/$league/stacked-decks'
+import { Route as GameLeagueSoothsayerIndexRouteImport } from './routes/$game/$league/soothsayer/index'
+import { Route as GameLeagueCardsIndexRouteImport } from './routes/$game/$league/cards/index'
+import { Route as GameLeagueCardsCardIdRouteImport } from './routes/$game/$league/cards/$cardId'
 
 const StackedDecksRoute = StackedDecksRouteImport.update({
   id: '/stacked-decks',
@@ -65,11 +66,6 @@ const CardsIndexRoute = CardsIndexRouteImport.update({
   path: '/cards/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const GameIndexRoute = GameIndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => GameRoute,
-} as any)
 const SoothsayerAuthRoute = SoothsayerAuthRouteImport.update({
   id: '/soothsayer/auth',
   path: '/soothsayer/auth',
@@ -80,25 +76,36 @@ const CardsCardIdRoute = CardsCardIdRouteImport.update({
   path: '/cards/$cardId',
   getParentRoute: () => rootRouteImport,
 } as any)
-const GameStackedDecksRoute = GameStackedDecksRouteImport.update({
+const GameLeagueRoute = GameLeagueRouteImport.update({
+  id: '/$league',
+  path: '/$league',
+  getParentRoute: () => GameRoute,
+} as any)
+const GameLeagueIndexRoute = GameLeagueIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => GameLeagueRoute,
+} as any)
+const GameLeagueStackedDecksRoute = GameLeagueStackedDecksRouteImport.update({
   id: '/stacked-decks',
   path: '/stacked-decks',
-  getParentRoute: () => GameRoute,
+  getParentRoute: () => GameLeagueRoute,
 } as any)
-const GameSoothsayerIndexRoute = GameSoothsayerIndexRouteImport.update({
-  id: '/soothsayer/',
-  path: '/soothsayer/',
-  getParentRoute: () => GameRoute,
-} as any)
-const GameCardsIndexRoute = GameCardsIndexRouteImport.update({
+const GameLeagueSoothsayerIndexRoute =
+  GameLeagueSoothsayerIndexRouteImport.update({
+    id: '/soothsayer/',
+    path: '/soothsayer/',
+    getParentRoute: () => GameLeagueRoute,
+  } as any)
+const GameLeagueCardsIndexRoute = GameLeagueCardsIndexRouteImport.update({
   id: '/cards/',
   path: '/cards/',
-  getParentRoute: () => GameRoute,
+  getParentRoute: () => GameLeagueRoute,
 } as any)
-const GameCardsCardIdRoute = GameCardsCardIdRouteImport.update({
+const GameLeagueCardsCardIdRoute = GameLeagueCardsCardIdRouteImport.update({
   id: '/cards/$cardId',
   path: '/cards/$cardId',
-  getParentRoute: () => GameRoute,
+  getParentRoute: () => GameLeagueRoute,
 } as any)
 
 export interface FileRoutesByFullPath {
@@ -108,31 +115,33 @@ export interface FileRoutesByFullPath {
   '/downloads': typeof DownloadsRoute
   '/privacy-policy': typeof PrivacyPolicyRoute
   '/stacked-decks': typeof StackedDecksRoute
-  '/$game/stacked-decks': typeof GameStackedDecksRoute
+  '/$game/$league': typeof GameLeagueRouteWithChildren
   '/cards/$cardId': typeof CardsCardIdRoute
   '/soothsayer/auth': typeof SoothsayerAuthRoute
-  '/$game/': typeof GameIndexRoute
   '/cards/': typeof CardsIndexRoute
   '/soothsayer/': typeof SoothsayerIndexRoute
-  '/$game/cards/$cardId': typeof GameCardsCardIdRoute
-  '/$game/cards/': typeof GameCardsIndexRoute
-  '/$game/soothsayer/': typeof GameSoothsayerIndexRoute
+  '/$game/$league/stacked-decks': typeof GameLeagueStackedDecksRoute
+  '/$game/$league/': typeof GameLeagueIndexRoute
+  '/$game/$league/cards/$cardId': typeof GameLeagueCardsCardIdRoute
+  '/$game/$league/cards/': typeof GameLeagueCardsIndexRoute
+  '/$game/$league/soothsayer/': typeof GameLeagueSoothsayerIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/$game': typeof GameRouteWithChildren
   '/attributions': typeof AttributionsRoute
   '/downloads': typeof DownloadsRoute
   '/privacy-policy': typeof PrivacyPolicyRoute
   '/stacked-decks': typeof StackedDecksRoute
-  '/$game/stacked-decks': typeof GameStackedDecksRoute
   '/cards/$cardId': typeof CardsCardIdRoute
   '/soothsayer/auth': typeof SoothsayerAuthRoute
-  '/$game': typeof GameIndexRoute
   '/cards': typeof CardsIndexRoute
   '/soothsayer': typeof SoothsayerIndexRoute
-  '/$game/cards/$cardId': typeof GameCardsCardIdRoute
-  '/$game/cards': typeof GameCardsIndexRoute
-  '/$game/soothsayer': typeof GameSoothsayerIndexRoute
+  '/$game/$league/stacked-decks': typeof GameLeagueStackedDecksRoute
+  '/$game/$league': typeof GameLeagueIndexRoute
+  '/$game/$league/cards/$cardId': typeof GameLeagueCardsCardIdRoute
+  '/$game/$league/cards': typeof GameLeagueCardsIndexRoute
+  '/$game/$league/soothsayer': typeof GameLeagueSoothsayerIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -142,15 +151,16 @@ export interface FileRoutesById {
   '/downloads': typeof DownloadsRoute
   '/privacy-policy': typeof PrivacyPolicyRoute
   '/stacked-decks': typeof StackedDecksRoute
-  '/$game/stacked-decks': typeof GameStackedDecksRoute
+  '/$game/$league': typeof GameLeagueRouteWithChildren
   '/cards/$cardId': typeof CardsCardIdRoute
   '/soothsayer/auth': typeof SoothsayerAuthRoute
-  '/$game/': typeof GameIndexRoute
   '/cards/': typeof CardsIndexRoute
   '/soothsayer/': typeof SoothsayerIndexRoute
-  '/$game/cards/$cardId': typeof GameCardsCardIdRoute
-  '/$game/cards/': typeof GameCardsIndexRoute
-  '/$game/soothsayer/': typeof GameSoothsayerIndexRoute
+  '/$game/$league/stacked-decks': typeof GameLeagueStackedDecksRoute
+  '/$game/$league/': typeof GameLeagueIndexRoute
+  '/$game/$league/cards/$cardId': typeof GameLeagueCardsCardIdRoute
+  '/$game/$league/cards/': typeof GameLeagueCardsIndexRoute
+  '/$game/$league/soothsayer/': typeof GameLeagueSoothsayerIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -161,31 +171,33 @@ export interface FileRouteTypes {
     | '/downloads'
     | '/privacy-policy'
     | '/stacked-decks'
-    | '/$game/stacked-decks'
+    | '/$game/$league'
     | '/cards/$cardId'
     | '/soothsayer/auth'
-    | '/$game/'
     | '/cards/'
     | '/soothsayer/'
-    | '/$game/cards/$cardId'
-    | '/$game/cards/'
-    | '/$game/soothsayer/'
+    | '/$game/$league/stacked-decks'
+    | '/$game/$league/'
+    | '/$game/$league/cards/$cardId'
+    | '/$game/$league/cards/'
+    | '/$game/$league/soothsayer/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/$game'
     | '/attributions'
     | '/downloads'
     | '/privacy-policy'
     | '/stacked-decks'
-    | '/$game/stacked-decks'
     | '/cards/$cardId'
     | '/soothsayer/auth'
-    | '/$game'
     | '/cards'
     | '/soothsayer'
-    | '/$game/cards/$cardId'
-    | '/$game/cards'
-    | '/$game/soothsayer'
+    | '/$game/$league/stacked-decks'
+    | '/$game/$league'
+    | '/$game/$league/cards/$cardId'
+    | '/$game/$league/cards'
+    | '/$game/$league/soothsayer'
   id:
     | '__root__'
     | '/'
@@ -194,15 +206,16 @@ export interface FileRouteTypes {
     | '/downloads'
     | '/privacy-policy'
     | '/stacked-decks'
-    | '/$game/stacked-decks'
+    | '/$game/$league'
     | '/cards/$cardId'
     | '/soothsayer/auth'
-    | '/$game/'
     | '/cards/'
     | '/soothsayer/'
-    | '/$game/cards/$cardId'
-    | '/$game/cards/'
-    | '/$game/soothsayer/'
+    | '/$game/$league/stacked-decks'
+    | '/$game/$league/'
+    | '/$game/$league/cards/$cardId'
+    | '/$game/$league/cards/'
+    | '/$game/$league/soothsayer/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -276,13 +289,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CardsIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/$game/': {
-      id: '/$game/'
-      path: '/'
-      fullPath: '/$game/'
-      preLoaderRoute: typeof GameIndexRouteImport
-      parentRoute: typeof GameRoute
-    }
     '/soothsayer/auth': {
       id: '/soothsayer/auth'
       path: '/soothsayer/auth'
@@ -297,51 +303,77 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CardsCardIdRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/$game/stacked-decks': {
-      id: '/$game/stacked-decks'
+    '/$game/$league': {
+      id: '/$game/$league'
+      path: '/$league'
+      fullPath: '/$game/$league'
+      preLoaderRoute: typeof GameLeagueRouteImport
+      parentRoute: typeof GameRoute
+    }
+    '/$game/$league/': {
+      id: '/$game/$league/'
+      path: '/'
+      fullPath: '/$game/$league/'
+      preLoaderRoute: typeof GameLeagueIndexRouteImport
+      parentRoute: typeof GameLeagueRoute
+    }
+    '/$game/$league/stacked-decks': {
+      id: '/$game/$league/stacked-decks'
       path: '/stacked-decks'
-      fullPath: '/$game/stacked-decks'
-      preLoaderRoute: typeof GameStackedDecksRouteImport
-      parentRoute: typeof GameRoute
+      fullPath: '/$game/$league/stacked-decks'
+      preLoaderRoute: typeof GameLeagueStackedDecksRouteImport
+      parentRoute: typeof GameLeagueRoute
     }
-    '/$game/soothsayer/': {
-      id: '/$game/soothsayer/'
+    '/$game/$league/soothsayer/': {
+      id: '/$game/$league/soothsayer/'
       path: '/soothsayer'
-      fullPath: '/$game/soothsayer/'
-      preLoaderRoute: typeof GameSoothsayerIndexRouteImport
-      parentRoute: typeof GameRoute
+      fullPath: '/$game/$league/soothsayer/'
+      preLoaderRoute: typeof GameLeagueSoothsayerIndexRouteImport
+      parentRoute: typeof GameLeagueRoute
     }
-    '/$game/cards/': {
-      id: '/$game/cards/'
+    '/$game/$league/cards/': {
+      id: '/$game/$league/cards/'
       path: '/cards'
-      fullPath: '/$game/cards/'
-      preLoaderRoute: typeof GameCardsIndexRouteImport
-      parentRoute: typeof GameRoute
+      fullPath: '/$game/$league/cards/'
+      preLoaderRoute: typeof GameLeagueCardsIndexRouteImport
+      parentRoute: typeof GameLeagueRoute
     }
-    '/$game/cards/$cardId': {
-      id: '/$game/cards/$cardId'
+    '/$game/$league/cards/$cardId': {
+      id: '/$game/$league/cards/$cardId'
       path: '/cards/$cardId'
-      fullPath: '/$game/cards/$cardId'
-      preLoaderRoute: typeof GameCardsCardIdRouteImport
-      parentRoute: typeof GameRoute
+      fullPath: '/$game/$league/cards/$cardId'
+      preLoaderRoute: typeof GameLeagueCardsCardIdRouteImport
+      parentRoute: typeof GameLeagueRoute
     }
   }
 }
 
+interface GameLeagueRouteChildren {
+  GameLeagueStackedDecksRoute: typeof GameLeagueStackedDecksRoute
+  GameLeagueIndexRoute: typeof GameLeagueIndexRoute
+  GameLeagueCardsCardIdRoute: typeof GameLeagueCardsCardIdRoute
+  GameLeagueCardsIndexRoute: typeof GameLeagueCardsIndexRoute
+  GameLeagueSoothsayerIndexRoute: typeof GameLeagueSoothsayerIndexRoute
+}
+
+const GameLeagueRouteChildren: GameLeagueRouteChildren = {
+  GameLeagueStackedDecksRoute: GameLeagueStackedDecksRoute,
+  GameLeagueIndexRoute: GameLeagueIndexRoute,
+  GameLeagueCardsCardIdRoute: GameLeagueCardsCardIdRoute,
+  GameLeagueCardsIndexRoute: GameLeagueCardsIndexRoute,
+  GameLeagueSoothsayerIndexRoute: GameLeagueSoothsayerIndexRoute,
+}
+
+const GameLeagueRouteWithChildren = GameLeagueRoute._addFileChildren(
+  GameLeagueRouteChildren,
+)
+
 interface GameRouteChildren {
-  GameStackedDecksRoute: typeof GameStackedDecksRoute
-  GameIndexRoute: typeof GameIndexRoute
-  GameCardsCardIdRoute: typeof GameCardsCardIdRoute
-  GameCardsIndexRoute: typeof GameCardsIndexRoute
-  GameSoothsayerIndexRoute: typeof GameSoothsayerIndexRoute
+  GameLeagueRoute: typeof GameLeagueRouteWithChildren
 }
 
 const GameRouteChildren: GameRouteChildren = {
-  GameStackedDecksRoute: GameStackedDecksRoute,
-  GameIndexRoute: GameIndexRoute,
-  GameCardsCardIdRoute: GameCardsCardIdRoute,
-  GameCardsIndexRoute: GameCardsIndexRoute,
-  GameSoothsayerIndexRoute: GameSoothsayerIndexRoute,
+  GameLeagueRoute: GameLeagueRouteWithChildren,
 }
 
 const GameRouteWithChildren = GameRoute._addFileChildren(GameRouteChildren)

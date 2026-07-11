@@ -3,7 +3,7 @@ import { useGameContext } from "../../../app/game-context";
 import { ButtonInternalLink } from "../../../components/buttons/ButtonLink";
 import { Heading } from "../../../components/headings";
 import { Text } from "../../../components/text";
-import { gameToLabel, gameToSlug } from "../../../lib/gameSlug";
+import { gameToLabel } from "../../../lib/gameSlug";
 import { useDropRatesIndex } from "../api/dropRatesIndex";
 
 export function HeroSection() {
@@ -62,15 +62,15 @@ export function HeroSection() {
         <div className="flex flex-col gap-6 md:shrink-0">
           <div className="flex items-center gap-4">
             <ButtonInternalLink
-              to="/$game/cards"
-              params={{ game: gameToSlug(game) }}
+              gameScoped
+              to="/cards"
               className="inline-flex h-12 w-40 items-center justify-center rounded-lg bg-primary px-5 text-sm font-semibold text-primary-content hover:bg-(--wc-primary-hover)"
             >
               Browse Cards
             </ButtonInternalLink>
             <ButtonInternalLink
-              to="/$game/stacked-decks"
-              params={{ game: gameToSlug(game) }}
+              gameScoped
+              to="/stacked-decks"
               className="inline-flex h-12 w-40 items-center justify-center rounded-lg border border-(--wc-border) bg-(--wc-glow)/20 px-5 text-sm font-medium text-(--wc-text-70) hover:border-(--wc-accent-border) hover:bg-(--wc-glow)/45 hover:text-(--wc-text-90)"
             >
               Stacked Decks <FiArrowRight className="ml-1" />

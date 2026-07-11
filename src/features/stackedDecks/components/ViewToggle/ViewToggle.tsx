@@ -5,7 +5,7 @@ import { createSearchUpdater } from "../../../../lib/searchNavigation";
 import {
   Route,
   type StackedDecksSearchParams,
-} from "../../../../routes/$game/stacked-decks";
+} from "../../../../routes/$game/$league/stacked-decks";
 
 export type StackedDecksView = "standard" | "advanced";
 
@@ -24,6 +24,7 @@ export function ViewToggle({ className }: ViewToggleProps) {
       onClick={() =>
         updateSearch({ view: isAdvanced ? undefined : "advanced" })
       }
+      aria-pressed={isAdvanced}
       className={clsx(
         "flex h-9 cursor-pointer items-center gap-1.5 rounded border px-3 font-medium duration-150 select-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--wc-gold)",
         isAdvanced

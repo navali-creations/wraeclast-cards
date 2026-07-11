@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
-import type { StackedDecksView } from "../../features/stackedDecks/components";
-import { StackedDecksPage } from "../../features/stackedDecks/routes";
-import { asPage, asString, asTrueFlag } from "../../lib/searchParams";
+import type { StackedDecksView } from "../../../features/stackedDecks/components";
+import { StackedDecksPage } from "../../../features/stackedDecks/routes";
+import { asPage, asString, asTrueFlag } from "../../../lib/searchParams";
 
 export type StackedDecksSearchParams = {
   sortBy?: string;
@@ -29,7 +29,7 @@ export function validateStackedDecksSearch(
   };
 }
 
-export const Route = createFileRoute("/$game/stacked-decks")({
+export const Route = createFileRoute("/$game/$league/stacked-decks")({
   validateSearch: validateStackedDecksSearch,
   component: StackedDecksPage,
 });

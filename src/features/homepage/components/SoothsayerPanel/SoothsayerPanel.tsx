@@ -1,18 +1,18 @@
+import clsx from "clsx";
 import { FiDownload } from "react-icons/fi";
-import { useGameContext } from "../../../../app/game-context";
 import { ButtonInternalLink } from "../../../../components/buttons/ButtonLink";
 import { Heading } from "../../../../components/headings";
 import { Text } from "../../../../components/text";
-import { gameToSlug } from "../../../../lib/gameSlug";
 import { soothsayerStats } from "../../api/homepageStats";
 import { StatItem } from "./StatItem";
 
 export function SoothsayerPanel() {
-  const { game } = useGameContext();
-
   const statItems = soothsayerStats.map((stat) => (
     <StatItem key={stat.label} stat={stat} />
   ));
+
+  const downloadButtonClassName =
+    "flex items-center gap-2 rounded-lg border border-(--wc-accent-border) bg-(--wc-glow) px-4 py-2 text-sm font-medium text-(--wc-text-90) transition-colors hover:brightness-110";
 
   return (
     <div className="rounded-xl border border-(--wc-border) bg-base-300 px-5 py-8">
@@ -39,15 +39,15 @@ export function SoothsayerPanel() {
           <div className="flex gap-5 xs:hidden">{statItems}</div>
           <div className="mt-2 flex justify-between">
             <ButtonInternalLink
-              to="/$game/soothsayer"
-              params={{ game: gameToSlug(game) }}
+              gameScoped
+              to="/soothsayer"
               className="rounded-lg px-4 py-1.5 text-sm font-medium bg-primary text-primary-content hover:bg-(--wc-primary-hover)"
             >
               Try the demo →
             </ButtonInternalLink>
             <ButtonInternalLink
               to="/downloads"
-              className="xs:hidden flex items-center gap-2 rounded-lg border border-(--wc-accent-border) bg-(--wc-glow) px-4 py-2 text-sm font-medium text-(--wc-text-90) transition-colors hover:brightness-110"
+              className={clsx("xs:hidden", downloadButtonClassName)}
             >
               <FiDownload aria-hidden="true" />
               Download App
@@ -61,7 +61,7 @@ export function SoothsayerPanel() {
 
           <ButtonInternalLink
             to="/downloads"
-            className="flex items-center gap-2 rounded-lg border border-(--wc-accent-border) bg-(--wc-glow) px-4 py-2 text-sm font-medium text-(--wc-text-90) transition-colors hover:brightness-110"
+            className={downloadButtonClassName}
           >
             <FiDownload aria-hidden="true" />
             Download App

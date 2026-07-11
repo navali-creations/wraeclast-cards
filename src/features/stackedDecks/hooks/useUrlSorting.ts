@@ -11,8 +11,8 @@ export function useUrlSorting(
   defaultColumn: string,
   { sortByKey, sortAscKey }: UrlSortingKeys,
 ) {
-  const search = useSearch({ from: "/$game/stacked-decks" });
-  const navigate = useNavigate({ from: "/$game/stacked-decks" });
+  const search = useSearch({ from: "/$game/$league/stacked-decks" });
+  const navigate = useNavigate({ from: "/$game/$league/stacked-decks" });
   const sortBy = search[sortByKey];
   const sortAsc = search[sortAscKey];
 

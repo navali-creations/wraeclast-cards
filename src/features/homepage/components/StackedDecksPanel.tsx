@@ -1,13 +1,9 @@
-import { useGameContext } from "../../../app/game-context";
 import { ButtonInternalLink } from "../../../components/buttons/ButtonLink";
 import { Heading } from "../../../components/headings";
 import { Text } from "../../../components/text";
-import { gameToSlug } from "../../../lib/gameSlug";
 import { topDropRates } from "../api/homepageStats";
 
 export function StackedDecksPanel() {
-  const { game } = useGameContext();
-
   return (
     <div className="rounded-xl border border-(--wc-border) bg-base-300 p-5">
       <div className="flex flex-col gap-3">
@@ -42,8 +38,8 @@ export function StackedDecksPanel() {
         </ul>
 
         <ButtonInternalLink
-          to="/$game/stacked-decks"
-          params={{ game: gameToSlug(game) }}
+          gameScoped
+          to="/stacked-decks"
           className="flex items-center gap-2 rounded-lg border border-(--wc-accent-border) bg-(--wc-glow) px-4 py-2 text-sm font-medium text-(--wc-text-90) transition-colors hover:brightness-110"
         >
           View all drop rates →

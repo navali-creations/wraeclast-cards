@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { CardsPage } from "../../../features/cards/routes";
-import { asPage, asString, asTrueFlag } from "../../../lib/searchParams";
+import { CardsPage } from "../../../../features/cards/routes";
+import { asPage, asString, asTrueFlag } from "../../../../lib/searchParams";
 
 export type CardsSearchParams = {
   name?: string;
@@ -20,7 +20,7 @@ export function validateCardsSearch(
   };
 }
 
-export const Route = createFileRoute("/$game/cards/")({
+export const Route = createFileRoute("/$game/$league/cards/")({
   validateSearch: validateCardsSearch,
   component: CardsPage,
 });

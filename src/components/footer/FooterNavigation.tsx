@@ -1,13 +1,12 @@
 import { Link } from "@tanstack/react-router";
 import { FiGithub } from "react-icons/fi";
-import { useGameContext } from "../../app/game-context";
 import { footerNavigation, navigationRoutes } from "../../config/navigation";
-import { gameToSlug } from "../../lib/gameSlug";
+import { NavItemLink } from "../links";
 import { Text } from "../text";
 
-export function FooterNavigation() {
-  const { game } = useGameContext();
+const LINK_CLASS_NAME = "text-sm link link-hover text-(--wc-text-50)";
 
+export function FooterNavigation() {
   return (
     <div className="flex gap-8 sm:gap-12">
       <div>
@@ -23,15 +22,7 @@ export function FooterNavigation() {
         <ul className="space-y-2">
           {navigationRoutes.map((item) => (
             <li key={item.path}>
-              <Link
-                to={item.path}
-                params={
-                  item.gameScoped ? { game: gameToSlug(game) } : undefined
-                }
-                className="text-sm link link-hover text-(--wc-text-50)"
-              >
-                {item.label}
-              </Link>
+              <NavItemLink item={item} className={LINK_CLASS_NAME} />
             </li>
           ))}
         </ul>
@@ -50,10 +41,7 @@ export function FooterNavigation() {
         <ul className="space-y-2">
           {footerNavigation.map((item) => (
             <li key={item.path}>
-              <Link
-                to={item.path}
-                className="text-sm link link-hover text-(--wc-text-50)"
-              >
+              <Link to={item.path} className={LINK_CLASS_NAME}>
                 {item.label}
               </Link>
             </li>

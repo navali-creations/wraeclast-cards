@@ -1,18 +1,35 @@
 import { Heading } from "../../../../components/headings";
 import { Text } from "../../../../components/text";
+import { Route } from "../../../../routes/$game/$league/soothsayer";
 import { SoothsayerDownloadActions } from "../../components/SoothsayerDownloadActions/SoothsayerDownloadActions";
 import { SoothsayerFeatureGallery } from "../../components/SoothsayerFeatureGallery/SoothsayerFeatureGallery";
 import { SoothsayerGalleryProvider } from "../../components/SoothsayerGalleryProvider/SoothsayerGalleryProvider";
+import {
+  defaultSoothsayerFeatureId,
+  isSoothsayerFeatureId,
+} from "./SoothsayerPage.utils";
+import { runWithViewTransition } from "./viewTransition";
 
-type SoothsayerPageProps = {
-  activeFeatureId: string;
-  onFeatureSelect: (featureId: string) => void;
-};
+export function SoothsayerPage() {
+  const { gallery } = Route.useSearch();
+  const navigate = Route.useNavigate();
+  const activeFeatureId = isSoothsayerFeatureId(gallery)
+    ? gallery
+    : defaultSoothsayerFeatureId;
 
-export function SoothsayerPage({
-  activeFeatureId,
-  onFeatureSelect,
-}: SoothsayerPageProps) {
+  const handleFeatureSelect = (featureId: string) => {
+    if (featureId === activeFeatureId) return;
+
+    runWithViewTransition(() =>
+      navigate({
+        search: (prev) => ({
+          ...prev,
+          gallery: featureId,
+        }),
+      }),
+    );
+  };
+
   return (
     <div className="flex flex-1 flex-col min-h-0 bg-(--wc-header-bg)">
       <div className="border-b border-[color-mix(in_oklch,var(--wc-border)_65%,black)] px-4 pt-5 pb-4 shadow-[inset_0_-16px_36px_-28px_black]">
@@ -42,7 +59,7 @@ export function SoothsayerPage({
         <div className="justify-center mx-auto flex w-full max-w-300 flex-1 flex-col min-h-0">
           <SoothsayerGalleryProvider
             activeFeatureId={activeFeatureId}
-            onFeatureSelect={onFeatureSelect}
+            onFeatureSelect={handleFeatureSelect}
           >
             <SoothsayerFeatureGallery />
           </SoothsayerGalleryProvider>

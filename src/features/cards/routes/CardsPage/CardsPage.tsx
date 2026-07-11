@@ -3,14 +3,16 @@ import { useMemo } from "react";
 import { getNameSuggestions } from "../../../../lib/nameSuggestions";
 import { createSearchUpdater } from "../../../../lib/searchNavigation";
 import { useDebounce } from "../../../../lib/useDebounce";
-import { type CardsSearchParams, Route } from "../../../../routes/$game/cards";
+import {
+  type CardsSearchParams,
+  Route,
+} from "../../../../routes/$game/$league/cards";
 import { CardsFilters, CardsResults } from "../../components";
 import { useCardsQuery } from "../../hooks";
 import { SortChips } from "./SortChips";
 
-const SORT_FIELDS: Record<string, string> = {
-  Name: "name",
-};
+const SORT_LABEL = "Name";
+const SORT_FIELD = "name";
 
 export function CardsPage() {
   const { name, sortBy = "name", sortDesc } = Route.useSearch();
@@ -39,21 +41,20 @@ export function CardsPage() {
     const sortEntry = newSorting[0];
     updateSearch({
       sortBy:
-        sortEntry?.id !== "name" || sortEntry?.desc ? sortEntry?.id : undefined,
+        sortEntry?.id !== SORT_FIELD || sortEntry?.desc
+          ? sortEntry?.id
+          : undefined,
       sortDesc: sortEntry?.desc || undefined,
       page: undefined,
     });
   };
 
-  const activeSortLabel =
-    Object.keys(SORT_FIELDS).find((label) => SORT_FIELDS[label] === sortBy) ??
-    null;
+  const activeSortLabel = sortBy === SORT_FIELD ? SORT_LABEL : null;
 
-  const handleSortChipClick = (label: string) => {
-    const fieldId = SORT_FIELDS[label];
-    if (!fieldId) return;
-    const isActive = activeSortLabel === label;
-    setSorting([{ id: fieldId, desc: isActive ? !activeDesc : false }]);
+  const handleSortChipClick = () => {
+    setSorting([
+      { id: SORT_FIELD, desc: activeSortLabel ? !activeDesc : false },
+    ]);
   };
 
   return (
@@ -73,7 +74,7 @@ export function CardsPage() {
           />
 
           <SortChips
-            labels={Object.keys(SORT_FIELDS)}
+            labels={[SORT_LABEL]}
             activeLabel={activeSortLabel}
             activeDesc={activeDesc}
             onSelect={handleSortChipClick}

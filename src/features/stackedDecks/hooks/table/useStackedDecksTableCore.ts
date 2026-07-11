@@ -52,7 +52,7 @@ export function useStackedDecksTableCore({
     error,
   } = useStackedDecksTableData({ searchTerm, verified });
 
-  const { page, setPage } = useUrlPagination("/$game/stacked-decks");
+  const { page, setPage } = useUrlPagination("/$game/$league/stacked-decks");
 
   const pagination: PaginationState = {
     pageIndex: page - 1,

@@ -24,7 +24,7 @@ export function useStackedDecksTableVariant({
   responsiveColumns,
 }: StackedDecksTableVariantOptions) {
   const { search: searchTerm = "", verified = false } = useSearch({
-    from: "/$game/stacked-decks",
+    from: "/$game/$league/stacked-decks",
   });
   const debouncedSearchTerm = useDebounce(searchTerm, 300);
 

@@ -1,14 +1,15 @@
-import { Link } from "@tanstack/react-router";
 import clsx from "clsx";
 import { FiMenu, FiX } from "react-icons/fi";
-import { useGameContext } from "../../app/game-context";
 import { navigationRoutes } from "../../config/navigation";
-import { gameToSlug } from "../../lib/gameSlug";
 import { useDropdown } from "../../lib/useDropdown";
 import { Button } from "../buttons";
+import { NavItemLink } from "../links";
+
+const LINK_CLASS_NAME =
+  "flex items-center px-4 py-3 rounded-lg text-base font-semibold text-(--wc-text-60) transition-all duration-150 hover:bg-(--wc-hover-glow) hover:text-(--wc-text) active:scale-[0.97] active:bg-(--wc-glow) focus:outline-none focus-visible:outline-none";
+const ACTIVE_PROPS = { className: "text-(--wc-gold)! bg-(--wc-glow)" };
 
 export function HeaderMobileNavigation() {
-  const { game } = useGameContext();
   const { open, containerRef, toggle, close } = useDropdown();
 
   return (
@@ -33,15 +34,12 @@ export function HeaderMobileNavigation() {
       >
         {navigationRoutes.map((item) => (
           <li key={item.path} className="list-none">
-            <Link
-              to={item.path}
-              params={item.gameScoped ? { game: gameToSlug(game) } : undefined}
+            <NavItemLink
+              item={item}
               onClick={close}
-              className="flex items-center px-4 py-3 rounded-lg text-base font-semibold text-(--wc-text-60) transition-all duration-150 hover:bg-(--wc-hover-glow) hover:text-(--wc-text) active:scale-[0.97] active:bg-(--wc-glow) focus:outline-none focus-visible:outline-none"
-              activeProps={{ className: "text-(--wc-gold)! bg-(--wc-glow)" }}
-            >
-              {item.label}
-            </Link>
+              className={LINK_CLASS_NAME}
+              activeProps={ACTIVE_PROPS}
+            />
           </li>
         ))}
       </ul>

@@ -1,3 +1,4 @@
+import type { GameLinkSuffix } from "../components/links";
 import type { FileRouteTypes } from "../routeTree.gen";
 
 // All static (non-dynamic) routes known to TanStack Router
@@ -6,15 +7,11 @@ type StaticRoutePath = Exclude<
   `${string}$${string}` | "." | ".."
 >;
 
-// /$game-prefixed routes with no further dynamic segments (e.g. excludes /$game/cards/$cardId)
-type GameScopedCandidate = Extract<FileRouteTypes["to"], `/$game/${string}`>;
-type GameScopedRoutePath = Exclude<
-  GameScopedCandidate,
-  `/$game/${string}$${string}`
->;
+// Game-link suffixes with no further dynamic segments (e.g. excludes /cards/$cardId)
+type StaticGameLinkSuffix = Exclude<GameLinkSuffix, `${string}$${string}`>;
 
-type NavigationItem =
-  | { label: string; path: GameScopedRoutePath; gameScoped: true }
+export type NavigationItem =
+  | { label: string; path: StaticGameLinkSuffix; gameScoped: true }
   | { label: string; path: StaticRoutePath; gameScoped?: false };
 
 type FooterNavigationItem = {
@@ -23,9 +20,9 @@ type FooterNavigationItem = {
 };
 
 export const navigationRoutes: NavigationItem[] = [
-  { label: "Cards", path: "/$game/cards", gameScoped: true },
-  { label: "Stacked Decks", path: "/$game/stacked-decks", gameScoped: true },
-  { label: "Soothsayer", path: "/$game/soothsayer", gameScoped: true },
+  { label: "Cards", path: "/cards", gameScoped: true },
+  { label: "Stacked Decks", path: "/stacked-decks", gameScoped: true },
+  { label: "Soothsayer", path: "/soothsayer", gameScoped: true },
   { label: "Downloads", path: "/downloads" },
 ] as const;
 
