@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { Heading } from "../../../../components/headings";
 
 export const Route = createFileRoute("/$game/$league/cards/$cardId")({
   component: CardDetailsPage,
@@ -9,7 +10,7 @@ function CardDetailsPage() {
 
   return (
     <div className="space-y-4">
-      <h1 className="text-3xl font-bold">Card Details</h1>
+      <Heading as="h1">Card Details</Heading>
       <p>Card ID: {cardId}</p>
     </div>
   );
