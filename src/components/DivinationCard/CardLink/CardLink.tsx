@@ -1,13 +1,11 @@
-import type { CSSProperties, MouseEvent, ReactNode } from "react";
-import { InternalLink } from "../../links";
+import { InternalLink, type InternalLinkProps } from "../../links";
 
-interface CardLinkProps {
+type CardLinkProps = Omit<
+  InternalLinkProps<"/cards/$cardId">,
+  "to" | "params"
+> & {
   cardId: string;
-  className?: string;
-  style?: CSSProperties;
-  onClick?: (event: MouseEvent) => void;
-  children?: ReactNode;
-}
+};
 
 export function CardLink({ cardId, children, ...props }: CardLinkProps) {
   return (

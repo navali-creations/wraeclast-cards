@@ -18,7 +18,7 @@ interface CardNamePreviewProps {
 }
 
 export function CardNamePreview({ name }: CardNamePreviewProps) {
-  const triggerRef = useRef<HTMLSpanElement>(null);
+  const triggerRef = useRef<HTMLAnchorElement>(null);
   // Invalidates stale async preview loads after hover changes or preview hides.
   const requestIdRef = useRef(0);
   const queryClient = useQueryClient();
@@ -118,19 +118,17 @@ export function CardNamePreview({ name }: CardNamePreviewProps) {
 
   return (
     <>
-      <span
+      <CardLink
+        cardId={name}
         ref={triggerRef}
         onPointerEnter={handlePointerEnter}
         onPointerLeave={handlePointerLeave}
-        className="inline-flex"
+        onFocus={handlePointerEnter}
+        onBlur={handlePointerLeave}
+        className="inline-flex text-inherit group-hover:underline"
       >
-        <CardLink
-          cardId={name}
-          className="inline-flex text-inherit group-hover:underline"
-        >
-          {name}
-        </CardLink>
-      </span>
+        {name}
+      </CardLink>
       {preview}
     </>
   );
