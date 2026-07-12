@@ -10,6 +10,12 @@
 }
 
 @media (prefers-reduced-motion: no-preference) {
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation: none;
+    mix-blend-mode: normal;
+  }
+
   ::view-transition-group(soothsayer-gallery-image) {
     animation-duration: 400ms;
     animation-timing-function: ease-out;
