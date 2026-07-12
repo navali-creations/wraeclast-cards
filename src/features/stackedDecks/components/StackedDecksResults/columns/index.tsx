@@ -1,3 +1,4 @@
+import { CardNamePreview } from "../CardNamePreview/CardNamePreview";
 import { ComparedToResearchCell } from "./cells";
 import { col, columnHelper, dualCol } from "./helper";
 
@@ -35,6 +36,7 @@ function rankColumn() {
 function nameColumn() {
   return col("name", "Card", {
     tdClassName: "font-fontin-sc text-(--wc-accent-border)",
+    cell: (ctx) => <CardNamePreview name={ctx.getValue()} />,
     sortDescFirst: false,
     filterFn: (row, _id, value: string) =>
       row.original.name.toLowerCase().includes(value.toLowerCase().trim()),

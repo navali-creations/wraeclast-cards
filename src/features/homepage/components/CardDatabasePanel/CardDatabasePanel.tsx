@@ -1,9 +1,13 @@
 import { preload } from "react-dom";
+import {
+  DIVINATION_CARD_HEIGHT,
+  DIVINATION_CARD_WIDTH,
+} from "../../../../components/DivinationCard/constants";
 import { Heading } from "../../../../components/headings";
 import { Text } from "../../../../components/text";
 import { useCardsQuery } from "../../../cards/hooks";
 import { useRandomCards } from "../../hooks/useRandomCards";
-import { CARD_H, CARD_W, SCALE, ScaledCard } from "./ScaledCard";
+import { SCALE, ScaledCard } from "./ScaledCard";
 
 const CARD_COUNT = 4;
 const SKELETON_KEYS = Array.from(
@@ -48,7 +52,10 @@ export function CardDatabasePanel() {
               <div
                 key={key}
                 className="animate-pulse rounded border border-(--wc-border) bg-base-200"
-                style={{ width: CARD_W * SCALE, height: CARD_H * SCALE }}
+                style={{
+                  width: DIVINATION_CARD_WIDTH * SCALE,
+                  height: DIVINATION_CARD_HEIGHT * SCALE,
+                }}
               />
             ))}
       </div>

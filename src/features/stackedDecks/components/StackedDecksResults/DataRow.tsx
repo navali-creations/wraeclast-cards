@@ -1,14 +1,58 @@
+import { useNavigate } from "@tanstack/react-router";
 import { flexRender, type Row } from "@tanstack/react-table";
 import { clsx } from "clsx";
+import type { MouseEvent } from "react";
+import { useGameContext } from "../../../../app/game-context";
+import { useLeagueContext } from "../../../../app/league-context";
+import { gameToSlug } from "../../../../lib/gameSlug";
+import { leagueToSlug } from "../../../../lib/leagueSlug";
 import type { StackedDecksRow } from "../../hooks";
 
 interface DataRowProps {
   row: Row<StackedDecksRow>;
 }
 
-export function DataRow({ row }: DataRowProps) {
+function shouldSkipRowNavigation(target: EventTarget | null) {
+  const element =
+    target instanceof Element
+      ? target
+      : target instanceof Node
+        ? target.parentElement
+        : null;
+
   return (
-    <tr className="border-t border-(--wc-border-dimmed) transition-colors odd:bg-(--wc-table-even) even:bg-(--wc-table-odd) hover:bg-(--wc-bg-dimmed)">
+    element !== null &&
+    Boolean(element.closest("a, button, input, select, textarea"))
+  );
+}
+
+export function DataRow({ row }: DataRowProps) {
+  const navigate = useNavigate();
+  const { game } = useGameContext();
+  const { selectedLeague } = useLeagueContext();
+
+  const handleOpenCard = () => {
+    navigate({
+      to: "/$game/$league/cards/$cardId",
+      params: {
+        game: gameToSlug(game),
+        league: leagueToSlug(selectedLeague),
+        cardId: row.original.name,
+      },
+    });
+  };
+
+  const handleRowClick = (event: MouseEvent<HTMLTableRowElement>) => {
+    if (event.defaultPrevented || shouldSkipRowNavigation(event.target)) return;
+
+    handleOpenCard();
+  };
+
+  return (
+    <tr
+      onClick={handleRowClick}
+      className="group cursor-pointer border-t border-(--wc-border-dimmed) transition-colors odd:bg-(--wc-table-even) even:bg-(--wc-table-odd) hover:bg-(--wc-bg-dimmed)"
+    >
       {row.getVisibleCells().map((cell) => {
         const meta = cell.column.columnDef.meta;
         const isSorted = cell.column.getIsSorted();

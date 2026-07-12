@@ -7,7 +7,7 @@ import { useCardMouseEffects } from "./hooks/useCardMouseEffects";
 import { renderRewardHtml } from "./utils/renderRewardHtml";
 
 export function DivinationCard({ card }: { card: Card }) {
-  const cardRef = useRef<HTMLLIElement>(null);
+  const cardRef = useRef<HTMLDivElement>(null);
   const { separatorUrl } = DIVINATION_CARDS_DATA;
   const rewardContent = useMemo(
     () => renderRewardHtml(card.rewardHtml),
@@ -17,9 +17,9 @@ export function DivinationCard({ card }: { card: Card }) {
     useCardMouseEffects(cardRef);
 
   return (
-    <li
+    <div
       ref={cardRef}
-      className="relative w-80 h-119 list-none"
+      className="relative w-80 h-119"
       style={{
         transform: `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`,
         transition: isHovered
@@ -92,6 +92,6 @@ export function DivinationCard({ card }: { card: Card }) {
         posX={mousePos.x}
         posY={mousePos.y}
       />
-    </li>
+    </div>
   );
 }
