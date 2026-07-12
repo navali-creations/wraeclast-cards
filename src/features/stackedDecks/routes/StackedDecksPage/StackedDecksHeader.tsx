@@ -19,7 +19,7 @@ interface StackedDecksHeaderProps {
 export function StackedDecksHeader({ summary }: StackedDecksHeaderProps) {
   return (
     <div className="border-b border-base-100 pt-5 pb-4">
-      <div className="mx-auto flex w-full max-w-300 flex-col gap-3 px-4 sm:flex-row sm:items-center sm:justify-between">
+      <div className="mx-auto flex w-full max-w-300 flex-col gap-3 px-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <div className="flex items-center gap-2.5">
             <Heading
