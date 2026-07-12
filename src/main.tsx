@@ -14,7 +14,19 @@ if (enableTelemetry && sentryDsn) {
     dsn: sentryDsn,
     dataCollection: {
       userInfo: false,
+      cookies: false,
+      httpHeaders: {
+        request: false,
+        response: false,
+      },
       httpBodies: [],
+      queryParams: {
+        deny: ["*"],
+      },
+      genAI: {
+        inputs: false,
+        outputs: false,
+      },
     },
   });
 }
