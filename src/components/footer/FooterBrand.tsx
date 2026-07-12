@@ -1,4 +1,4 @@
-import { InternalLink } from "../links";
+import { SiteLogo } from "../site-logo/SiteLogo";
 import { Text } from "../text";
 
 export function FooterBrand() {
