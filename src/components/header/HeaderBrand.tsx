@@ -1,12 +1,5 @@
-import { InternalLink } from "../links";
+import { SiteLogo } from "../site-logo/SiteLogo";
 
 export function HeaderBrand() {
-  return (
-    <InternalLink
-      to=""
-      className="font-cinzel text-lg font-bold tracking-widest uppercase text-(--wc-gold) px-2"
-    >
-      Wraeclast<span className="text-(--color-primary)">.</span>Cards
-    </InternalLink>
-  );
+  return <SiteLogo className="px-2 text-2xl" />;
 }

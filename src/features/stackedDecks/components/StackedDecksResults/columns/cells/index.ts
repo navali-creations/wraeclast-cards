@@ -1,1 +1,2 @@
-export { ComparedToResearchCell } from "./ComparedToResearchCell";
+export { ComparedToReferenceCell } from "./ComparedToReferenceCell";
+export { DeltaPercentCell } from "./DeltaPercentCell";

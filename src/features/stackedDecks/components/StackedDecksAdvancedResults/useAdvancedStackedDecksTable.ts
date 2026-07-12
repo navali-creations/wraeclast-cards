@@ -2,18 +2,18 @@ import { useStackedDecksTableVariant } from "../../hooks";
 import { createAdvancedColumns } from "../StackedDecksResults/columns";
 
 const ADVANCED_RESPONSIVE_COLUMNS = {
-  tabletHidden: ["research_weight"],
+  tabletHidden: ["reference_weight"],
   mobileHidden: [
-    "research_weight",
+    "reference_weight",
     "community_estimated_weight",
-    "expected_drops",
+    "community_estimated_weight_delta_vs_reference",
     "count",
   ],
 };
 
 export function useAdvancedStackedDecksTable() {
   return useStackedDecksTableVariant({
-    defaultSort: "drop_difference",
+    defaultSort: "community_estimated_weight_delta_vs_reference",
     sortByKey: "advancedSortBy",
     sortAscKey: "advancedSortAsc",
     createColumns: createAdvancedColumns,

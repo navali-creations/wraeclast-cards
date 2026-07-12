@@ -1,7 +1,9 @@
 export const ADVANCED_SECONDARY_COLUMNS = [
-  { id: "research_weight", label: "Research Weight" },
+  { id: "reference_weight", label: "Reference Weight" },
   { id: "community_estimated_weight", label: "Community Weight" },
-  { id: "expected_drops", label: "Expected Drops" },
-  { id: "drop_difference", label: "Difference" },
+  {
+    id: "community_estimated_weight_delta_vs_reference",
+    label: "Weight Difference",
+  },
   { id: "count", label: "Drops Reported" },
 ] as const;
