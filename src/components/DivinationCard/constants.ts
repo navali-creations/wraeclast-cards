@@ -1,0 +1,2 @@
+export const DIVINATION_CARD_WIDTH = 320;
+export const DIVINATION_CARD_HEIGHT = 476;

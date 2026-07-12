@@ -376,6 +376,7 @@ function enrichCardsWithReference(cards, referenceData) {
       if (cardsByName.has(cardName)) continue;
 
       const missingCard = {
+        card_id: cardName,
         name: cardName,
         count: 0,
         ratio: 0,
@@ -470,6 +471,9 @@ function splitCardsByLeague(payload) {
       if (!leagueIds.has(leagueId)) continue;
 
       byLeague.get(leagueId)?.cards.push({
+        // Keep this aligned with the website card route id. Today the card
+        // catalog uses the card name as its id.
+        card_id: card.name,
         name: card.name,
         count: stats.count,
         ratio: stats.ratio,

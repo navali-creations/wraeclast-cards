@@ -1,5 +1,10 @@
 import { Link } from "@tanstack/react-router";
-import type { CSSProperties, MouseEvent, ReactNode } from "react";
+import type {
+  AnchorHTMLAttributes,
+  CSSProperties,
+  ReactNode,
+  Ref,
+} from "react";
 import { useGameContext } from "../../app/game-context";
 import { useLeagueContext } from "../../app/league-context";
 import { gameToSlug } from "../../lib/gameSlug";
@@ -22,9 +27,14 @@ export type GameLinkSuffix =
 export interface InternalLinkProps<TSuffix extends GameLinkSuffix> {
   to: TSuffix;
   params?: Record<string, string>;
+  ref?: Ref<HTMLAnchorElement>;
   className?: string;
   style?: CSSProperties;
-  onClick?: (event: MouseEvent) => void;
+  onClick?: AnchorHTMLAttributes<HTMLAnchorElement>["onClick"];
+  onPointerEnter?: AnchorHTMLAttributes<HTMLAnchorElement>["onPointerEnter"];
+  onPointerLeave?: AnchorHTMLAttributes<HTMLAnchorElement>["onPointerLeave"];
+  onFocus?: AnchorHTMLAttributes<HTMLAnchorElement>["onFocus"];
+  onBlur?: AnchorHTMLAttributes<HTMLAnchorElement>["onBlur"];
   activeProps?: { className?: string };
   children?: ReactNode;
 }

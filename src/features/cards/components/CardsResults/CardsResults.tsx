@@ -1,4 +1,3 @@
-import { useQuery } from "@tanstack/react-query";
 import type { SortingState } from "@tanstack/react-table";
 import { useMemo } from "react";
 import { useCardsQuery } from "../../hooks";
@@ -31,11 +30,13 @@ export function CardsResults({ searchTerm, sorting }: CardsResultsProps) {
   const cards: Card[] = data ?? [];
 
   const normalizedSearch = searchTerm.trim().toLowerCase();
-  const { data: matchedCards = cards } = useQuery({
-    queryKey: ["cards", "search", normalizedSearch],
-    queryFn: () => searchCards(cards, normalizedSearch),
-    enabled: !!data,
-  });
+  const emptyMessage = normalizedSearch
+    ? "No cards match your search."
+    : "No card data available for this game yet.";
+  const matchedCards = useMemo(
+    () => searchCards(cards, normalizedSearch),
+    [cards, normalizedSearch],
+  );
 
   const filteredCards = useMemo(() => {
     const sortEntry = sorting[0];
@@ -57,7 +58,7 @@ export function CardsResults({ searchTerm, sorting }: CardsResultsProps) {
       <p className="text-sm font-medium text-[#6d5b44]">
         {filteredCards.length} cards
       </p>
-      <CardsGrid data={filteredCards} />
+      <CardsGrid data={filteredCards} emptyMessage={emptyMessage} />
     </div>
   );
 }

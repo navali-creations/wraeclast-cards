@@ -1,4 +1,5 @@
 import type { StackedDecksRow } from "../../../hooks";
+import { CardNamePreview } from "../CardNamePreview/CardNamePreview";
 import { ColumnHeader } from "./ColumnHeader";
 import { ComparedToReferenceCell, DeltaPercentCell } from "./cells";
 import { col, columnHelper, dualCol } from "./helper";
@@ -54,6 +55,12 @@ function rankColumn() {
 function nameColumn() {
   return col("name", "Card", {
     tdClassName: "font-fontin-sc text-(--wc-accent-border)",
+    cell: (ctx) => (
+      <CardNamePreview
+        cardId={ctx.row.original.card_id ?? ctx.row.original.name}
+        name={ctx.getValue()}
+      />
+    ),
     sortDescFirst: false,
     filterFn: (row, _id, value: string) =>
       row.original.name.toLowerCase().includes(value.toLowerCase().trim()),
