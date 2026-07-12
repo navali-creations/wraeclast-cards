@@ -2,8 +2,13 @@ import { useStackedDecksTableVariant } from "../../hooks";
 import { createColumns } from "./columns";
 
 const BASIC_RESPONSIVE_COLUMNS = {
-  tabletHidden: ["research_chance"],
-  mobileHidden: ["research_chance", "seen_vs_research", "count"],
+  tabletHidden: ["reference_estimated_chance", "chance_difference"],
+  mobileHidden: [
+    "reference_estimated_chance",
+    "chance_difference",
+    "seen_vs_reference",
+    "count",
+  ],
 };
 
 export function useStackedDecksTable() {

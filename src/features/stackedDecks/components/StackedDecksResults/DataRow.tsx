@@ -30,6 +30,7 @@ export function DataRow({ row }: DataRowProps) {
   const navigate = useNavigate();
   const { game } = useGameContext();
   const { selectedLeague } = useLeagueContext();
+  const cardId = row.original.card_id ?? row.original.name;
 
   const handleOpenCard = () => {
     navigate({
@@ -37,7 +38,7 @@ export function DataRow({ row }: DataRowProps) {
       params: {
         game: gameToSlug(game),
         league: leagueToSlug(selectedLeague),
-        cardId: row.original.name,
+        cardId,
       },
     });
   };

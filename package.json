@@ -19,6 +19,7 @@
   "dependencies": {
     "@navali/fated-connections": "^0.2.5",
     "@navali/poe1-divination-cards": "^3.28.2",
+    "@sentry/react": "^10.65.0",
     "@tanstack/react-query": "^5.101.0",
     "@tanstack/react-router": "^1.170.15",
     "@tanstack/react-table": "^8.21.3",

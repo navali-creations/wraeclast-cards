@@ -4,7 +4,7 @@ import {
   getCardsDataUrl,
   getDivinationCardsDataSource,
 } from "../hooks/divinationCardsData";
-import type { Card } from "../types";
+import type { Card, CardRarity } from "../types";
 
 type RawCard = {
   name: string;
@@ -36,6 +36,14 @@ function parseRawCards(value: unknown): RawCard[] {
   }
 
   return value;
+}
+
+function weightToDropRarity(weight: number | undefined): CardRarity {
+  if (typeof weight !== "number" || weight <= 0) return 0;
+  if (weight > 5000) return 4;
+  if (weight > 1000) return 3;
+  if (weight > 30) return 2;
+  return 1;
 }
 
 function stripHtml(html: string): string {
@@ -85,6 +93,10 @@ function toCard(raw: RawCard, source: DivinationCardsDataSource): Card {
       : raw.description,
     stackSize: raw.stack_size,
     dropLocations: [],
+    rarity: weightToDropRarity(raw.weight),
+    weight: raw.weight,
+    fromBoss: raw.from_boss ?? false,
+    isDisabled: raw.is_disabled ?? false,
   };
 }
 

@@ -14,10 +14,11 @@ import {
 } from "./CardNamePreview.utils";
 
 interface CardNamePreviewProps {
+  cardId: string;
   name: string;
 }
 
-export function CardNamePreview({ name }: CardNamePreviewProps) {
+export function CardNamePreview({ cardId, name }: CardNamePreviewProps) {
   const triggerRef = useRef<HTMLAnchorElement>(null);
   // Invalidates stale async preview loads after hover changes or preview hides.
   const requestIdRef = useRef(0);
@@ -119,7 +120,7 @@ export function CardNamePreview({ name }: CardNamePreviewProps) {
   return (
     <>
       <CardLink
-        cardId={name}
+        cardId={cardId}
         ref={triggerRef}
         onPointerEnter={handlePointerEnter}
         onPointerLeave={handlePointerLeave}
