@@ -3,7 +3,7 @@ import { Text } from "../text";
 export function FooterBottomBar() {
   return (
     <div className="mt-6 sm:mt-8 pt-4 border-t border-(--wc-border) flex flex-col sm:flex-row sm:items-start justify-between gap-3 text-xs text-(--wc-text-50)">
-      <Text size="xs" muted className="max-w-lg">
+      <Text size="xs" muted className="min-w-0 max-w-none">
         <Text as="span" weight="semibold">
           Disclaimer:
         </Text>{" "}
