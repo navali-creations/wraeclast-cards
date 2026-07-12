@@ -1,20 +1,21 @@
 import { DivinationCard } from "../../../../components/DivinationCard";
-import { InternalLink } from "../../../../components/links";
+import { CardLink } from "../../../../components/DivinationCard/CardLink/CardLink";
+import {
+  DIVINATION_CARD_HEIGHT,
+  DIVINATION_CARD_WIDTH,
+} from "../../../../components/DivinationCard/constants";
 import type { Card } from "../../../cards/types";
 
-export const CARD_W = 320;
-export const CARD_H = 476;
 export const SCALE = 0.55;
 
 export function ScaledCard({ card }: { card: Card }) {
   return (
-    <InternalLink
-      to="/cards/$cardId"
-      params={{ cardId: card.id }}
+    <CardLink
+      cardId={card.id}
       className="block"
       style={{
-        width: CARD_W * SCALE,
-        height: CARD_H * SCALE,
+        width: DIVINATION_CARD_WIDTH * SCALE,
+        height: DIVINATION_CARD_HEIGHT * SCALE,
         overflow: "hidden",
       }}
     >
@@ -22,12 +23,12 @@ export function ScaledCard({ card }: { card: Card }) {
         style={{
           transform: `scale(${SCALE})`,
           transformOrigin: "top left",
-          width: CARD_W,
-          height: CARD_H,
+          width: DIVINATION_CARD_WIDTH,
+          height: DIVINATION_CARD_HEIGHT,
         }}
       >
         <DivinationCard card={card} />
       </div>
-    </InternalLink>
+    </CardLink>
   );
 }

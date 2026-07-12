@@ -1,17 +1,36 @@
-const DIVINATION_CARDS_DATA_CDN =
-  "https://cdn.jsdelivr.net/npm/@navali/poe1-divination-cards@3.28.2/data";
+import { EGame } from "../../../enums";
 
-const DIVINATION_CARDS_IMAGES_BASE_URL = `${DIVINATION_CARDS_DATA_CDN}/images`;
-
-const DIVINATION_CARDS_DATA = {
-  dataCdn: DIVINATION_CARDS_DATA_CDN,
-  imagesBaseUrl: DIVINATION_CARDS_IMAGES_BASE_URL,
-  frameUrl: `${DIVINATION_CARDS_DATA_CDN}/Divination_card_frame.png`,
-  separatorUrl: `${DIVINATION_CARDS_DATA_CDN}/Divination_card_separator.png`,
-} as const;
-
-export {
-  DIVINATION_CARDS_DATA,
-  DIVINATION_CARDS_DATA_CDN,
-  DIVINATION_CARDS_IMAGES_BASE_URL,
+const DIVINATION_CARDS_DATA_CDNS: Partial<Record<EGame, string>> = {
+  [EGame.Poe1]:
+    "https://cdn.jsdelivr.net/npm/@navali/poe1-divination-cards@3.28.2/data",
 };
+
+export type DivinationCardsDataSource = {
+  dataCdn: string;
+  imagesBaseUrl: string;
+  frameUrl: string;
+  separatorUrl: string;
+};
+
+export function getDivinationCardsDataSource(
+  game: EGame,
+): DivinationCardsDataSource | null {
+  const dataCdn = DIVINATION_CARDS_DATA_CDNS[game];
+  if (!dataCdn) return null;
+
+  return {
+    dataCdn,
+    imagesBaseUrl: `${dataCdn}/images`,
+    frameUrl: `${dataCdn}/Divination_card_frame.png`,
+    separatorUrl: `${dataCdn}/Divination_card_separator.png`,
+  };
+}
+
+export function getCardsDataUrl(
+  source: DivinationCardsDataSource,
+  leagueName: string | undefined,
+) {
+  if (!leagueName) return `${source.dataCdn}/cards.json`;
+
+  return `${source.dataCdn}/cards-${encodeURIComponent(leagueName)}.json`;
+}

@@ -1,5 +1,6 @@
 import { preload } from "react-dom";
 import { DivinationCard } from "../../../../components/DivinationCard";
+import { CardLink } from "../../../../components/DivinationCard/CardLink/CardLink";
 import { Pagination } from "../../../../components/pagination";
 import { useUrlPagination } from "../../../../lib/useUrlPagination";
 import { useCardsQuery } from "../../hooks";
@@ -12,9 +13,10 @@ export const PAGE_SIZE = 24;
 
 interface CardsGridProps {
   data: Card[];
+  emptyMessage?: string;
 }
 
-export function CardsGrid({ data }: CardsGridProps) {
+export function CardsGrid({ data, emptyMessage }: CardsGridProps) {
   const { isLoading, error } = useCardsQuery();
   const { page, setPage } = useUrlPagination("/cards/");
 
@@ -33,7 +35,11 @@ export function CardsGrid({ data }: CardsGridProps) {
   if (isLoading) return <CardsGridSkeleton />;
 
   if (!data.length)
-    return <EmptyMessage>No cards match your search.</EmptyMessage>;
+    return (
+      <EmptyMessage>
+        {emptyMessage ?? "No cards match your search."}
+      </EmptyMessage>
+    );
 
   const pageData = data.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE);
 
@@ -42,7 +48,11 @@ export function CardsGrid({ data }: CardsGridProps) {
       <ScrollToTop />
       <ul className="grid grid-cols-1 gap-x-40 gap-y-4 justify-items-center sm:grid-cols-2 md:grid-cols-2 md:gap-x-0 lg:grid-cols-3 lg:gap-x-4 xl:grid-cols-4 xl:gap-x-40">
         {pageData.map((card) => (
-          <DivinationCard key={card.id} card={card} />
+          <li key={card.id} className="list-none">
+            <CardLink cardId={card.id} className="block">
+              <DivinationCard card={card} />
+            </CardLink>
+          </li>
         ))}
       </ul>
       <Pagination page={safePage} totalPages={totalPages} onChange={setPage} />

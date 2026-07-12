@@ -7,8 +7,8 @@ export function Methodology() {
         <Text as="span" weight="semibold">
           Methodology:
         </Text>{" "}
-        Drop rates are observed from real stacked deck openings captured by
-        Soothsayer. Weight data sourced from the{" "}
+        Observed rates come from Soothsayer uploads. Community estimates use
+        Rain of Chaos as their anchor. The{" "}
         <a
           href="https://docs.google.com/spreadsheets/d/1PmGES_e1on6K7O5ghHuoorEjruAVb7dQ5m7PGrW7t80/edit?gid=272334906#gid=272334906"
           target="_blank"
@@ -17,11 +17,11 @@ export function Methodology() {
         >
           Prohibited Library
         </a>{" "}
-        spreadsheet by{" "}
+        weights by{" "}
         <Text as="span" weight="semibold" className="text-(--color-primary)">
           @nerdyjoe
-        </Text>
-        . Rates may vary across leagues.
+        </Text>{" "}
+        are a reference, not known probabilities. Rates may vary by league.
       </Text>
     </section>
   );

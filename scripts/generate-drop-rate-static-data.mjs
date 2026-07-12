@@ -4,11 +4,9 @@ import path from "node:path";
 const DEFAULT_GAMES = ["poe1", "poe2"];
 const DEFAULT_OUTPUT_DIR = "dist/data/drop-rates";
 const DEFAULT_PUBLIC_BASE_URL = "https://wraeclast.cards/data/drop-rates";
-const DEFAULT_RESEARCH_DATA_BASE_URL =
+const DEFAULT_REFERENCE_DATA_BASE_URL =
   "https://raw.githubusercontent.com/navali-creations/fateweaver/main/packages/poe1-divination-cards/data";
-const SCHEMA_VERSION = 2;
-const COMMUNITY_WEIGHT_ANCHOR_CARD = "Rain of Chaos";
-const COMMUNITY_WEIGHT_ANCHOR_WEIGHT = 121400;
+const SCHEMA_VERSION = 4;
 const CACHE_SECONDS = 7 * 24 * 60 * 60;
 const BROWSER_CACHE_SECONDS = 60 * 60;
 const LEAGUE_STAT_FIELDS = [
@@ -242,34 +240,47 @@ function roundRatio(value) {
   return Number(value.toFixed(12));
 }
 
-function roundCount(value) {
+function floorCount(value) {
   if (!Number.isFinite(value)) return null;
-  return Number(value.toFixed(3));
+  return Math.floor(value);
 }
 
-function communityWeightScale(anchorCount) {
-  if (!Number.isFinite(anchorCount) || anchorCount <= 0) return null;
-  return anchorCount ** 1.5 / COMMUNITY_WEIGHT_ANCHOR_WEIGHT;
+function ratioDelta(current, baseline) {
+  if (
+    !Number.isFinite(current) ||
+    !Number.isFinite(baseline) ||
+    baseline <= 0
+  ) {
+    return null;
+  }
+
+  return roundRatio((current - baseline) / baseline);
 }
 
-function estimateCommunityWeight(count, scale) {
-  if (!Number.isFinite(count) || count <= 0 || !scale) return null;
-  return roundCount(count ** 1.5 / scale);
+function chanceWeight(value) {
+  if (!Number.isFinite(value) || value <= 0) return null;
+  return value ** (2 / 3);
 }
 
-function researchFileUrl(baseUrl, leagueName) {
+function chanceFromWeight(value, totalChanceWeight) {
+  const weighted = chanceWeight(value);
+  if (weighted === null || totalChanceWeight <= 0) return null;
+  return weighted / totalChanceWeight;
+}
+
+function referenceFileUrl(baseUrl, leagueName) {
   const normalizedBaseUrl = normalizeBaseUrl(baseUrl);
   return `${normalizedBaseUrl}/cards-${encodeURIComponent(leagueName)}.json`;
 }
 
-function latestResearchFileUrl(baseUrl) {
+function latestReferenceFileUrl(baseUrl) {
   const normalizedBaseUrl = normalizeBaseUrl(baseUrl);
   return `${normalizedBaseUrl}/cards.json`;
 }
 
-function validateResearchCards(cards, leagueName) {
+function validateReferenceCards(cards, leagueName) {
   if (!Array.isArray(cards)) {
-    throw new Error(`Invalid research card payload for ${leagueName}`);
+    throw new Error(`Invalid reference card payload for ${leagueName}`);
   }
 
   for (const [index, card] of cards.entries()) {
@@ -283,57 +294,61 @@ function validateResearchCards(cards, leagueName) {
       typeof card.from_boss !== "boolean"
     ) {
       throw new Error(
-        `Invalid research card row for ${leagueName} at index ${index}`,
+        `Invalid reference card row for ${leagueName} at index ${index}`,
       );
     }
   }
 }
 
-function isResearchCardDisabled(card) {
+function isReferenceCardDisabled(card) {
   return card.is_disabled === true;
 }
 
-function isResearchCardFromBoss(card) {
+function isReferenceCardFromBoss(card) {
   return card.from_boss === true;
 }
 
-async function fetchResearchData({ game, leagueName, researchDataBaseUrl }) {
+async function fetchReferenceData({ game, leagueName, referenceDataBaseUrl }) {
   if (game !== "poe1") return null;
 
-  const sourceUrl = researchFileUrl(researchDataBaseUrl, leagueName);
+  const sourceUrl = referenceFileUrl(referenceDataBaseUrl, leagueName);
   let resolvedSourceUrl = sourceUrl;
   let cards = await fetchOptionalRawJson(sourceUrl);
 
   if (!cards) {
-    const fallbackUrl = latestResearchFileUrl(researchDataBaseUrl);
+    const fallbackUrl = latestReferenceFileUrl(referenceDataBaseUrl);
     cards = await fetchOptionalRawJson(fallbackUrl);
 
     if (!cards) {
       console.warn(
-        `[drop-rates] No research weights found for ${game}/${leagueName}`,
+        `[drop-rates] No reference weights found for ${game}/${leagueName}`,
       );
       return null;
     }
 
     resolvedSourceUrl = fallbackUrl;
     console.warn(
-      `[drop-rates] No league-specific research weights found for ${game}/${leagueName}; using latest weights from ${fallbackUrl}`,
+      `[drop-rates] No league-specific reference weights found for ${game}/${leagueName}; using latest weights from ${fallbackUrl}`,
     );
   }
 
-  validateResearchCards(cards, leagueName);
+  validateReferenceCards(cards, leagueName);
 
   const eligibleCards = cards.filter(
     (card) =>
-      !isResearchCardDisabled(card) &&
-      !isResearchCardFromBoss(card) &&
+      !isReferenceCardDisabled(card) &&
+      !isReferenceCardFromBoss(card) &&
       card.weight > 0,
   );
   const totalWeight = eligibleCards.reduce((sum, card) => sum + card.weight, 0);
+  const totalChanceWeight = eligibleCards.reduce(
+    (sum, card) => sum + (chanceWeight(card.weight) ?? 0),
+    0,
+  );
 
-  if (totalWeight <= 0) {
+  if (totalWeight <= 0 || totalChanceWeight <= 0) {
     console.warn(
-      `[drop-rates] Research weights for ${game}/${leagueName} have no eligible cards`,
+      `[drop-rates] Reference weights for ${game}/${leagueName} have no eligible cards`,
     );
     return null;
   }
@@ -345,6 +360,7 @@ async function fetchResearchData({ game, leagueName, researchDataBaseUrl }) {
     source: "fateweaver",
     source_url: resolvedSourceUrl,
     total_weight: totalWeight,
+    total_chance_weight: totalChanceWeight,
     eligible_card_count: eligibleCards.length,
     card_count: cards.length,
     cardByName,
@@ -352,141 +368,89 @@ async function fetchResearchData({ game, leagueName, researchDataBaseUrl }) {
   };
 }
 
-function publicResearchMetadata(researchData) {
-  if (!researchData) return null;
-
-  return {
-    source: researchData.source,
-    source_url: researchData.source_url,
-    total_weight: researchData.total_weight,
-    eligible_card_count: researchData.eligible_card_count,
-    card_count: researchData.card_count,
-  };
-}
-
-function enrichCardsWithResearch(cards, researchData) {
-  if (!researchData) return { cards, metadata: null };
-
+function enrichCardsWithReference(cards, referenceData) {
   const cardsByName = new Map(cards.map((card) => [card.name, card]));
 
-  for (const cardName of researchData.eligibleCardNames) {
-    if (cardsByName.has(cardName)) continue;
+  if (referenceData) {
+    for (const cardName of referenceData.eligibleCardNames) {
+      if (cardsByName.has(cardName)) continue;
 
-    const missingCard = {
-      name: cardName,
-      count: 0,
-      ratio: 0,
-      contributors: 0,
-      verified_count: 0,
-      verified_contributors: 0,
-    };
-    cardsByName.set(cardName, missingCard);
-    cards.push(missingCard);
+      const missingCard = {
+        card_id: cardName,
+        name: cardName,
+        count: 0,
+        ratio: 0,
+        verified_count: 0,
+        verified_ratio: 0,
+        community_estimated_weight: null,
+        verified_community_estimated_weight: null,
+      };
+      cardsByName.set(cardName, missingCard);
+      cards.push(missingCard);
+    }
   }
 
-  const observedTotal = cards.reduce((sum, card) => {
-    if (!researchData.eligibleCardNames.has(card.name)) return sum;
-    return sum + card.count;
-  }, 0);
   const verifiedObservedTotal = cards.reduce((sum, card) => {
-    if (!researchData.eligibleCardNames.has(card.name)) return sum;
+    if (!referenceData?.eligibleCardNames.has(card.name)) return sum;
     return sum + card.verified_count;
   }, 0);
-  const anchorCard = cardsByName.get(COMMUNITY_WEIGHT_ANCHOR_CARD);
-  const observedAnchorCount = anchorCard?.count ?? 0;
-  const verifiedObservedAnchorCount = anchorCard?.verified_count ?? 0;
-  const observedWeightScale = communityWeightScale(observedAnchorCount);
-  const verifiedObservedWeightScale = communityWeightScale(
-    verifiedObservedAnchorCount,
-  );
 
   return {
     cards: cards
       .map((card) => {
-        const researchCard = researchData.cardByName.get(card.name);
-        const researchEligible =
-          researchCard !== undefined &&
-          researchData.eligibleCardNames.has(card.name);
-        const researchChance = researchEligible
-          ? researchCard.weight / researchData.total_weight
+        const referenceCard = referenceData?.cardByName.get(card.name);
+        const referenceEligible =
+          referenceData !== null &&
+          referenceData !== undefined &&
+          referenceCard !== undefined &&
+          referenceData?.eligibleCardNames.has(card.name);
+        const referenceEstimatedChance = referenceEligible
+          ? chanceFromWeight(
+              referenceCard.weight,
+              referenceData.total_chance_weight,
+            )
           : null;
-        const playersSaw =
-          researchEligible && observedTotal > 0
-            ? card.count / observedTotal
-            : null;
+        const playersSaw = card.ratio ?? null;
         const verifiedPlayersSaw =
-          researchEligible && verifiedObservedTotal > 0
-            ? card.verified_count / verifiedObservedTotal
-            : null;
-        const expectedDrops =
-          researchChance !== null ? researchChance * observedTotal : null;
-        const verifiedExpectedDrops =
-          researchChance !== null && verifiedObservedTotal > 0
-            ? researchChance * verifiedObservedTotal
-            : null;
-        const communityEstimatedWeight = estimateCommunityWeight(
-          card.count,
-          observedWeightScale,
+          verifiedObservedTotal > 0 ? (card.verified_ratio ?? null) : null;
+        const communityEstimatedWeight = floorCount(
+          card.community_estimated_weight,
         );
-        const verifiedCommunityEstimatedWeight = estimateCommunityWeight(
-          card.verified_count,
-          verifiedObservedWeightScale,
+        const verifiedCommunityEstimatedWeight = floorCount(
+          card.verified_community_estimated_weight,
         );
 
         return {
-          ...card,
-          research_weight: researchCard?.weight ?? null,
-          research_eligible: researchEligible,
-          research_chance: roundRatio(researchChance),
+          name: card.name,
+          count: card.count,
+          ratio: card.ratio,
+          verified_count: card.verified_count,
+          verified_ratio: card.verified_ratio,
+          reference_weight: referenceCard?.weight ?? null,
           players_saw: roundRatio(playersSaw),
-          seen_vs_research:
-            researchChance && playersSaw !== null
-              ? roundRatio(playersSaw / researchChance)
-              : null,
-          expected_drops: roundCount(expectedDrops),
-          drop_difference:
-            expectedDrops !== null
-              ? roundCount(card.count - expectedDrops)
+          reference_estimated_chance: roundRatio(referenceEstimatedChance),
+          seen_vs_reference:
+            referenceEstimatedChance && playersSaw !== null
+              ? roundRatio(playersSaw / referenceEstimatedChance)
               : null,
           verified_players_saw: roundRatio(verifiedPlayersSaw),
-          verified_seen_vs_research:
-            researchChance && verifiedPlayersSaw !== null
-              ? roundRatio(verifiedPlayersSaw / researchChance)
-              : null,
-          verified_expected_drops: roundCount(verifiedExpectedDrops),
-          verified_drop_difference:
-            verifiedExpectedDrops !== null
-              ? roundCount(card.verified_count - verifiedExpectedDrops)
+          verified_seen_vs_reference:
+            referenceEstimatedChance && verifiedPlayersSaw !== null
+              ? roundRatio(verifiedPlayersSaw / referenceEstimatedChance)
               : null,
           community_estimated_weight: communityEstimatedWeight,
-          community_estimated_weight_vs_research:
-            researchCard?.weight > 0 && communityEstimatedWeight !== null
-              ? roundRatio(communityEstimatedWeight / researchCard.weight)
-              : null,
+          community_estimated_weight_delta_vs_reference: ratioDelta(
+            communityEstimatedWeight,
+            referenceCard?.weight,
+          ),
           verified_community_estimated_weight: verifiedCommunityEstimatedWeight,
-          verified_community_estimated_weight_vs_research:
-            researchCard?.weight > 0 &&
-            verifiedCommunityEstimatedWeight !== null
-              ? roundRatio(
-                  verifiedCommunityEstimatedWeight / researchCard.weight,
-                )
-              : null,
+          verified_community_estimated_weight_delta_vs_reference: ratioDelta(
+            verifiedCommunityEstimatedWeight,
+            referenceCard?.weight,
+          ),
         };
       })
       .sort((a, b) => a.name.localeCompare(b.name)),
-    metadata: {
-      ...publicResearchMetadata(researchData),
-      observed_total: observedTotal,
-      verified_observed_total: verifiedObservedTotal,
-      community_weight_anchor: {
-        card: COMMUNITY_WEIGHT_ANCHOR_CARD,
-        weight: COMMUNITY_WEIGHT_ANCHOR_WEIGHT,
-        observed_count: observedAnchorCount,
-        verified_observed_count: verifiedObservedAnchorCount,
-        observed_scale: roundRatio(observedWeightScale),
-        verified_observed_scale: roundRatio(verifiedObservedWeightScale),
-      },
-    },
   };
 }
 
@@ -507,13 +471,17 @@ function splitCardsByLeague(payload) {
       if (!leagueIds.has(leagueId)) continue;
 
       byLeague.get(leagueId)?.cards.push({
+        // Keep this aligned with the website card route id. Today the card
+        // catalog uses the card name as its id.
+        card_id: card.name,
         name: card.name,
         count: stats.count,
         ratio: stats.ratio,
-        contributors: stats.contributors,
         verified_count: stats.verified_count,
         verified_ratio: stats.verified_ratio,
-        verified_contributors: stats.verified_contributors,
+        community_estimated_weight: stats.community_estimated_weight ?? null,
+        verified_community_estimated_weight:
+          stats.verified_community_estimated_weight ?? null,
       });
     }
   }
@@ -544,14 +512,12 @@ async function writeLeagueFile({
   league,
   cards,
   historical,
-  research,
 }) {
   const body = {
     schema_version: SCHEMA_VERSION,
     generated_at: generatedAt,
     game,
     league: publicLeagueMetadata(league, historical),
-    research,
     cards,
   };
 
@@ -669,9 +635,9 @@ async function main() {
       process.env.VITE_DROP_RATES_BASE_URL ??
       DEFAULT_PUBLIC_BASE_URL,
   );
-  const researchDataBaseUrl = normalizeBaseUrl(
-    process.env.DROP_RATES_RESEARCH_DATA_BASE_URL ??
-      DEFAULT_RESEARCH_DATA_BASE_URL,
+  const referenceDataBaseUrl = normalizeBaseUrl(
+    process.env.DROP_RATES_REFERENCE_DATA_BASE_URL ??
+      DEFAULT_REFERENCE_DATA_BASE_URL,
   );
   const games = (process.env.DROP_RATES_GAMES ?? DEFAULT_GAMES.join(","))
     .split(",")
@@ -689,9 +655,18 @@ async function main() {
   const previousManifest = forceBackfill
     ? null
     : await fetchOptionalJson(`${publicBaseUrl}/index.json`);
-  const shouldBackfill = hasBackfillOverride
-    ? forceBackfill
-    : !previousManifest;
+  const requiresSchemaBackfill =
+    previousManifest !== null &&
+    previousManifest?.schema_version !== SCHEMA_VERSION;
+  const shouldBackfill =
+    requiresSchemaBackfill ||
+    (hasBackfillOverride ? forceBackfill : !previousManifest);
+
+  if (requiresSchemaBackfill) {
+    console.log(
+      `[drop-rates] Static schema changed from ${previousManifest.schema_version ?? "unknown"} to ${SCHEMA_VERSION}; rebuilding historical data`,
+    );
+  }
 
   if (!previousManifest && !shouldBackfill) {
     console.warn(
@@ -717,12 +692,12 @@ async function main() {
     for (const { league, cards } of activeByLeague.values()) {
       if (cards.length === 0) continue;
 
-      const researchData = await fetchResearchData({
+      const referenceData = await fetchReferenceData({
         game,
         leagueName: league.name,
-        researchDataBaseUrl,
+        referenceDataBaseUrl,
       });
-      const enriched = enrichCardsWithResearch(cards, researchData);
+      const enriched = enrichCardsWithReference(cards, referenceData);
 
       leagueEntries.push(
         await writeLeagueFile({
@@ -732,7 +707,6 @@ async function main() {
           league,
           cards: enriched.cards,
           historical: false,
-          research: enriched.metadata,
         }),
       );
       generatedLeagueIds.add(league.id);
@@ -754,12 +728,12 @@ async function main() {
       for (const { league, cards } of allByLeague.values()) {
         if (generatedLeagueIds.has(league.id) || cards.length === 0) continue;
 
-        const researchData = await fetchResearchData({
+        const referenceData = await fetchReferenceData({
           game,
           leagueName: league.name,
-          researchDataBaseUrl,
+          referenceDataBaseUrl,
         });
-        const enriched = enrichCardsWithResearch(cards, researchData);
+        const enriched = enrichCardsWithReference(cards, referenceData);
 
         leagueEntries.push(
           await writeLeagueFile({
@@ -769,7 +743,6 @@ async function main() {
             league,
             cards: enriched.cards,
             historical: true,
-            research: enriched.metadata,
           }),
         );
         generatedLeagueIds.add(league.id);

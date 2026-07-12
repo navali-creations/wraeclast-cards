@@ -1,8 +1,4 @@
-import { DIVINATION_CARDS_DATA } from "../../../features/cards/hooks";
-
-export function CardFrame() {
-  const { frameUrl } = DIVINATION_CARDS_DATA;
-
+export function CardFrame({ frameUrl }: { frameUrl: string }) {
   return (
     <img
       src={frameUrl}

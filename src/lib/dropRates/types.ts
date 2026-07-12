@@ -15,36 +15,39 @@ export interface DropRateLeague {
 // Shape of `<game>/index.json`: the list of leagues with drop-rate data
 // available for a game, fetched by useGameDropRates.
 export interface GameDropRates {
-  url: string;
-  league_count: number;
+  schema_version: number;
+  generated_at: string;
+  game: Game;
   leagues: DropRateLeague[];
 }
 
 export interface DropRateCard {
+  // Website card route id. Older generated files may not have this yet.
+  card_id?: string;
   name: string;
   // Drops reported for this card across all sources.
   count: number;
+  // Share of all reported drops for this card.
+  ratio: number;
   // Drops reported for this card from verified sources only.
   verified_count: number;
-  // Modeled drop chance ("Research Chance").
-  research_chance: number | null;
+  // Share of verified reported drops for this card.
+  verified_ratio: number;
+  // Chance estimated from the external Fateweaver/Prohibited Library reference.
+  reference_estimated_chance: number | null;
   // Share of players who reported seeing this card ("Players Saw").
   players_saw: number | null;
   verified_players_saw: number | null;
-  // players_saw vs. research_chance ("Compared to Research").
-  seen_vs_research: number | null;
-  verified_seen_vs_research: number | null;
-  // Modeled drop weight ("Research Weight").
-  research_weight: number;
+  // players_saw vs. reference_estimated_chance.
+  seen_vs_reference: number | null;
+  verified_seen_vs_reference: number | null;
+  // External modeled drop weight used as the reference.
+  reference_weight: number | null;
   // Weight estimated from community data ("Community Weight").
-  community_estimated_weight: number;
+  community_estimated_weight: number | null;
   verified_community_estimated_weight: number | null;
-  // Drops expected given the estimated weight ("Expected Drops").
-  expected_drops: number | null;
-  verified_expected_drops: number | null;
-  // expected_drops vs. actual drops reported ("Difference").
-  drop_difference: number | null;
-  verified_drop_difference: number | null;
+  community_estimated_weight_delta_vs_reference: number | null;
+  verified_community_estimated_weight_delta_vs_reference: number | null;
 }
 
 // Shape of `<game>/<leagueId>.json`: the full per-card drop-rate data for

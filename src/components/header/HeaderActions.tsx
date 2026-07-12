@@ -44,7 +44,7 @@ export function HeaderActions() {
   }
 
   return (
-    <div className="navbar-end gap-3 max-xs:flex-none max-xs:w-full max-xs:justify-between max-xs:px-6 max-xs:pb-4">
+    <div className="navbar-end justify-self-end gap-3 max-xs:flex-none max-xs:w-full max-xs:justify-between max-xs:px-6 max-xs:pb-4">
       <div ref={containerRef} className="relative shrink-0">
         <Button
           onClick={toggle}
