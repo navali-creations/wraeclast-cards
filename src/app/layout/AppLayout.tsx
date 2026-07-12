@@ -4,6 +4,8 @@ import { Footer } from "../../components/footer/Footer";
 import { Header } from "../../components/header/Header";
 
 const FULL_WIDTH_ROUTE_IDS = new Set([
+  "/$game/$league/cards",
+  "/$game/$league/cards/",
   "/$game/$league/soothsayer",
   "/$game/$league/soothsayer/",
   "/$game/$league/stacked-decks",

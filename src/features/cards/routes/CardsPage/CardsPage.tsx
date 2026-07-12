@@ -1,5 +1,7 @@
 import type { SortingState } from "@tanstack/react-table";
 import { useMemo } from "react";
+import { useLeagueContext } from "../../../../app/league-context";
+import { PageHeader } from "../../../../components/page-header/PageHeader/PageHeader";
 import { getNameSuggestions } from "../../../../lib/nameSuggestions";
 import { createSearchUpdater } from "../../../../lib/searchNavigation";
 import { useDebounce } from "../../../../lib/useDebounce";
@@ -7,31 +9,42 @@ import {
   type CardsSearchParams,
   Route,
 } from "../../../../routes/$game/$league/cards";
-import { CardsFilters, CardsResults } from "../../components";
+import { CardsResults } from "../../components";
 import { useCardsQuery } from "../../hooks";
-import { SortChips } from "./SortChips";
-
-const SORT_LABEL = "Name";
-const SORT_FIELD = "name";
+import {
+  CARD_NAME_SORT,
+  CARD_SORT_LABELS,
+  searchCards,
+  sortCards,
+} from "./CardsPage.utils";
+import { CardsPageActions } from "./CardsPageActions/CardsPageActions";
+import { CardsPageSubtitle } from "./CardsPageSubtitle/CardsPageSubtitle";
 
 export function CardsPage() {
-  const { name, sortBy = "name", sortDesc } = Route.useSearch();
+  const { name, sortBy = CARD_NAME_SORT.field, sortDesc } = Route.useSearch();
   const navigate = Route.useNavigate();
   const updateSearch = createSearchUpdater<CardsSearchParams>(navigate);
+  const { selectedLeague } = useLeagueContext();
 
   const searchTerm = name ?? "";
   const debouncedSearchTerm = useDebounce(searchTerm, 300);
   const activeDesc = sortDesc ?? false;
 
-  const { data: cards } = useCardsQuery();
-  const cardNames = useMemo(
-    () => (cards ?? []).map((card) => card.name),
-    [cards],
-  );
+  const { data: cardsData } = useCardsQuery();
+  const cards = cardsData ?? [];
+  const cardNames = useMemo(() => cards.map((card) => card.name), [cards]);
   const suggestions = useMemo(
     () => getNameSuggestions(cardNames, debouncedSearchTerm),
     [cardNames, debouncedSearchTerm],
   );
+  const sorting = useMemo(
+    () => [{ id: sortBy, desc: activeDesc }],
+    [sortBy, activeDesc],
+  );
+  const filteredCards = useMemo(() => {
+    const normalizedSearch = debouncedSearchTerm.trim().toLowerCase();
+    return sortCards(searchCards(cards, normalizedSearch), sorting);
+  }, [cards, debouncedSearchTerm, sorting]);
 
   const setSearchTerm = (value: string) => {
     updateSearch({ name: value || undefined, page: undefined });
@@ -41,7 +54,7 @@ export function CardsPage() {
     const sortEntry = newSorting[0];
     updateSearch({
       sortBy:
-        sortEntry?.id !== SORT_FIELD || sortEntry?.desc
+        sortEntry?.id !== CARD_NAME_SORT.field || sortEntry?.desc
           ? sortEntry?.id
           : undefined,
       sortDesc: sortEntry?.desc || undefined,
@@ -49,45 +62,45 @@ export function CardsPage() {
     });
   };
 
-  const activeSortLabel = sortBy === SORT_FIELD ? SORT_LABEL : null;
+  const activeSortLabel =
+    sortBy === CARD_NAME_SORT.field ? CARD_NAME_SORT.label : null;
+  const cardCount = cardsData ? filteredCards.length : undefined;
 
   const handleSortChipClick = () => {
     setSorting([
-      { id: SORT_FIELD, desc: activeSortLabel ? !activeDesc : false },
+      {
+        id: CARD_NAME_SORT.field,
+        desc: activeSortLabel ? !activeDesc : false,
+      },
     ]);
   };
 
   return (
-    <div className="-mx-4 -mt-6 -mb-6 flex flex-1 flex-col min-h-0">
-      <div className="space-y-4 border-b border-[color-mix(in_oklch,var(--wc-border)_65%,black)] px-4 pt-5 pb-4 shadow-[inset_0_-16px_36px_-28px_black]">
-        <div>
-          <h1 className="font-fontin text-4xl leading-none font-bold tracking-tight text-[color-mix(in_oklch,var(--wc-gold)_88%,white)] sm:text-5xl">
-            Divination Cards
-          </h1>
-        </div>
-
-        <div className="flex flex-col gap-3 xs:flex-row xs:items-center xs:justify-between">
-          <CardsFilters
-            value={searchTerm}
-            onChange={setSearchTerm}
+    <div className="flex flex-1 flex-col min-h-0">
+      <PageHeader
+        title="Divination Cards"
+        subtitle={
+          <CardsPageSubtitle
+            cardCount={cardCount}
+            leagueName={selectedLeague.name}
+          />
+        }
+        actions={
+          <CardsPageActions
+            searchTerm={searchTerm}
             suggestions={suggestions}
-          />
-
-          <SortChips
-            labels={[SORT_LABEL]}
-            activeLabel={activeSortLabel}
+            sortLabels={CARD_SORT_LABELS}
+            activeSortLabel={activeSortLabel}
             activeDesc={activeDesc}
-            onSelect={handleSortChipClick}
+            onSearchChange={setSearchTerm}
+            onSortClick={handleSortChipClick}
           />
-        </div>
-      </div>
+        }
+      />
 
-      <div className="relative left-1/2 mt-3 flex w-screen -translate-x-1/2 flex-1 flex-col bg-primary-content min-h-0">
+      <div className="mt-3 flex flex-1 flex-col bg-primary-content min-h-0">
         <div className="mx-auto flex w-full max-w-300 flex-1 flex-col px-4 py-6 min-h-0">
-          <CardsResults
-            searchTerm={debouncedSearchTerm}
-            sorting={[{ id: sortBy, desc: activeDesc }]}
-          />
+          <CardsResults cards={filteredCards} />
         </div>
       </div>
     </div>
