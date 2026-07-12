@@ -1,10 +1,14 @@
 import { queryOptions, useQuery } from "@tanstack/react-query";
+import {
+  normalizeGameDropRates,
+  normalizeLeagueDropRates,
+} from "./normalizers";
 import type { Game, GameDropRates, LeagueDropRates } from "./types";
 
 const ONE_HOUR_MS = 1000 * 60 * 60;
 
-// Generic GET-and-parse-as-JSON used by both hooks below.
-async function fetchDropRates<T>(url: string): Promise<T> {
+// Raw JSON fetcher; callers normalize the payload before it reaches React.
+async function fetchDropRates(url: string): Promise<unknown> {
   const response = await fetch(url);
   if (!response.ok) {
     throw new Error(`Failed to fetch drop rates from ${url}`);
@@ -43,8 +47,11 @@ function buildDropRatesUrl(...segments: string[]) {
 export function gameDropRatesQueryOptions(game: Game) {
   return queryOptions({
     queryKey: ["drop-rates", game],
-    queryFn: () =>
-      fetchDropRates<GameDropRates>(buildDropRatesUrl(game, "index.json")),
+    queryFn: async (): Promise<GameDropRates> =>
+      normalizeGameDropRates(
+        await fetchDropRates(buildDropRatesUrl(game, "index.json")),
+        game,
+      ),
     staleTime: ONE_HOUR_MS,
   });
 }
@@ -58,9 +65,10 @@ export function useGameDropRates(game: Game) {
 export function useLeagueDropRates(game: Game, leagueId: string | undefined) {
   return useQuery({
     queryKey: ["drop-rates", game, leagueId],
-    queryFn: () =>
-      fetchDropRates<LeagueDropRates>(
-        buildDropRatesUrl(game, `${leagueId}.json`),
+    queryFn: async (): Promise<LeagueDropRates> =>
+      normalizeLeagueDropRates(
+        await fetchDropRates(buildDropRatesUrl(game, `${leagueId}.json`)),
+        game,
       ),
     enabled: !!leagueId,
     staleTime: ONE_HOUR_MS,
