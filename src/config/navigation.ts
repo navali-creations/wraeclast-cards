@@ -23,7 +23,7 @@ export const navigationRoutes: NavigationItem[] = [
   { label: "Cards", path: "/cards", gameScoped: true },
   { label: "Stacked Decks", path: "/stacked-decks", gameScoped: true },
   { label: "Soothsayer", path: "/soothsayer", gameScoped: true },
-  { label: "Downloads", path: "/downloads" },
+  // { label: "Downloads", path: "/downloads" },
 ] as const;
 
 export const footerNavigation: FooterNavigationItem[] = [
