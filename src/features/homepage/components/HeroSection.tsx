@@ -1,3 +1,4 @@
+import clsx from "clsx";
 import { FiArrowRight } from "react-icons/fi";
 import { useGameContext } from "../../../app/game-context";
 import { ButtonInternalLink } from "../../../components/buttons/ButtonLink";
@@ -5,10 +6,12 @@ import { Heading } from "../../../components/headings";
 import { Text } from "../../../components/text";
 import { gameToLabel } from "../../../lib/gameSlug";
 import { useDropRatesIndex } from "../api/dropRatesIndex";
+import { useHeroQuote } from "../hooks/useHeroQuote";
 
 export function HeroSection() {
   const { game } = useGameContext();
   const { data } = useDropRatesIndex();
+  const { quote, attribution, sizeClass: quoteSizeClass } = useHeroQuote();
   const leaguesArchived =
     (data?.games.poe1.league_count ?? 0) + (data?.games.poe2.league_count ?? 0);
   const leagues = data?.games[game].leagues;
@@ -37,17 +40,26 @@ export function HeroSection() {
       <div className="flex flex-col gap-8 md:flex-row md:items-end md:gap-10 lg:flex-col lg:gap-8">
         {/* Heading + subtitle */}
         <div className="flex flex-col gap-8">
-          <Heading as="h1" className="font-cinzel leading-snug tracking-wider">
-            <span className="block text-5xl text-(--wc-text-90) lg:text-6xl">
-              No Exile
-            </span>
-            <span className="ml-6 block bg-linear-to-r from-(--wc-gold) to-amber-200 bg-clip-text text-7xl text-transparent lg:text-8xl">
-              Drops
-            </span>
-            <span className="block text-5xl text-(--wc-text-90) lg:text-6xl">
-              Unseen
-            </span>
-          </Heading>
+          <div className="flex flex-col gap-4">
+            <Heading
+              as="h1"
+              className={clsx(
+                "max-w-[24ch] font-cinzel text-2xl leading-tight tracking-normal text-balance text-(--wc-gold)",
+                quoteSizeClass,
+              )}
+            >
+              &ldquo;{quote}&rdquo;
+            </Heading>
+
+            <Text
+              as="cite"
+              size="sm"
+              className="inline-flex items-center gap-2 not-italic text-xs tracking-[0.14em] text-(--wc-text-60) sm:text-sm"
+            >
+              <span aria-hidden className="h-px w-6 bg-(--wc-border)" />
+              {attribution}
+            </Text>
+          </div>
 
           <Text
             size="base"
