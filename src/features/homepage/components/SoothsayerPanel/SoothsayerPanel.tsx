@@ -39,7 +39,6 @@ export function SoothsayerPanel() {
           <div className="flex gap-5 xs:hidden">{statItems}</div>
           <div className="mt-2 flex justify-between">
             <ButtonInternalLink
-              gameScoped
               to="/soothsayer"
               className="rounded-lg px-4 py-1.5 text-sm font-medium bg-primary text-primary-content hover:bg-(--wc-primary-hover)"
             >
