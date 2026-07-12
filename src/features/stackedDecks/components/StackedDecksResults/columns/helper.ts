@@ -2,11 +2,16 @@ import {
   type CellContext,
   createColumnHelper,
   type FilterFn,
+  type HeaderContext,
 } from "@tanstack/react-table";
 import type { ReactNode } from "react";
 import type { StackedDecksRow } from "../../../hooks";
 
 export const columnHelper = createColumnHelper<StackedDecksRow>();
+
+type ColumnHeaderContent<TValue> =
+  | string
+  | ((context: HeaderContext<StackedDecksRow, TValue>) => ReactNode);
 
 export type ColOptions<K extends keyof StackedDecksRow> = {
   align?: "left" | "right";
@@ -15,24 +20,44 @@ export type ColOptions<K extends keyof StackedDecksRow> = {
   cell?: (ctx: CellContext<StackedDecksRow, StackedDecksRow[K]>) => ReactNode;
   filterFn?: FilterFn<StackedDecksRow>;
   sortDescFirst?: boolean;
+  sortUndefined?: "first" | "last" | false | -1 | 1;
 };
+
+function sortableValue<T>(
+  value: T,
+  sortUndefined: ColOptions<keyof StackedDecksRow>["sortUndefined"],
+) {
+  return sortUndefined !== undefined && value === null ? undefined : value;
+}
 
 export function col<K extends keyof StackedDecksRow>(
   key: K,
-  header: string,
+  header: ColumnHeaderContent<StackedDecksRow[K]>,
   options: ColOptions<K> = {},
 ) {
-  const { align, thClassName, tdClassName, cell, filterFn, sortDescFirst } =
-    options;
-  return columnHelper.accessor(key, {
-    header,
-    ...(filterFn !== undefined && { filterFn }),
-    ...(cell !== undefined && {
-      cell: cell as (ctx: CellContext<StackedDecksRow, unknown>) => ReactNode,
-    }),
-    ...(sortDescFirst !== undefined && { sortDescFirst }),
-    meta: { align, thClassName, tdClassName },
-  });
+  const {
+    align,
+    thClassName,
+    tdClassName,
+    cell,
+    filterFn,
+    sortDescFirst,
+    sortUndefined,
+  } = options;
+  return columnHelper.accessor(
+    (row) => sortableValue(row[key], sortUndefined),
+    {
+      id: String(key),
+      header,
+      ...(filterFn !== undefined && { filterFn }),
+      ...(cell !== undefined && {
+        cell: cell as (ctx: CellContext<StackedDecksRow, unknown>) => ReactNode,
+      }),
+      ...(sortDescFirst !== undefined && { sortDescFirst }),
+      ...(sortUndefined !== undefined && { sortUndefined }),
+      meta: { align, thClassName, tdClassName },
+    },
+  );
 }
 
 /**
@@ -47,13 +72,21 @@ export function dualCol<
   rawKey: RK,
   verifiedKey: VK,
   verified: boolean,
-  header: string,
+  header: ColumnHeaderContent<StackedDecksRow[RK] | StackedDecksRow[VK]>,
   options: ColOptions<RK> = {},
 ) {
-  const { align, thClassName, tdClassName, cell, filterFn, sortDescFirst } =
-    options;
+  const {
+    align,
+    thClassName,
+    tdClassName,
+    cell,
+    filterFn,
+    sortDescFirst,
+    sortUndefined,
+  } = options;
   return columnHelper.accessor(
-    (row) => (verified ? row[verifiedKey] : row[rawKey]),
+    (row) =>
+      sortableValue(verified ? row[verifiedKey] : row[rawKey], sortUndefined),
     {
       id: rawKey,
       header,
@@ -62,6 +95,7 @@ export function dualCol<
         cell: cell as (ctx: CellContext<StackedDecksRow, unknown>) => ReactNode,
       }),
       ...(sortDescFirst !== undefined && { sortDescFirst }),
+      ...(sortUndefined !== undefined && { sortUndefined }),
       meta: { align, thClassName, tdClassName },
     },
   );

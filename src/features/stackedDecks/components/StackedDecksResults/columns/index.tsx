@@ -1,20 +1,39 @@
-import { ComparedToResearchCell } from "./cells";
+import type { StackedDecksRow } from "../../../hooks";
+import { ColumnHeader } from "./ColumnHeader";
+import { ComparedToReferenceCell, DeltaPercentCell } from "./cells";
 import { col, columnHelper, dualCol } from "./helper";
 
-function formatPercent(value: number | null) {
-  return value === null ? "—" : `${(value * 100).toFixed(4)}%`;
+const headerWithTooltip = (
+  label: string,
+  tooltip: string,
+  placement?: "bottom" | "bottom-end",
+) =>
+  function HeaderWithTooltip() {
+    return (
+      <ColumnHeader label={label} tooltip={tooltip} placement={placement} />
+    );
+  };
+
+function formatPercent(value: number | null | undefined) {
+  return value == null ? "—" : `${(value * 100).toFixed(6)}%`;
 }
 
-function formatNumber(value: number | null) {
-  return value === null
-    ? "—"
-    : Number(value).toLocaleString(undefined, { maximumFractionDigits: 3 });
+function formatEstimatedPercent(value: number | null | undefined) {
+  return value == null ? "—" : `≈${formatPercent(value)}`;
 }
 
-function formatSignedNumber(value: number | null) {
-  if (value === null) return "—";
-  const formatted = formatNumber(value);
-  return value > 0 ? `+${formatted}` : formatted;
+function formatSignedPercent(value: number | null | undefined) {
+  if (value == null) return "—";
+
+  const displayedPercent = (Math.abs(value) * 100).toFixed(6);
+  if (displayedPercent === "0.000000") return "0.000000%";
+
+  return `${value > 0 ? "+" : "-"}${displayedPercent}%`;
+}
+
+function formatPlainInteger(value: number | null | undefined) {
+  if (value == null) return "—";
+  return `${Math.floor(value)}`;
 }
 
 function rankColumn() {
@@ -41,36 +60,109 @@ function nameColumn() {
   });
 }
 
+function playersSaw(row: StackedDecksRow, verified: boolean) {
+  return verified
+    ? (row.verified_players_saw ??
+        (row.verified_count > 0 ? row.verified_ratio : null))
+    : (row.players_saw ?? row.ratio);
+}
+
+function playersSawColumn(verified: boolean) {
+  return columnHelper.accessor(
+    (row) => playersSaw(row, verified) ?? undefined,
+    {
+      id: "players_saw",
+      header: headerWithTooltip(
+        "Players Saw",
+        "This card's share of reported drops for the selected league and verification mode.",
+      ),
+      sortUndefined: "last",
+      cell: (ctx) => formatPercent(ctx.getValue()),
+      meta: {
+        align: "right",
+        tdClassName: "font-semibold tabular-nums text-(--wc-text-30)",
+      },
+    },
+  );
+}
+
+function chanceDifferenceColumn(verified: boolean) {
+  return columnHelper.accessor(
+    (row) => {
+      const observedChance = playersSaw(row, verified);
+      return observedChance === null || row.reference_estimated_chance === null
+        ? undefined
+        : observedChance - row.reference_estimated_chance;
+    },
+    {
+      id: "chance_difference",
+      header: headerWithTooltip(
+        "Chance Difference",
+        "Players Saw minus Reference Estimate, shown as a raw percentage-point difference.",
+      ),
+      sortUndefined: "last",
+      cell: (ctx) => formatSignedPercent(ctx.getValue()),
+      meta: {
+        align: "right",
+        tdClassName: "tabular-nums text-(--wc-text-30)",
+      },
+    },
+  );
+}
+
+function dropsReportedColumn(verified: boolean) {
+  return dualCol(
+    "count",
+    "verified_count",
+    verified,
+    headerWithTooltip(
+      "Drops Reported",
+      "Total reported copies of this card for the selected league and verification mode.",
+      "bottom-end",
+    ),
+    {
+      align: "right",
+      tdClassName: "tabular-nums text-(--wc-text-30)",
+      cell: (ctx) => ctx.getValue().toLocaleString(),
+    },
+  );
+}
+
 export function createColumns(verified: boolean) {
   return [
     rankColumn(),
     nameColumn(),
-    col("research_chance", "Research Chance", {
-      align: "right",
-      tdClassName: "tabular-nums text-(--wc-text-30)",
-      cell: (ctx) => formatPercent(ctx.getValue()),
-    }),
-    dualCol("players_saw", "verified_players_saw", verified, "Players Saw", {
-      align: "right",
-      tdClassName: "font-semibold tabular-nums text-(--wc-text-30)",
-      cell: (ctx) => formatPercent(ctx.getValue()),
-    }),
-    dualCol(
-      "seen_vs_research",
-      "verified_seen_vs_research",
-      verified,
-      "Compared to Research",
+    col(
+      "reference_estimated_chance",
+      headerWithTooltip(
+        "Reference Estimate",
+        "Modeled chance derived from Prohibited Library reference weights; it is not a known drop probability.",
+      ),
       {
         align: "right",
         tdClassName: "tabular-nums text-(--wc-text-30)",
-        cell: ComparedToResearchCell,
+        sortUndefined: "last",
+        cell: (ctx) => formatEstimatedPercent(ctx.getValue()),
       },
     ),
-    dualCol("count", "verified_count", verified, "Drops Reported", {
-      align: "right",
-      tdClassName: "tabular-nums text-(--wc-text-30)",
-      cell: (ctx) => ctx.getValue().toLocaleString(),
-    }),
+    playersSawColumn(verified),
+    chanceDifferenceColumn(verified),
+    dualCol(
+      "seen_vs_reference",
+      "verified_seen_vs_reference",
+      verified,
+      headerWithTooltip(
+        "Compared to Reference",
+        "Relative difference from the reference after treating the first ±3% as about expected.",
+      ),
+      {
+        align: "right",
+        tdClassName: "tabular-nums text-(--wc-text-30)",
+        sortUndefined: "last",
+        cell: ComparedToReferenceCell,
+      },
+    ),
+    dropsReportedColumn(verified),
   ];
 }
 
@@ -78,48 +170,49 @@ export function createAdvancedColumns(verified: boolean) {
   return [
     rankColumn(),
     nameColumn(),
-    col("research_weight", "Research Weight", {
-      align: "right",
-      tdClassName: "tabular-nums text-(--wc-text-30)",
-      cell: (ctx) => formatNumber(ctx.getValue()),
-    }),
+    col(
+      "reference_weight",
+      headerWithTooltip(
+        "Reference Weight",
+        "External Prohibited Library weight used as a comparison benchmark.",
+      ),
+      {
+        align: "right",
+        tdClassName: "tabular-nums text-(--wc-text-30)",
+        sortUndefined: "last",
+        cell: (ctx) => formatPlainInteger(ctx.getValue()),
+      },
+    ),
     dualCol(
       "community_estimated_weight",
       "verified_community_estimated_weight",
       verified,
-      "Community Weight",
+      headerWithTooltip(
+        "Community Weight",
+        "Weight inferred from this league's Soothsayer observations using Rain of Chaos as the anchor.",
+      ),
       {
         align: "right",
         tdClassName: "tabular-nums text-(--wc-text-30)",
-        cell: (ctx) => formatNumber(ctx.getValue()),
+        sortUndefined: "last",
+        cell: (ctx) => formatPlainInteger(ctx.getValue()),
       },
     ),
     dualCol(
-      "expected_drops",
-      "verified_expected_drops",
+      "community_estimated_weight_delta_vs_reference",
+      "verified_community_estimated_weight_delta_vs_reference",
       verified,
-      "Expected Drops",
+      headerWithTooltip(
+        "Weight Difference",
+        "Relative difference between Community Weight and Reference Weight.",
+      ),
       {
         align: "right",
         tdClassName: "tabular-nums text-(--wc-text-30)",
-        cell: (ctx) => formatNumber(ctx.getValue()),
+        sortUndefined: "last",
+        cell: (ctx) => <DeltaPercentCell value={ctx.getValue()} />,
       },
     ),
-    dualCol(
-      "drop_difference",
-      "verified_drop_difference",
-      verified,
-      "Difference",
-      {
-        align: "right",
-        tdClassName: "tabular-nums text-(--wc-text-30)",
-        cell: (ctx) => formatSignedNumber(ctx.getValue()),
-      },
-    ),
-    dualCol("count", "verified_count", verified, "Drops Reported", {
-      align: "right",
-      tdClassName: "tabular-nums text-(--wc-text-30)",
-      cell: (ctx) => ctx.getValue().toLocaleString(),
-    }),
+    dropsReportedColumn(verified),
   ];
 }
