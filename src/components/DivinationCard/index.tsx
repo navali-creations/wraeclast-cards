@@ -86,7 +86,7 @@ export function DivinationCard({ card }: { card: Card }) {
       </div>
 
       <RarityEffects
-        stackSize={card.stackSize}
+        rarity={card.rarity}
         mousePos={mousePos}
         isHovered={isHovered}
         posX={mousePos.x}
