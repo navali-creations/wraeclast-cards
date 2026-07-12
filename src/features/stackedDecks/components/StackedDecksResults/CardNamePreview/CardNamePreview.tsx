@@ -1,9 +1,5 @@
 import { useQueryClient } from "@tanstack/react-query";
-import type {
-  CSSProperties,
-  MouseEvent as ReactMouseEvent,
-  PointerEvent as ReactPointerEvent,
-} from "react";
+import type { CSSProperties } from "react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { useGameContext } from "../../../../../app/game-context";
@@ -25,9 +21,9 @@ export function CardNamePreview({ name }: CardNamePreviewProps) {
   const triggerRef = useRef<HTMLSpanElement>(null);
   // Invalidates stale async preview loads after hover changes or preview hides.
   const requestIdRef = useRef(0);
-  const suppressNextClickRef = useRef(false);
   const queryClient = useQueryClient();
   const { game } = useGameContext();
+  // Card previews use the current PoE1 card catalog; skip them for other games.
   const canShowPreview = game === EGame.Poe1;
   const [previewStyle, setPreviewStyle] = useState<CSSProperties | null>(null);
   const [previewCard, setPreviewCard] = useState<Card | null>(null);
@@ -66,50 +62,16 @@ export function CardNamePreview({ name }: CardNamePreviewProps) {
 
   const hidePreview = useCallback(() => {
     requestIdRef.current += 1;
-    suppressNextClickRef.current = false;
     setPreviewCard(null);
     setPreviewStyle(null);
   }, []);
 
-  const handlePointerEnter = (event: ReactPointerEvent<HTMLSpanElement>) => {
-    if (event.pointerType !== "mouse") return;
+  const handlePointerEnter = () => {
     void showPreview();
   };
 
-  const handlePointerLeave = (event: ReactPointerEvent<HTMLSpanElement>) => {
-    if (event.pointerType !== "mouse") return;
+  const handlePointerLeave = () => {
     hidePreview();
-  };
-
-  const handlePointerDown = (event: ReactPointerEvent<HTMLSpanElement>) => {
-    if (event.pointerType === "mouse") return;
-    if (previewStyle) {
-      suppressNextClickRef.current = false;
-      return;
-    }
-
-    if (!canShowPreview) return;
-
-    const cachedCards = queryClient.getQueryData<Card[]>(
-      cardsQueryOptions().queryKey,
-    );
-    if (!cachedCards || !findCardByName(cachedCards, name)) {
-      void queryClient.prefetchQuery(cardsQueryOptions());
-      return;
-    }
-
-    suppressNextClickRef.current = true;
-    event.preventDefault();
-    event.stopPropagation();
-    void showPreview();
-  };
-
-  const handleLinkClick = (event: ReactMouseEvent) => {
-    if (!suppressNextClickRef.current) return;
-
-    suppressNextClickRef.current = false;
-    event.preventDefault();
-    event.stopPropagation();
   };
 
   useEffect(() => {
@@ -160,13 +122,11 @@ export function CardNamePreview({ name }: CardNamePreviewProps) {
         ref={triggerRef}
         onPointerEnter={handlePointerEnter}
         onPointerLeave={handlePointerLeave}
-        onPointerDown={handlePointerDown}
         className="inline-flex"
       >
         <CardLink
           cardId={name}
           className="inline-flex text-inherit group-hover:underline"
-          onClick={handleLinkClick}
         >
           {name}
         </CardLink>
