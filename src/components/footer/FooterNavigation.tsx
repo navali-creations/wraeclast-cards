@@ -4,11 +4,12 @@ import { footerNavigation, navigationRoutes } from "../../config/navigation";
 import { NavItemLink } from "../links";
 import { Text } from "../text";
 
-const LINK_CLASS_NAME = "text-sm link link-hover text-(--wc-text-50)";
+const LINK_CLASS_NAME =
+  "inline-flex h-5 items-center text-sm leading-5 link link-hover text-(--wc-text-50)";
 
 export function FooterNavigation() {
   return (
-    <div className="flex gap-8 sm:gap-12">
+    <div className="grid grid-cols-[max-content_max-content] gap-x-8 sm:gap-x-12">
       <div>
         <Text
           size="xs"
@@ -51,10 +52,10 @@ export function FooterNavigation() {
               href="https://github.com/navali-creations/wraeclast-cards.git"
               target="_blank"
               rel="noreferrer noopener"
-              className="text-sm link link-hover text-(--wc-text-50) flex items-center gap-1.5"
+              className={`${LINK_CLASS_NAME} gap-1.5`}
             >
-              <FiGithub />
-              GitHub
+              <span>GitHub</span>
+              <FiGithub aria-hidden="true" className="size-3.5" />
             </a>
           </li>
         </ul>

@@ -24,7 +24,7 @@ export function ErrorCard() {
           <ButtonExternalLink variant="error" href={deepLink}>
             Try again
           </ButtonExternalLink>
-          <ButtonInternalLink variant="subtle" to="/downloads">
+          <ButtonInternalLink variant="subtle" to="/soothsayer">
             Download Soothsayer -&gt;
           </ButtonInternalLink>
         </>
