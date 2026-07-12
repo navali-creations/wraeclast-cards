@@ -16,9 +16,11 @@ export function StackedDecksPage() {
     <div className="flex flex-1 flex-col min-h-0">
       <StackedDecksHeader
         // Gated on leagueData (the drop-rate query totalCount comes from), not on
-        // league (the league metadata), so the count doesn't flash in before it's ready.
+        // league alone, so the count doesn't flash in before it's ready.
         summary={
-          leagueData ? { totalCount, leagueName: league?.name } : undefined
+          leagueData && league?.name
+            ? { totalCount, leagueName: league.name }
+            : undefined
         }
       />
 

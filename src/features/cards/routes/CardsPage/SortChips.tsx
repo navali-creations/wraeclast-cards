@@ -2,7 +2,7 @@ import { FiChevronDown, FiChevronUp } from "react-icons/fi";
 import { Button } from "../../../../components/buttons";
 
 interface SortChipsProps {
-  labels: string[];
+  labels: readonly string[];
   activeLabel: string | null;
   activeDesc: boolean;
   onSelect: (label: string) => void;
@@ -15,7 +15,7 @@ export function SortChips({
   onSelect,
 }: SortChipsProps) {
   return (
-    <div className="flex items-center gap-2 self-end xs:self-auto">
+    <div className="flex items-center gap-2 sm:ml-auto sm:justify-end">
       {labels.map((label) => {
         const isActive = activeLabel === label;
         return (
