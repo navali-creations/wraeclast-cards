@@ -11,7 +11,7 @@ export function CardsGridSkeleton() {
       {SKELETON_IDS.map((id) => (
         <div
           key={id}
-          className="aspect-3/4 animate-pulse rounded-sm border border-(--wc-gold-dim) bg-(--wc-card-darker) opacity-50"
+          className="wc-card-shimmer aspect-3/4 rounded-sm border border-(--wc-gold-dim)"
         />
       ))}
     </div>

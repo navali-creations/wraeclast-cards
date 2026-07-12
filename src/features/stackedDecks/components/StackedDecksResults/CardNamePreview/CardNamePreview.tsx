@@ -3,9 +3,9 @@ import type { CSSProperties } from "react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { useGameContext } from "../../../../../app/game-context";
+import { useLeagueContext } from "../../../../../app/league-context";
 import { DivinationCard } from "../../../../../components/DivinationCard";
 import { CardLink } from "../../../../../components/DivinationCard/CardLink/CardLink";
-import { EGame } from "../../../../../enums";
 import { cardsQueryOptions } from "../../../../cards/hooks";
 import type { Card } from "../../../../cards/types";
 import {
@@ -23,15 +23,13 @@ export function CardNamePreview({ name }: CardNamePreviewProps) {
   const requestIdRef = useRef(0);
   const queryClient = useQueryClient();
   const { game } = useGameContext();
-  // Card previews use the current PoE1 card catalog; skip them for other games.
-  const canShowPreview = game === EGame.Poe1;
+  const { selectedLeague } = useLeagueContext();
   const [previewStyle, setPreviewStyle] = useState<CSSProperties | null>(null);
   const [previewCard, setPreviewCard] = useState<Card | null>(null);
 
   const showPreview = useCallback(async () => {
     const trigger = triggerRef.current;
-    if (!trigger || typeof window === "undefined" || !canShowPreview)
-      return false;
+    if (!trigger || typeof window === "undefined") return false;
 
     const requestId = requestIdRef.current + 1;
     requestIdRef.current = requestId;
@@ -44,7 +42,9 @@ export function CardNamePreview({ name }: CardNamePreviewProps) {
     );
 
     try {
-      const cards = await queryClient.ensureQueryData(cardsQueryOptions());
+      const cards = await queryClient.ensureQueryData(
+        cardsQueryOptions({ game, leagueName: selectedLeague.name }),
+      );
       if (requestIdRef.current !== requestId) return false;
 
       const card = findCardByName(cards, name);
@@ -58,7 +58,7 @@ export function CardNamePreview({ name }: CardNamePreviewProps) {
       setPreviewStyle(null);
       return false;
     }
-  }, [canShowPreview, name, queryClient]);
+  }, [game, name, queryClient, selectedLeague.name]);
 
   const hidePreview = useCallback(() => {
     requestIdRef.current += 1;

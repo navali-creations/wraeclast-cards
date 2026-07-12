@@ -1,6 +1,8 @@
+import type { EGame } from "../../../enums";
 import {
-  DIVINATION_CARDS_DATA_CDN,
-  DIVINATION_CARDS_IMAGES_BASE_URL,
+  type DivinationCardsDataSource,
+  getCardsDataUrl,
+  getDivinationCardsDataSource,
 } from "../hooks/divinationCardsData";
 import type { Card } from "../types";
 
@@ -15,6 +17,26 @@ type RawCard = {
   from_boss?: boolean;
   weight?: number;
 };
+
+function isRawCard(value: unknown): value is RawCard {
+  if (!value || typeof value !== "object") return false;
+
+  const card = value as Record<string, unknown>;
+
+  return (
+    typeof card.name === "string" &&
+    typeof card.stack_size === "number" &&
+    typeof card.description === "string"
+  );
+}
+
+function parseRawCards(value: unknown): RawCard[] {
+  if (!Array.isArray(value) || !value.every(isRawCard)) {
+    throw new Error("Invalid divination card data");
+  }
+
+  return value;
+}
 
 function stripHtml(html: string): string {
   return html
@@ -42,13 +64,20 @@ function cleanRewardHtml(html: string): string {
   return result.trim();
 }
 
-function toCard(raw: RawCard): Card {
+interface GetCardsParams {
+  game: EGame;
+  leagueName?: string;
+}
+
+function toCard(raw: RawCard, source: DivinationCardsDataSource): Card {
   return {
     id: raw.name,
     name: raw.name,
     imageUrl: raw.art_src
-      ? `${DIVINATION_CARDS_IMAGES_BASE_URL}/${raw.art_src}`
+      ? `${source.imagesBaseUrl}/${raw.art_src}`
       : undefined,
+    frameUrl: source.frameUrl,
+    separatorUrl: source.separatorUrl,
     flavourText: raw.flavour_html ? stripHtml(raw.flavour_html) : undefined,
     rewardText: raw.description,
     rewardHtml: raw.reward_html
@@ -59,9 +88,26 @@ function toCard(raw: RawCard): Card {
   };
 }
 
-export async function getCards(): Promise<Card[]> {
-  const res = await fetch(`${DIVINATION_CARDS_DATA_CDN}/cards.json`);
+async function fetchCards(url: string): Promise<RawCard[]> {
+  const res = await fetch(url);
   if (!res.ok) throw new Error(`Failed to fetch cards: ${res.status}`);
-  const data: RawCard[] = await res.json();
-  return data.map(toCard);
+  return parseRawCards(await res.json());
+}
+
+export async function getCards({
+  game,
+  leagueName,
+}: GetCardsParams): Promise<Card[]> {
+  const source = getDivinationCardsDataSource(game);
+  if (!source) return [];
+
+  try {
+    const data = await fetchCards(getCardsDataUrl(source, leagueName));
+    return data.map((raw) => toCard(raw, source));
+  } catch (error) {
+    if (!leagueName) throw error;
+
+    const data = await fetchCards(getCardsDataUrl(source, undefined));
+    return data.map((raw) => toCard(raw, source));
+  }
 }

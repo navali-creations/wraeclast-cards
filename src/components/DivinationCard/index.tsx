@@ -1,5 +1,4 @@
 import { useMemo, useRef } from "react";
-import { DIVINATION_CARDS_DATA } from "../../features/cards/hooks";
 import type { Card } from "../../features/cards/types";
 import { CardFrame } from "./components/CardFrame";
 import { RarityEffects } from "./effects/RarityEffects";
@@ -8,7 +7,6 @@ import { renderRewardHtml } from "./utils/renderRewardHtml";
 
 export function DivinationCard({ card }: { card: Card }) {
   const cardRef = useRef<HTMLDivElement>(null);
-  const { separatorUrl } = DIVINATION_CARDS_DATA;
   const rewardContent = useMemo(
     () => renderRewardHtml(card.rewardHtml),
     [card.rewardHtml],
@@ -44,7 +42,7 @@ export function DivinationCard({ card }: { card: Card }) {
       </div>
 
       {/* Frame overlay */}
-      <CardFrame />
+      <CardFrame frameUrl={card.frameUrl} />
 
       {/* Card name */}
       <div className="absolute z-30 top-2.5 flex justify-center w-full">
@@ -70,7 +68,7 @@ export function DivinationCard({ card }: { card: Card }) {
           {card.flavourText && (
             <div className="flex justify-center w-full">
               <img
-                src={separatorUrl}
+                src={card.separatorUrl}
                 alt={`${card.name} separator`}
                 className="h-0.5"
               />

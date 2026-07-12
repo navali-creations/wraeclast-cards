@@ -13,9 +13,10 @@ export const PAGE_SIZE = 24;
 
 interface CardsGridProps {
   data: Card[];
+  emptyMessage?: string;
 }
 
-export function CardsGrid({ data }: CardsGridProps) {
+export function CardsGrid({ data, emptyMessage }: CardsGridProps) {
   const { isLoading, error } = useCardsQuery();
   const { page, setPage } = useUrlPagination("/cards/");
 
@@ -34,7 +35,11 @@ export function CardsGrid({ data }: CardsGridProps) {
   if (isLoading) return <CardsGridSkeleton />;
 
   if (!data.length)
-    return <EmptyMessage>No cards match your search.</EmptyMessage>;
+    return (
+      <EmptyMessage>
+        {emptyMessage ?? "No cards match your search."}
+      </EmptyMessage>
+    );
 
   const pageData = data.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE);
 

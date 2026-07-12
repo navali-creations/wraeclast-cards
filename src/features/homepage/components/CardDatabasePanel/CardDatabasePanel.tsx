@@ -16,8 +16,9 @@ const SKELETON_KEYS = Array.from(
 );
 
 export function CardDatabasePanel() {
-  const { data: allCards } = useCardsQuery();
+  const { data: allCards, isLoading } = useCardsQuery();
   const cards = useRandomCards(CARD_COUNT);
+  const hasCards = cards.length > 0;
 
   for (const card of cards) {
     if (card.imageUrl) preload(card.imageUrl, { as: "image" });
@@ -46,18 +47,30 @@ export function CardDatabasePanel() {
 
       {/* 2×2 card grid */}
       <div className="grid grid-cols-2 gap-3 justify-items-center">
-        {cards.length > 0
-          ? cards.map((card) => <ScaledCard key={card.id} card={card} />)
-          : SKELETON_KEYS.map((key) => (
-              <div
-                key={key}
-                className="animate-pulse rounded border border-(--wc-border) bg-base-200"
-                style={{
-                  width: DIVINATION_CARD_WIDTH * SCALE,
-                  height: DIVINATION_CARD_HEIGHT * SCALE,
-                }}
-              />
-            ))}
+        {hasCards &&
+          cards.map((card) => <ScaledCard key={card.id} card={card} />)}
+
+        {!hasCards &&
+          isLoading &&
+          SKELETON_KEYS.map((key) => (
+            <div
+              key={key}
+              className="wc-card-shimmer rounded border border-(--wc-border)"
+              style={{
+                width: DIVINATION_CARD_WIDTH * SCALE,
+                height: DIVINATION_CARD_HEIGHT * SCALE,
+              }}
+            />
+          ))}
+
+        {!hasCards && !isLoading && (
+          <Text
+            size="sm"
+            className="col-span-2 py-8 text-center text-(--wc-text-50)"
+          >
+            No card data available for this game yet.
+          </Text>
+        )}
       </div>
     </div>
   );

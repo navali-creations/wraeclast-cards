@@ -227,6 +227,41 @@ body {
     var(--color-base-100);
 }
 
+.wc-card-shimmer {
+  position: relative;
+  overflow: hidden;
+  background: transparent;
+}
+
+.wc-card-shimmer::before {
+  position: absolute;
+  inset: 0;
+  content: "";
+  background: linear-gradient(
+    110deg,
+    transparent 0%,
+    transparent 35%,
+    var(--wc-skeleton-highlight) 50%,
+    transparent 65%,
+    transparent 100%
+  );
+  transform: translateX(-100%);
+  animation: wc-card-shimmer 1.4s ease-in-out infinite;
+}
+
+@keyframes wc-card-shimmer {
+  to {
+    transform: translateX(100%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wc-card-shimmer::before {
+    transform: none;
+    animation: none;
+  }
+}
+
 /* ── Prose (markdown typography) ─────────────────────────── */
 .prose {
   color: var(--color-base-content);
