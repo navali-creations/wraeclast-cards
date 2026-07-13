@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import { Heading } from "../../headings";
 import { Text } from "../../text";
+import "./PageHeader.css";
 
 interface PageHeaderProps {
   title: ReactNode;
@@ -10,7 +11,7 @@ interface PageHeaderProps {
 
 export function PageHeader({ title, subtitle, actions }: PageHeaderProps) {
   return (
-    <div className="border-b border-[color-mix(in_oklch,var(--wc-border)_65%,black)] bg-(--wc-header-bg) pt-5 pb-4 shadow-[inset_0_-16px_36px_-28px_black]">
+    <div className="wc-page-header-enter border-b border-[color-mix(in_oklch,var(--wc-border)_65%,black)] bg-(--wc-header-bg) pt-5 pb-4 shadow-[inset_0_-16px_36px_-28px_black]">
       <div className="mx-auto grid w-full max-w-300 gap-3 px-4 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-start">
         <div className="min-w-0">
           <Heading

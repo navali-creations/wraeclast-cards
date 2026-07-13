@@ -1,7 +1,7 @@
 import { useNavigate } from "@tanstack/react-router";
 import { flexRender, type Row } from "@tanstack/react-table";
 import { clsx } from "clsx";
-import type { MouseEvent } from "react";
+import type { CSSProperties, MouseEvent } from "react";
 import { useGameContext } from "../../../../app/game-context";
 import { useLeagueContext } from "../../../../app/league-context";
 import { gameToSlug } from "../../../../lib/gameSlug";
@@ -10,6 +10,8 @@ import type { StackedDecksRow } from "../../hooks";
 
 interface DataRowProps {
   row: Row<StackedDecksRow>;
+  animationIndex: number;
+  shouldAnimate: boolean;
 }
 
 function shouldSkipRowNavigation(target: EventTarget | null) {
@@ -26,7 +28,7 @@ function shouldSkipRowNavigation(target: EventTarget | null) {
   );
 }
 
-export function DataRow({ row }: DataRowProps) {
+export function DataRow({ row, animationIndex, shouldAnimate }: DataRowProps) {
   const navigate = useNavigate();
   const { game } = useGameContext();
   const { selectedLeague } = useLeagueContext();
@@ -52,7 +54,11 @@ export function DataRow({ row }: DataRowProps) {
   return (
     <tr
       onClick={handleRowClick}
-      className="group cursor-pointer border-t border-(--wc-border-dimmed) transition-colors odd:bg-(--wc-table-even) even:bg-(--wc-table-odd) hover:bg-(--wc-bg-dimmed)"
+      className={clsx(
+        "group cursor-pointer border-t border-(--wc-border-dimmed) transition-colors odd:bg-(--wc-table-even) even:bg-(--wc-table-odd) hover:bg-(--wc-bg-dimmed)",
+        shouldAnimate && "wc-stacked-decks-row-enter",
+      )}
+      style={{ "--row-stagger": animationIndex } as CSSProperties}
     >
       {row.getVisibleCells().map((cell) => {
         const meta = cell.column.columnDef.meta;
@@ -67,7 +73,9 @@ export function DataRow({ row }: DataRowProps) {
               isSorted && "xs:bg-(--wc-skeleton-highlight)",
             )}
           >
-            {flexRender(cell.column.columnDef.cell, cell.getContext())}
+            <div className="wc-stacked-decks-cell-content">
+              {flexRender(cell.column.columnDef.cell, cell.getContext())}
+            </div>
           </td>
         );
       })}

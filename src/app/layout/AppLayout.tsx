@@ -2,6 +2,7 @@ import { Outlet, useMatches } from "@tanstack/react-router";
 import clsx from "clsx";
 import { Footer } from "../../components/footer/Footer";
 import { Header } from "../../components/header/Header";
+import "./AppLayout.css";
 
 const FULL_WIDTH_ROUTE_IDS = new Set([
   "/$game/$league/cards",
@@ -29,7 +30,8 @@ export function AppLayout() {
         })}
       >
         <div
-          className={clsx("flex-1 flex flex-col", {
+          key={routeId}
+          className={clsx("flex-1 flex flex-col wc-page-enter", {
             "mx-auto w-full max-w-300 max-md:px-4 md:px-6 py-6":
               !isFullWidthRoute,
           })}
