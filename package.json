@@ -13,6 +13,7 @@
     "drop-rates:generate:dev": "node scripts/generate-drop-rate-static-data.mjs --output-dir=public/data/drop-rates --public-base-url=http://localhost:5173/data/drop-rates --no-headers",
     "preview": "vite preview",
     "sitemap:generate": "node scripts/generate-sitemap.mjs",
+    "sitemap:submit:google": "node scripts/submit-sitemap-google.mjs",
     "format": "biome format . --write",
     "prepare": "lefthook install"
   },

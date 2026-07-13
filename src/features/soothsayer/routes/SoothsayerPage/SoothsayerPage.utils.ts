@@ -54,7 +54,7 @@ export const soothsayerFeatures: SoothsayerFeature[] = [
     id: "rarity-insights",
     title: "Rarity Insights",
     description:
-      "Compare card rarity filters across poe.ninja prices, Prohibited Library weights, and any online or private filters you have loaded.",
+      "Compare card rarity filters across poe.ninja prices, the Prohibited Library average-weight model, and any online or private filters you have loaded.",
     imageSrc: "/images/soothsayer/rarity-insights.webp",
     thumbnailSrc: "/images/soothsayer/thumbs/rarity-insights.webp",
     imageAlt: "Compare and edit divination card rarities across loot filters",

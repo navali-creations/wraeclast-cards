@@ -17,11 +17,12 @@ export function Methodology() {
         >
           Prohibited Library
         </a>{" "}
-        weights by{" "}
+        average-weight formula documented by{" "}
         <Text as="span" weight="semibold" className="text-(--color-primary)">
           @nerdyjoe
         </Text>{" "}
-        are a reference, not known probabilities. Rates may vary by league.
+        provides the reference model; its published weight values are not
+        imported. Rates may vary by league.
       </Text>
     </section>
   );

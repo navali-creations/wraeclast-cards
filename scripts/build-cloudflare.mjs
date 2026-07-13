@@ -50,3 +50,4 @@ if (isPreviewBranch) {
 }
 
 await runPnpm(["drop-rates:generate"]);
+await runPnpm(["sitemap:generate"]);
