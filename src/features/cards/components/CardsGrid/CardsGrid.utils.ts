@@ -3,6 +3,14 @@ import { useEffect, useState } from "react";
 const CARDS_GRID_ROWS = 4;
 const CARDS_GRID_WIDE_COLUMNS = 5;
 const CARDS_GRID_WIDE_ROWS = 5;
+
+// Keep these in sync with the Tailwind breakpoint tokens used by the grid
+// classes below (`sm:`, `md:`, `lg:`, `xl:`). These are Tailwind's default
+// responsive breakpoints: https://tailwindcss.com/docs/responsive-design#using-custom-breakpoints
+//
+// The project currently only adds a custom `--breakpoint-xs` in `src/index.css`;
+// it does not override `sm`/`md`/`lg`/`xl`. If those theme breakpoints ever
+// change, update these values and the grid class names together.
 const TAILWIND_SM = 640;
 const TAILWIND_MD = 768;
 const TAILWIND_LG = 1024;
