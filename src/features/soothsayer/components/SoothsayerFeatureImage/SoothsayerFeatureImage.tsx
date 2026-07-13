@@ -24,9 +24,7 @@ export function SoothsayerFeatureImage({
       <div
         className={clsx(
           "flex h-full w-full items-center justify-center bg-base-100 px-3 text-center",
-          variant === "hero"
-            ? "min-h-[18rem] sm:min-h-[24rem] lg:min-h-full"
-            : "min-h-14",
+          variant === "hero" ? "min-h-full" : "min-h-14",
         )}
       >
         <Text
@@ -50,7 +48,7 @@ export function SoothsayerFeatureImage({
       className={clsx(
         "h-full w-full",
         variant === "hero"
-          ? "min-h-[18rem] object-contain sm:min-h-[24rem] lg:min-h-full"
+          ? "soothsayer-gallery-image-transition object-contain"
           : "object-cover",
       )}
       loading={variant === "hero" ? "eager" : "lazy"}

@@ -9,6 +9,7 @@ const FULL_WIDTH_ROUTE_IDS = new Set([
   "/$game/$league/soothsayer",
   "/$game/$league/soothsayer/",
   "/$game/$league/stacked-decks",
+  "/soothsayer/",
 ]);
 
 export function AppLayout() {
