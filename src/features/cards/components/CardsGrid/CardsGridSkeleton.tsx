@@ -1,18 +1,20 @@
-const SKELETON_COUNT = 24;
-
-const SKELETON_IDS = Array.from(
-  { length: SKELETON_COUNT },
-  (_, i) => `grid-skeleton-${i}`,
-);
+import {
+  CARDS_GRID_CLASS_NAME,
+  CARDS_GRID_SKELETON_CARD_CLASS_NAME,
+  useCardsPageSize,
+} from "./CardsGrid.utils";
 
 export function CardsGridSkeleton() {
+  const pageSize = useCardsPageSize();
+  const skeletonIds = Array.from(
+    { length: pageSize },
+    (_, i) => `grid-skeleton-${i}`,
+  );
+
   return (
-    <div className="grid grid-cols-[repeat(auto-fill,minmax(20rem,1fr))] gap-4">
-      {SKELETON_IDS.map((id) => (
-        <div
-          key={id}
-          className="wc-card-shimmer aspect-3/4 rounded-sm border border-(--wc-gold-dim)"
-        />
+    <div className={CARDS_GRID_CLASS_NAME}>
+      {skeletonIds.map((id) => (
+        <div key={id} className={CARDS_GRID_SKELETON_CARD_CLASS_NAME} />
       ))}
     </div>
   );

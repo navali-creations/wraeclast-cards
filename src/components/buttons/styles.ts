@@ -11,9 +11,9 @@ export const variantClasses = {
   control: `${controlBase} border-(--wc-border) bg-(--wc-glow)/80 text-(--wc-text-70) hover:border-(--wc-accent-border) hover:bg-(--wc-primary-hover) hover:text-(--wc-text-90)`,
   controlActive: `${controlBase} border-(--wc-hero-accent) bg-(--wc-glow) text-(--wc-gold) hover:border-(--wc-hero-accent) hover:bg-(--wc-glow) hover:text-(--wc-gold)`,
   secondary:
-    "flex h-9 w-9 items-center justify-center rounded border duration-150 select-none font-cinzel cursor-pointer border-(--wc-border) text-(--wc-text-60) hover:border-(--wc-accent-border) hover:bg-(--wc-glow)/40 hover:text-(--wc-gold-muted)",
+    "flex h-9 w-9 items-center justify-center rounded border duration-150 select-none cursor-pointer border-(--wc-border) text-(--wc-text-60) hover:border-(--wc-accent-border) hover:bg-(--wc-glow)/40 hover:text-(--wc-gold-muted)",
   secondaryActive:
-    "flex h-9 w-9 items-center justify-center rounded border duration-150 select-none font-cinzel cursor-default border-(--wc-gold-dim) bg-(--wc-glow) text-(--wc-gold) shadow-[0_0_10px_color-mix(in_oklch,var(--wc-gold-dim)_35%,transparent)]",
+    "flex h-9 w-9 items-center justify-center rounded border duration-150 select-none cursor-default border-(--wc-gold-dim) bg-(--wc-glow) text-(--wc-gold) shadow-[0_0_10px_color-mix(in_oklch,var(--wc-gold-dim)_35%,transparent)]",
 } as const;
 
 export type ButtonVariant = keyof typeof variantClasses;

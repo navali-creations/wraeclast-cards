@@ -7,8 +7,8 @@ const ACTIVE_PROPS = { className: "text-(--wc-text-90)!" };
 
 export function HeaderDesktopNavigation() {
   return (
-    <div className="hidden md:flex items-center">
-      <ul className="menu menu-horizontal px-1">
+    <div className="hidden items-center justify-self-center md:flex">
+      <ul className="menu menu-horizontal flex-nowrap px-1">
         {navigationRoutes.map((item) => (
           <li key={item.path}>
             <NavItemLink

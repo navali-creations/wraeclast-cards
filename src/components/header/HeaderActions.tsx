@@ -10,6 +10,8 @@ import { leagueToSlug } from "../../lib/leagueSlug";
 import { useDropdown } from "../../lib/useDropdown";
 import { Button } from "../buttons";
 
+const SHOW_GAME_SELECTOR = false;
+
 export function HeaderActions() {
   const { game, setGame } = useGameContext();
   const { leagues, selectedLeague, selectedLeagueId, setSelectedLeague } =
@@ -44,7 +46,7 @@ export function HeaderActions() {
   }
 
   return (
-    <div className="navbar-end justify-self-end gap-3 max-xs:flex-none max-xs:w-full max-xs:justify-between max-xs:px-6 max-xs:pb-4">
+    <div className="flex items-center justify-self-end gap-3">
       <div ref={containerRef} className="relative shrink-0">
         <Button
           onClick={toggle}
@@ -100,33 +102,37 @@ export function HeaderActions() {
         </div>
       </div>
 
-      <div className="relative shrink-0 rounded-lg p-1 bg-(--wc-card-darker) ring-1 ring-(--wc-border)">
-        <span
-          aria-hidden="true"
-          className={clsx(
-            "absolute inset-y-1 left-1 w-[calc(50%-0.125rem)] rounded-md bg-primary transition-transform duration-250 ease-out",
-            game === EGame.Poe2 && "translate-x-full",
-          )}
-        />
-        <div className="relative z-10 flex items-center">
-          {Object.values(EGame).map((gameVersion) => {
-            const isChecked = game === gameVersion;
-            return (
-              <Button
-                key={gameVersion}
-                aria-pressed={isChecked}
-                onClick={() => handleSelectGame(gameVersion)}
-                className={clsx(
-                  "h-8 min-w-16 px-3.5 flex items-center justify-center rounded-md text-sm font-semibold tracking-wide transition-colors duration-200 cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--wc-gold)",
-                  isChecked ? "text-primary-content" : "text-(--wc-text-60)/92",
-                )}
-              >
-                {gameToLabel(gameVersion)}
-              </Button>
-            );
-          })}
+      {SHOW_GAME_SELECTOR && (
+        <div className="relative shrink-0 rounded-lg p-1 bg-(--wc-card-darker) ring-1 ring-(--wc-border)">
+          <span
+            aria-hidden="true"
+            className={clsx(
+              "absolute inset-y-1 left-1 w-[calc(50%-0.125rem)] rounded-md bg-primary transition-transform duration-250 ease-out",
+              game === EGame.Poe2 && "translate-x-full",
+            )}
+          />
+          <div className="relative z-10 flex items-center">
+            {Object.values(EGame).map((gameVersion) => {
+              const isChecked = game === gameVersion;
+              return (
+                <Button
+                  key={gameVersion}
+                  aria-pressed={isChecked}
+                  onClick={() => handleSelectGame(gameVersion)}
+                  className={clsx(
+                    "h-8 min-w-16 px-3.5 flex items-center justify-center rounded-md text-sm font-semibold tracking-wide transition-colors duration-200 cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--wc-gold)",
+                    isChecked
+                      ? "text-primary-content"
+                      : "text-(--wc-text-60)/92",
+                  )}
+                >
+                  {gameToLabel(gameVersion)}
+                </Button>
+              );
+            })}
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }

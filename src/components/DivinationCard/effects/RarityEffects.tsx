@@ -10,6 +10,6 @@ interface RarityEffectsProps extends CardEffectProps {
 
 export function RarityEffects({ rarity, ...effectProps }: RarityEffectsProps) {
   if (rarity === 1) return <ExtremelyRareEffect {...effectProps} />;
-  if (rarity === 2 || rarity === 3) return <RareEffect {...effectProps} />;
+  if (rarity === 2) return <RareEffect {...effectProps} />;
   return <CommonEffect {...effectProps} />;
 }
