@@ -1,5 +1,5 @@
 import { PageHeader } from "../../../../components/page-header/PageHeader/PageHeader";
-import { Route } from "../../../../routes/$game/$league/soothsayer";
+import { Route } from "../../../../routes/soothsayer";
 import { SoothsayerFeatureGallery } from "../../components/SoothsayerFeatureGallery/SoothsayerFeatureGallery";
 import { SoothsayerGalleryProvider } from "../../components/SoothsayerGalleryProvider/SoothsayerGalleryProvider";
 import {
@@ -31,7 +31,7 @@ export function SoothsayerPage() {
   };
 
   return (
-    <div className="flex flex-1 flex-col min-h-0 bg-(--wc-header-bg)">
+    <div className="flex flex-1 flex-col min-h-0 bg-primary-content">
       <PageHeader
         title="Soothsayer"
         subtitle={<SoothsayerPageSubtitle />}

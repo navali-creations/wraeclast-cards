@@ -22,7 +22,6 @@ import { Route as CardsCardIdRouteImport } from './routes/cards/$cardId'
 import { Route as GameLeagueRouteImport } from './routes/$game/$league'
 import { Route as GameLeagueIndexRouteImport } from './routes/$game/$league/index'
 import { Route as GameLeagueStackedDecksRouteImport } from './routes/$game/$league/stacked-decks'
-import { Route as GameLeagueSoothsayerIndexRouteImport } from './routes/$game/$league/soothsayer/index'
 import { Route as GameLeagueCardsIndexRouteImport } from './routes/$game/$league/cards/index'
 import { Route as GameLeagueCardsCardIdRouteImport } from './routes/$game/$league/cards/$cardId'
 
@@ -91,12 +90,6 @@ const GameLeagueStackedDecksRoute = GameLeagueStackedDecksRouteImport.update({
   path: '/stacked-decks',
   getParentRoute: () => GameLeagueRoute,
 } as any)
-const GameLeagueSoothsayerIndexRoute =
-  GameLeagueSoothsayerIndexRouteImport.update({
-    id: '/soothsayer/',
-    path: '/soothsayer/',
-    getParentRoute: () => GameLeagueRoute,
-  } as any)
 const GameLeagueCardsIndexRoute = GameLeagueCardsIndexRouteImport.update({
   id: '/cards/',
   path: '/cards/',
@@ -124,7 +117,6 @@ export interface FileRoutesByFullPath {
   '/$game/$league/': typeof GameLeagueIndexRoute
   '/$game/$league/cards/$cardId': typeof GameLeagueCardsCardIdRoute
   '/$game/$league/cards/': typeof GameLeagueCardsIndexRoute
-  '/$game/$league/soothsayer/': typeof GameLeagueSoothsayerIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -141,7 +133,6 @@ export interface FileRoutesByTo {
   '/$game/$league': typeof GameLeagueIndexRoute
   '/$game/$league/cards/$cardId': typeof GameLeagueCardsCardIdRoute
   '/$game/$league/cards': typeof GameLeagueCardsIndexRoute
-  '/$game/$league/soothsayer': typeof GameLeagueSoothsayerIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -160,7 +151,6 @@ export interface FileRoutesById {
   '/$game/$league/': typeof GameLeagueIndexRoute
   '/$game/$league/cards/$cardId': typeof GameLeagueCardsCardIdRoute
   '/$game/$league/cards/': typeof GameLeagueCardsIndexRoute
-  '/$game/$league/soothsayer/': typeof GameLeagueSoothsayerIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -180,7 +170,6 @@ export interface FileRouteTypes {
     | '/$game/$league/'
     | '/$game/$league/cards/$cardId'
     | '/$game/$league/cards/'
-    | '/$game/$league/soothsayer/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -197,7 +186,6 @@ export interface FileRouteTypes {
     | '/$game/$league'
     | '/$game/$league/cards/$cardId'
     | '/$game/$league/cards'
-    | '/$game/$league/soothsayer'
   id:
     | '__root__'
     | '/'
@@ -215,7 +203,6 @@ export interface FileRouteTypes {
     | '/$game/$league/'
     | '/$game/$league/cards/$cardId'
     | '/$game/$league/cards/'
-    | '/$game/$league/soothsayer/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -324,13 +311,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof GameLeagueStackedDecksRouteImport
       parentRoute: typeof GameLeagueRoute
     }
-    '/$game/$league/soothsayer/': {
-      id: '/$game/$league/soothsayer/'
-      path: '/soothsayer'
-      fullPath: '/$game/$league/soothsayer/'
-      preLoaderRoute: typeof GameLeagueSoothsayerIndexRouteImport
-      parentRoute: typeof GameLeagueRoute
-    }
     '/$game/$league/cards/': {
       id: '/$game/$league/cards/'
       path: '/cards'
@@ -353,7 +333,6 @@ interface GameLeagueRouteChildren {
   GameLeagueIndexRoute: typeof GameLeagueIndexRoute
   GameLeagueCardsCardIdRoute: typeof GameLeagueCardsCardIdRoute
   GameLeagueCardsIndexRoute: typeof GameLeagueCardsIndexRoute
-  GameLeagueSoothsayerIndexRoute: typeof GameLeagueSoothsayerIndexRoute
 }
 
 const GameLeagueRouteChildren: GameLeagueRouteChildren = {
@@ -361,7 +340,6 @@ const GameLeagueRouteChildren: GameLeagueRouteChildren = {
   GameLeagueIndexRoute: GameLeagueIndexRoute,
   GameLeagueCardsCardIdRoute: GameLeagueCardsCardIdRoute,
   GameLeagueCardsIndexRoute: GameLeagueCardsIndexRoute,
-  GameLeagueSoothsayerIndexRoute: GameLeagueSoothsayerIndexRoute,
 }
 
 const GameLeagueRouteWithChildren = GameLeagueRoute._addFileChildren(
