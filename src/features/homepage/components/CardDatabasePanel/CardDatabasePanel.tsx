@@ -1,4 +1,6 @@
 import { preload } from "react-dom";
+import { FiArrowRight } from "react-icons/fi";
+import { ButtonInternalLink } from "../../../../components/buttons/ButtonLink";
 import {
   DIVINATION_CARD_HEIGHT,
   DIVINATION_CARD_WIDTH,
@@ -6,7 +8,7 @@ import {
 import { Heading } from "../../../../components/headings";
 import { Text } from "../../../../components/text";
 import { useCardsQuery } from "../../../cards/hooks";
-import { useRandomCards } from "../../hooks/useRandomCards";
+import { useRarityPreviewCards } from "../../hooks/useRarityPreviewCards";
 import { SCALE, ScaledCard } from "./ScaledCard";
 
 const CARD_COUNT = 4;
@@ -17,7 +19,7 @@ const SKELETON_KEYS = Array.from(
 
 export function CardDatabasePanel() {
   const { data: allCards, isLoading } = useCardsQuery();
-  const cards = useRandomCards(CARD_COUNT);
+  const cards = useRarityPreviewCards();
   const hasCards = cards.length > 0;
 
   for (const card of cards) {
@@ -72,6 +74,15 @@ export function CardDatabasePanel() {
           </Text>
         )}
       </div>
+
+      <ButtonInternalLink
+        gameScoped
+        to="/cards"
+        className="mt-auto flex items-center justify-center gap-2 rounded-lg border border-(--wc-accent-border) bg-(--wc-glow) px-4 py-2 text-center text-sm font-medium text-(--wc-text-90) transition-colors hover:brightness-110"
+      >
+        Browse all cards
+        <FiArrowRight aria-hidden="true" />
+      </ButtonInternalLink>
     </div>
   );
 }

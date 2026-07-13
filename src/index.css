@@ -44,7 +44,6 @@ body {
 
 /* ── Font theme tokens ────────────────────────────────────── */
 @theme {
-  --font-cinzel: "Cinzel", "Trajan Pro", serif;
   --breakpoint-xs: 426px;
 }
 
@@ -279,7 +278,7 @@ body {
 .prose h4,
 .prose h5,
 .prose h6 {
-  font-family: "Cinzel", "Palatino Linotype", serif;
+  font-family: "Fontin", "Palatino Linotype", serif;
   color: var(--wc-gold);
   line-height: 1.25;
   margin-top: 2em;
