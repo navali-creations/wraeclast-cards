@@ -1,3 +1,4 @@
+import clsx from "clsx";
 import { useMemo, useRef } from "react";
 import type { Card } from "../../features/cards/types";
 import { CardFrame } from "./components/CardFrame";
@@ -5,7 +6,17 @@ import { RarityEffects } from "./effects/RarityEffects";
 import { useCardMouseEffects } from "./hooks/useCardMouseEffects";
 import { renderRewardHtml } from "./utils/renderRewardHtml";
 
-export function DivinationCard({ card }: { card: Card }) {
+interface DivinationCardProps {
+  card: Card;
+  className?: string;
+  scaleClassName?: string;
+}
+
+export function DivinationCard({
+  card,
+  className,
+  scaleClassName,
+}: DivinationCardProps) {
   const cardRef = useRef<HTMLDivElement>(null);
   const rewardContent = useMemo(
     () => renderRewardHtml(card.rewardHtml),
@@ -14,10 +25,10 @@ export function DivinationCard({ card }: { card: Card }) {
   const { mousePos, isHovered, rotateX, rotateY } =
     useCardMouseEffects(cardRef);
 
-  return (
+  const cardElement = (
     <div
       ref={cardRef}
-      className="relative w-80 h-119"
+      className={clsx("relative w-80 h-119", !scaleClassName && className)}
       style={{
         transform: `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`,
         transition: isHovered
@@ -90,6 +101,23 @@ export function DivinationCard({ card }: { card: Card }) {
         posX={mousePos.x}
         posY={mousePos.y}
       />
+    </div>
+  );
+
+  if (!scaleClassName) return cardElement;
+
+  return (
+    <div
+      className={clsx(
+        "relative h-[calc(29.75rem*var(--wc-card-scale))] w-[calc(20rem*var(--wc-card-scale))]",
+        "[--wc-card-scale:1]",
+        scaleClassName,
+        className,
+      )}
+    >
+      <div className="absolute top-0 left-0 origin-top-left [transform:scale(var(--wc-card-scale))]">
+        {cardElement}
+      </div>
     </div>
   );
 }
