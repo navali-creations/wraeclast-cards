@@ -2,8 +2,10 @@ import { navigationRoutes } from "../../config/navigation";
 import { NavItemLink } from "../links";
 
 const LINK_CLASS_NAME =
-  "text-sm text-(--wc-text-60) hover:bg-transparent hover:text-(--wc-text-60) focus:outline-none focus-visible:outline-none focus:bg-transparent focus-visible:bg-transparent";
-const ACTIVE_PROPS = { className: "text-(--wc-text-90)!" };
+  "!rounded-none border-b-2 border-transparent px-3 py-2 text-sm text-(--wc-text-60) transition-[color,border-color] hover:border-(--wc-gold-dim) hover:bg-transparent hover:text-(--wc-text-90) focus:bg-transparent focus:outline-none focus-visible:border-(--wc-gold-dim) focus-visible:bg-transparent focus-visible:outline-none";
+const ACTIVE_PROPS = {
+  className: "!border-(--wc-gold) !text-(--wc-text-90)",
+};
 
 export function HeaderDesktopNavigation() {
   return (

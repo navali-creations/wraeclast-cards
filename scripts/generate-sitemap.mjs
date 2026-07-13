@@ -519,7 +519,6 @@ function buildRedirects(entries, defaultLeagueByGame) {
   const poe2Default = defaultLeagueByGame.poe2 ?? "standard";
   const redirects = [
     `/cards /path-of-exile/${poe1Default}/cards 308`,
-    `/cards/* /path-of-exile/${poe1Default}/cards/:splat 308`,
     `/stacked-decks /path-of-exile/${poe1Default}/stacked-decks 308`,
     `/path-of-exile /path-of-exile/${poe1Default} 308`,
     `/path-of-exile-2 /path-of-exile-2/${poe2Default} 308`,
@@ -532,6 +531,7 @@ function buildRedirects(entries, defaultLeagueByGame) {
   }
 
   redirects.push(
+    `/cards/* /path-of-exile/${poe1Default}/cards/:splat 308`,
     "",
     "# Card details are intentionally still client-rendered while that page is under development.",
     "/path-of-exile/:league/cards/:cardId /index.html 200",
