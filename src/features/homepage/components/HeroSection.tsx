@@ -1,5 +1,4 @@
 import clsx from "clsx";
-import { Heading } from "../../../components/headings";
 import { Text } from "../../../components/text";
 import { useDropRatesIndex } from "../api/dropRatesIndex";
 import { useHeroQuote } from "../hooks/useHeroQuote";
@@ -21,18 +20,21 @@ export function HeroSection() {
 
   return (
     <div className="flex flex-col items-start gap-8">
+      <h1 className="sr-only">
+        Path of Exile divination cards and stacked deck drop rates
+      </h1>
       <div className="grid w-full grid-cols-1 items-start gap-8 md:grid-cols-[minmax(0,58%)_minmax(0,1fr)] md:gap-x-4 md:gap-y-8 lg:grid-cols-1 lg:justify-items-center lg:gap-8">
         <div className="flex flex-col gap-4 md:col-span-2 md:justify-self-center lg:col-span-1">
-          <div className="flex flex-col gap-4">
-            <Heading
-              as="h1"
+          <blockquote className="flex flex-col gap-4">
+            <Text
+              as="p"
               className={clsx(
-                "max-w-none text-center text-2xl leading-tight tracking-normal text-(--wc-gold) italic lg:max-w-[24ch]",
+                "max-w-none text-center font-fontin text-2xl font-bold leading-tight tracking-normal text-(--wc-gold) italic lg:max-w-[24ch]",
                 quoteSizeClass,
               )}
             >
               &ldquo;{quote}&rdquo;
-            </Heading>
+            </Text>
 
             <Text
               as="cite"
@@ -44,7 +46,7 @@ export function HeroSection() {
               </span>
               {attribution}
             </Text>
-          </div>
+          </blockquote>
         </div>
 
         <div className="flex w-full flex-col gap-4 md:col-span-2 md:row-start-2 lg:col-span-1 lg:row-auto">

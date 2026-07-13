@@ -57,3 +57,13 @@ jobs:
         env:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+
+      # The script submits the stable sitemap URL only after production deploys succeed.
+      # It exits cleanly until the two Google service-account secrets are configured.
+      - name: Submit sitemap to Google Search Console
+        run: pnpm sitemap:submit:google
+        env:
+          GOOGLE_SEARCH_CONSOLE_CLIENT_EMAIL: ${{ secrets.GOOGLE_SEARCH_CONSOLE_CLIENT_EMAIL }}
+          GOOGLE_SEARCH_CONSOLE_PRIVATE_KEY: ${{ secrets.GOOGLE_SEARCH_CONSOLE_PRIVATE_KEY }}
+          GOOGLE_SEARCH_CONSOLE_SITE_URL: sc-domain:wraeclast.cards
+          GOOGLE_SEARCH_CONSOLE_SITEMAP_URL: https://wraeclast.cards/sitemap.xml

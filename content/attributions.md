@@ -1,12 +1,12 @@
 # Attributions
 
-Wraeclast Cards relies on the following third-party and community-maintained data sources:
+wraeclast.cards relies on the following third-party and community-maintained data sources:
 
 ## Data Sources
 
 ### Prohibited Library
 
-Divination card drop weight data sourced from community-maintained research.
+The average-weight estimation formula is based on community-maintained research by @nerdyjoe. wraeclast.cards applies the formula as a reference model rather than importing the spreadsheet's published weight values.
 
 - https://docs.google.com/spreadsheets/d/1PmGES_e1on6K7O5ghHuoorEjruAVb7dQ5m7PGrW7t80/edit?gid=272334906#gid=272334906
 

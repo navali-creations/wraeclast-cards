@@ -143,7 +143,7 @@ export function createColumns(verified: boolean) {
       "reference_estimated_chance",
       headerWithTooltip(
         "Reference Estimate",
-        "Modeled chance derived from Prohibited Library reference weights; it is not a known drop probability.",
+        "Modeled chance derived from the Prohibited Library average-weight formula; it is not a known drop probability.",
       ),
       {
         align: "right",
@@ -181,7 +181,7 @@ export function createAdvancedColumns(verified: boolean) {
       "reference_weight",
       headerWithTooltip(
         "Reference Weight",
-        "External Prohibited Library weight used as a comparison benchmark.",
+        "Modeled comparison value based on the Prohibited Library average-weight formula.",
       ),
       {
         align: "right",

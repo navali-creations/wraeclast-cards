@@ -1,6 +1,4 @@
-# Fonts live under assets/fonts/ and are content-hashed, so any filename here
-# is safe to cache indefinitely regardless of what the hash currently is.
-# JS/CSS bundles stay directly under assets/ and are intentionally excluded so
-# users get updates without clearing their cache.
-/assets/fonts/*
+# Vite content-hashes every production asset filename. A new deployment gets a
+# new URL, so browsers can safely retain old JS, CSS, and fonts indefinitely.
+/assets/*
   Cache-Control: public, max-age=31536000, immutable

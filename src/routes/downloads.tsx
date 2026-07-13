@@ -1,6 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { createStaticPageSeoHead } from "../lib/seo";
 
 export const Route = createFileRoute("/downloads")({
+  head: () => createStaticPageSeoHead("downloads"),
   component: DownloadsPage,
 });
 

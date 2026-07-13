@@ -1,52 +1,19 @@
-import fs from "node:fs";
 import tailwindcss from "@tailwindcss/vite";
 import { tanstackRouter } from "@tanstack/router-plugin/vite";
 import react from "@vitejs/plugin-react";
-import { defineConfig, type Plugin } from "vite";
-
-function preloadCdnPlugin(): Plugin {
-  return {
-    name: "preload-cdn",
-    transformIndexHtml() {
-      const poe1CardsPackage = JSON.parse(
-        fs.readFileSync(
-          "node_modules/@navali/poe1-divination-cards/package.json",
-          "utf-8",
-        ),
-      );
-      const base = `https://cdn.jsdelivr.net/npm/@navali/poe1-divination-cards@${poe1CardsPackage.version}`;
-      return [
-        {
-          tag: "link",
-          attrs: {
-            rel: "preload",
-            as: "fetch",
-            href: `${base}/data/cards.json`,
-            crossorigin: "",
-          },
-          injectTo: "head",
-        },
-        {
-          tag: "link",
-          attrs: {
-            rel: "preload",
-            as: "image",
-            href: `${base}/data/Divination_card_frame.png`,
-          },
-          injectTo: "head",
-        },
-      ];
-    },
-  };
-}
+import { defineConfig } from "vite";
 
 export default defineConfig({
-  plugins: [tailwindcss(), react(), tanstackRouter(), preloadCdnPlugin()],
+  plugins: [
+    tailwindcss(),
+    tanstackRouter({ autoCodeSplitting: true }),
+    react(),
+  ],
   build: {
     rollupOptions: {
       output: {
-        // Fonts get their own directory so the Cloudflare Pages _headers file
-        // can cache them with a single wildcard instead of per-filename rules.
+        // Keep font files grouped under assets/fonts while retaining Vite's
+        // content hash used by the immutable /assets/* cache policy.
         assetFileNames: (assetInfo) => {
           const name = assetInfo.names?.[0] ?? "";
           return /\.(woff2?|ttf|otf|eot)$/.test(name)

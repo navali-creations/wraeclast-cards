@@ -1,4 +1,4 @@
-# Wraeclast Cards
+# wraeclast.cards
 
 ## Setup
 
@@ -27,6 +27,24 @@ Run the project:
 pnpm install
 pnpm dev
 ```
+
+## Google Search Console sitemap submission
+
+The production publishing workflow submits `https://wraeclast.cards/sitemap.xml`
+after a successful Cloudflare Pages deployment. Configure these GitHub Actions
+repository secrets:
+
+- `GOOGLE_SEARCH_CONSOLE_CLIENT_EMAIL`: a Google Cloud service-account email
+- `GOOGLE_SEARCH_CONSOLE_PRIVATE_KEY`: that service account's PEM private key
+
+Enable the Search Console API in the service account's Google Cloud project and
+add the service-account email as a user of the `sc-domain:wraeclast.cards`
+Search Console property. Without both secrets, the workflow safely skips the
+submission.
+
+The sitemap generator writes a normal sitemap while the site has at most 50,000
+indexable URLs. Above that limit, `sitemap.xml` automatically becomes a sitemap
+index pointing to child files of at most 45,000 URLs each.
 
 ## Code Quality
 

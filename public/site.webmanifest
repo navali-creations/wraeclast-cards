@@ -1,0 +1,16 @@
+{
+  "name": "wraeclast.cards",
+  "short_name": "wraeclast.cards",
+  "description": "Path of Exile divination card data and community-observed stacked deck drop rates.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#290000",
+  "theme_color": "#290000",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}
