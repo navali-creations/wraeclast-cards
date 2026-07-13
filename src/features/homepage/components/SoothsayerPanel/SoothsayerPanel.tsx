@@ -31,7 +31,6 @@ export function SoothsayerPanel() {
         />
 
         <ButtonInternalLink
-          gameScoped
           to="/soothsayer"
           className="inline-flex w-full items-center justify-center gap-2 rounded-lg border border-(--wc-accent-border) bg-(--wc-glow) px-4 py-2 text-center text-sm font-medium text-(--wc-text-90) transition-colors hover:brightness-110 md:col-start-1 md:row-start-2 md:self-end"
         >
