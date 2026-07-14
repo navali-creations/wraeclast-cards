@@ -1,25 +1,25 @@
-import { HiMagnifyingGlass } from "react-icons/hi2";
-import { SearchInput } from "../../../../components/input";
+import { FilterBar } from "./FilterBar/FilterBar";
+import type { FilterFacet, FilterValue } from "./FilterBar/FilterBar.utils";
 
 interface CardsFiltersProps {
-  value: string;
-  onChange: (value: string) => void;
-  suggestions: string[];
+  filterFacets: FilterFacet[];
+  filterValue: FilterValue;
+  onFilterValueChange: (value: FilterValue) => void;
 }
 
 export function CardsFilters({
-  value,
-  onChange,
-  suggestions,
+  filterFacets,
+  filterValue,
+  onFilterValueChange,
 }: CardsFiltersProps) {
   return (
-    <SearchInput
-      value={value}
-      onChange={onChange}
-      suggestions={suggestions}
-      placeholder="Search cards or rewards…"
-      leftIcon={<HiMagnifyingGlass className="size-4" />}
-      containerClassName="w-full sm:max-w-sm"
-    />
+    <div className="flex w-full flex-col gap-3">
+      <FilterBar
+        facets={filterFacets}
+        value={filterValue}
+        onChange={onFilterValueChange}
+        className="w-full"
+      />
+    </div>
   );
 }

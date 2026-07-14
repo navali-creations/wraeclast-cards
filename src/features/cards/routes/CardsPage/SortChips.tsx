@@ -1,5 +1,6 @@
+import clsx from "clsx";
+import type { MouseEvent } from "react";
 import { FiChevronDown, FiChevronUp } from "react-icons/fi";
-import { Button } from "../../../../components/buttons";
 
 interface SortChipsProps {
   labels: readonly string[];
@@ -14,16 +15,30 @@ export function SortChips({
   activeDesc,
   onSelect,
 }: SortChipsProps) {
+  const handleSelect = (event: MouseEvent<HTMLButtonElement>) => {
+    const { label } = event.currentTarget.dataset;
+    if (label) onSelect(label);
+  };
+
   return (
-    <div className="flex items-center gap-2 sm:ml-auto sm:justify-end">
+    <div className="flex items-center gap-2">
       {labels.map((label) => {
         const isActive = activeLabel === label;
+
         return (
-          <Button
+          <button
             key={label}
-            onClick={() => onSelect(label)}
-            variant={isActive ? "controlActive" : "control"}
-            className="whitespace-nowrap"
+            type="button"
+            data-label={label}
+            onClick={handleSelect}
+            style={{ fontWeight: 400 }}
+            className={clsx(
+              "btn btn-md gap-1.5 whitespace-nowrap font-normal! normal-case",
+              {
+                "btn-primary": isActive,
+                "btn-outline btn-primary": !isActive,
+              },
+            )}
           >
             {label}
             {isActive && (
@@ -31,7 +46,7 @@ export function SortChips({
                 {activeDesc ? <FiChevronDown /> : <FiChevronUp />}
               </span>
             )}
-          </Button>
+          </button>
         );
       })}
     </div>

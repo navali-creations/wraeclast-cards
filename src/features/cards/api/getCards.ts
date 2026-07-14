@@ -1,5 +1,11 @@
 import type { EGame } from "../../../enums";
 import {
+  cleanRewardHtml,
+  extractRewardTags,
+  getRewardSearchText,
+  stripHtmlText,
+} from "../cards.utils";
+import {
   type DivinationCardsDataSource,
   getCardsDataUrl,
   getDivinationCardsDataSource,
@@ -18,6 +24,20 @@ type RawCard = {
   weight?: number;
 };
 
+function isOptionalString(value: unknown): value is string | undefined {
+  return value === undefined || typeof value === "string";
+}
+
+function isOptionalBoolean(value: unknown): value is boolean | undefined {
+  return value === undefined || typeof value === "boolean";
+}
+
+function isOptionalFiniteNumber(value: unknown): value is number | undefined {
+  return (
+    value === undefined || (typeof value === "number" && Number.isFinite(value))
+  );
+}
+
 function isRawCard(value: unknown): value is RawCard {
   if (!value || typeof value !== "object") return false;
 
@@ -26,7 +46,14 @@ function isRawCard(value: unknown): value is RawCard {
   return (
     typeof card.name === "string" &&
     typeof card.stack_size === "number" &&
-    typeof card.description === "string"
+    Number.isFinite(card.stack_size) &&
+    typeof card.description === "string" &&
+    isOptionalString(card.reward_html) &&
+    isOptionalString(card.art_src) &&
+    isOptionalString(card.flavour_html) &&
+    isOptionalBoolean(card.is_disabled) &&
+    isOptionalBoolean(card.from_boss) &&
+    isOptionalFiniteNumber(card.weight)
   );
 }
 
@@ -46,38 +73,16 @@ function weightToDropRarity(weight: number | undefined): CardRarity {
   return 1;
 }
 
-function stripHtml(html: string): string {
-  return html
-    .replace(/<br\s*\/?>/gi, " ")
-    .replace(/<[^>]+>/g, "")
-    .trim();
-}
-
-function cleanRewardHtml(html: string): string {
-  let result = html
-    .replace(/\[\[File:[^\]]*\]\]/g, "")
-    .replace(/\[\[[^\]|]*\|([^\]]+)\]\]/g, "$1")
-    .replace(/\[\[([^\]]+)\]\]/g, "$1");
-
-  // Unwrap non-tc spans (hoverbox etc.) while keeping their content
-  let prev = "";
-  while (prev !== result) {
-    prev = result;
-    result = result.replace(
-      /<span[^>]*class="(?!tc[\s"])[^"]*"[^>]*>([\s\S]*?)<\/span>/g,
-      "$1",
-    );
-  }
-
-  return result.trim();
-}
-
 interface GetCardsParams {
   game: EGame;
   leagueName?: string;
 }
 
 function toCard(raw: RawCard, source: DivinationCardsDataSource): Card {
+  const rewardHtml = raw.reward_html
+    ? cleanRewardHtml(raw.reward_html)
+    : raw.description;
+
   return {
     id: raw.name,
     name: raw.name,
@@ -86,11 +91,11 @@ function toCard(raw: RawCard, source: DivinationCardsDataSource): Card {
       : undefined,
     frameUrl: source.frameUrl,
     separatorUrl: source.separatorUrl,
-    flavourText: raw.flavour_html ? stripHtml(raw.flavour_html) : undefined,
+    flavourText: raw.flavour_html ? stripHtmlText(raw.flavour_html) : undefined,
     rewardText: raw.description,
-    rewardHtml: raw.reward_html
-      ? cleanRewardHtml(raw.reward_html)
-      : raw.description,
+    rewardHtml,
+    rewardSearchText: getRewardSearchText(rewardHtml),
+    rewardTags: extractRewardTags(raw.reward_html),
     stackSize: raw.stack_size,
     dropLocations: [],
     rarity: weightToDropRarity(raw.weight),
