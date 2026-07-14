@@ -2,20 +2,46 @@ import { useNavigate, useParams } from "@tanstack/react-router";
 import clsx from "clsx";
 import type { MouseEvent } from "react";
 import { FiChevronDown } from "react-icons/fi";
+import { useGameContext } from "../../app/game-context";
 import { useLeagueContext } from "../../app/league-context";
+import { EGame } from "../../enums";
 import type { DropRateLeague } from "../../lib/dropRates";
+import { gameToLabel, gameToSlug } from "../../lib/gameSlug";
 import { leagueToSlug } from "../../lib/leagueSlug";
 import { useDropdown } from "../../lib/useDropdown";
 import { Button } from "../buttons";
 
+const SHOW_GAME_SELECTOR = false;
+
 export function HeaderActions() {
+  const { game, setGame } = useGameContext();
   const { leagues, selectedLeague, selectedLeagueId, setSelectedLeague } =
     useLeagueContext();
   const { open, containerRef, toggle, close } = useDropdown();
-  const { league: leagueParam } = useParams({
+  const { game: gameParam, league: leagueParam } = useParams({
     strict: false,
   });
   const navigate = useNavigate();
+
+  function handleSelectGame(nextGame: EGame) {
+    if (game === nextGame) return;
+    if (gameParam) {
+      navigate({
+        to: ".",
+        params: (prev) => ({ ...prev, game: gameToSlug(nextGame) }),
+        search: (prev) => prev,
+      });
+      return;
+    }
+    setGame(nextGame);
+  }
+
+  function handleGameClick(event: MouseEvent<HTMLButtonElement>) {
+    const { game: nextGame } = event.currentTarget.dataset;
+    if (nextGame !== EGame.Poe1 && nextGame !== EGame.Poe2) return;
+
+    handleSelectGame(nextGame);
+  }
 
   function handleSelectLeague(league: DropRateLeague) {
     if (league.id === selectedLeagueId) return;
@@ -97,6 +123,40 @@ export function HeaderActions() {
           ))}
         </div>
       </div>
+
+      {SHOW_GAME_SELECTOR && (
+        <div className="relative shrink-0 rounded-lg bg-(--wc-card-darker) p-1 ring-1 ring-(--wc-border)">
+          <span
+            aria-hidden="true"
+            className={clsx(
+              "absolute inset-y-1 left-1 w-[calc(50%-0.125rem)] rounded-md bg-primary transition-transform duration-250 ease-out",
+              { "translate-x-full": game === EGame.Poe2 },
+            )}
+          />
+          <div className="relative z-10 flex items-center">
+            {Object.values(EGame).map((gameVersion) => {
+              const isChecked = game === gameVersion;
+              return (
+                <Button
+                  key={gameVersion}
+                  aria-pressed={isChecked}
+                  data-game={gameVersion}
+                  onClick={handleGameClick}
+                  className={clsx(
+                    "flex h-8 min-w-16 cursor-pointer items-center justify-center rounded-md px-3.5 text-sm font-semibold tracking-wide transition-colors duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--wc-gold)",
+                    {
+                      "text-primary-content": isChecked,
+                      "text-(--wc-text-60)/92": !isChecked,
+                    },
+                  )}
+                >
+                  {gameToLabel(gameVersion)}
+                </Button>
+              );
+            })}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
