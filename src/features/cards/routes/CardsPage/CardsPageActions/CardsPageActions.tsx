@@ -5,40 +5,23 @@ import { Button } from "../../../../../components/buttons";
 import { Drawer } from "../../../../../components/Drawer/Drawer";
 import { SearchInput } from "../../../../../components/input";
 import { SegmentedControl } from "../../../../../components/SegmentedControl/SegmentedControl";
-import { CardsFilters } from "../../../components";
-import type {
-  FilterFacet,
-  FilterValue,
-} from "../../../components/CardsFilters/FilterBar/FilterBar.utils";
+import { FilterBar } from "../../../components/CardsFilters/FilterBar/FilterBar";
+import { useCardsPageControlsContext } from "../CardsPageControlsContext";
 import { SortChips } from "../SortChips";
 
-interface CardsPageActionsProps {
-  searchTerm: string;
-  suggestions: string[];
-  filterFacets: FilterFacet[];
-  filterValue: FilterValue;
-  sortLabels: readonly string[];
-  activeSortLabel: string | null;
-  activeDesc: boolean;
-  onSearchChange: (value: string) => void;
-  onFilterValueChange: (value: FilterValue) => void;
-  onClearControls: () => void;
-  onSortClick: (label: string) => void;
-}
-
-export function CardsPageActions({
-  searchTerm,
-  suggestions,
-  filterFacets,
-  filterValue,
-  sortLabels,
-  activeSortLabel,
-  activeDesc,
-  onSearchChange,
-  onFilterValueChange,
-  onClearControls,
-  onSortClick,
-}: CardsPageActionsProps) {
+export function CardsPageActions() {
+  const {
+    activeDesc,
+    activeSortLabel,
+    filterFacets,
+    filterValue,
+    onClearControls,
+    onFilterValueChange,
+    onSearchChange,
+    searchTerm,
+    sortLabels,
+    suggestions,
+  } = useCardsPageControlsContext();
   const [open, setOpen] = useState(false);
   const [drawerTab, setDrawerTab] = useState("filters");
   const selectedFilterCount = Object.values(filterValue).reduce(
@@ -106,18 +89,14 @@ export function CardsPageActions({
           />
 
           {drawerTab === "filters" ? (
-            <CardsFilters
-              filterFacets={filterFacets}
-              filterValue={filterValue}
-              onFilterValueChange={onFilterValueChange}
+            <FilterBar
+              facets={filterFacets}
+              value={filterValue}
+              onChange={onFilterValueChange}
+              className="w-full"
             />
           ) : (
-            <SortChips
-              labels={sortLabels}
-              activeLabel={activeSortLabel}
-              activeDesc={activeDesc}
-              onSelect={onSortClick}
-            />
+            <SortChips />
           )}
         </div>
       </Drawer>

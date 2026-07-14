@@ -1,29 +1,21 @@
 import clsx from "clsx";
 import type { MouseEvent } from "react";
 import { FiChevronDown, FiChevronUp } from "react-icons/fi";
+import { useCardsPageControlsContext } from "./CardsPageControlsContext";
 
-interface SortChipsProps {
-  labels: readonly string[];
-  activeLabel: string | null;
-  activeDesc: boolean;
-  onSelect: (label: string) => void;
-}
+export function SortChips() {
+  const { activeDesc, activeSortLabel, onSortClick, sortLabels } =
+    useCardsPageControlsContext();
 
-export function SortChips({
-  labels,
-  activeLabel,
-  activeDesc,
-  onSelect,
-}: SortChipsProps) {
   const handleSelect = (event: MouseEvent<HTMLButtonElement>) => {
     const { label } = event.currentTarget.dataset;
-    if (label) onSelect(label);
+    if (label) onSortClick(label);
   };
 
   return (
     <div className="flex items-center gap-2">
-      {labels.map((label) => {
-        const isActive = activeLabel === label;
+      {sortLabels.map((label) => {
+        const isActive = activeSortLabel === label;
 
         return (
           <button

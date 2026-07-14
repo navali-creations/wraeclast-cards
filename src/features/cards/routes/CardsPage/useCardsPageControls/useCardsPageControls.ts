@@ -12,22 +12,20 @@ export function useCardsPageControls() {
   });
 
   return {
-    actionsProps: {
-      searchTerm: searchState.searchTerm,
-      suggestions: filteredData.suggestions,
-      filterFacets: filteredData.filterFacets,
-      filterValue: searchState.filterValue,
-      sortLabels: CARD_SORT_LABELS,
-      activeSortLabel: searchState.activeSort.label,
-      activeDesc: searchState.activeDesc,
-      onSearchChange: searchState.onSearchChange,
-      onFilterValueChange: searchState.onFilterValueChange,
-      onClearControls: searchState.onClearControls,
-      onSortClick: searchState.onSortClick,
-    },
+    activeDesc: searchState.activeDesc,
+    activeSortLabel: searchState.activeSort.label,
     cardCount: filteredData.cardCount,
+    filterFacets: filteredData.filterFacets,
     filteredCards: filteredData.filteredCards,
+    filterValue: searchState.filterValue,
     hasError: filteredData.hasError,
     isLoading: filteredData.isLoading,
+    onClearControls: searchState.onClearControls,
+    onFilterValueChange: searchState.onFilterValueChange,
+    onSearchChange: searchState.onSearchChange,
+    onSortClick: searchState.onSortClick,
+    searchTerm: searchState.searchTerm,
+    sortLabels: CARD_SORT_LABELS,
+    suggestions: filteredData.suggestions,
   };
 }
