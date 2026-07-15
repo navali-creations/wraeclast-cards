@@ -8,6 +8,8 @@ const TRANSIENT_RESPONSE_STATUSES = new Set([408, 429, 500, 502, 503, 504]);
 const clientEmail = process.env.GOOGLE_SEARCH_CONSOLE_CLIENT_EMAIL;
 const rawPrivateKey = process.env.GOOGLE_SEARCH_CONSOLE_PRIVATE_KEY;
 const failOnError = process.env.GOOGLE_SEARCH_CONSOLE_FAIL_ON_ERROR !== "false";
+const skipSitemapCheck =
+  process.env.GOOGLE_SEARCH_CONSOLE_SKIP_SITEMAP_CHECK === "true";
 const siteUrl =
   process.env.GOOGLE_SEARCH_CONSOLE_SITE_URL ?? "sc-domain:wraeclast.cards";
 const sitemapUrl =
@@ -158,7 +160,10 @@ async function main() {
     );
   }
 
-  await waitForPublishedSitemap();
+  if (!skipSitemapCheck) {
+    await waitForPublishedSitemap();
+  }
+
   const accessToken = await getAccessToken();
   const endpoint = `${SEARCH_CONSOLE_API_URL}/sites/${encodeURIComponent(siteUrl)}/sitemaps/${encodeURIComponent(sitemapUrl)}`;
   const response = await fetchWithRetry(
