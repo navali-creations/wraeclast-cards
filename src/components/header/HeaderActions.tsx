@@ -1,5 +1,6 @@
 import { useNavigate, useParams } from "@tanstack/react-router";
 import clsx from "clsx";
+import type { MouseEvent } from "react";
 import { FiCheck, FiChevronDown } from "react-icons/fi";
 import { useGameContext } from "../../app/game-context";
 import { useLeagueContext } from "../../app/league-context";
@@ -32,10 +33,8 @@ export function HeaderActions() {
         <button
           type="button"
           aria-pressed={isSelected}
-          onClick={() => {
-            handleSelectLeague(league);
-            close();
-          }}
+          data-league-id={league.id}
+          onClick={handleLeagueClick}
           className={clsx(
             "flex w-full items-center justify-between gap-2 !min-h-0 !rounded-sm !px-2.5 !py-1.5 text-left font-fontin text-[15px] font-semibold !leading-tight transition-colors",
             isSelected
@@ -51,14 +50,23 @@ export function HeaderActions() {
   }
 
   function handleSelectGame(nextGame: EGame) {
+    if (game === nextGame) return;
     if (gameParam) {
       navigate({
         to: ".",
         params: (prev) => ({ ...prev, game: gameToSlug(nextGame) }),
+        search: (prev) => prev,
       });
       return;
     }
     setGame(nextGame);
+  }
+
+  function handleGameClick(event: MouseEvent<HTMLButtonElement>) {
+    const { game: nextGame } = event.currentTarget.dataset;
+    if (nextGame !== EGame.Poe1 && nextGame !== EGame.Poe2) return;
+
+    handleSelectGame(nextGame);
   }
 
   function handleSelectLeague(league: DropRateLeague) {
@@ -67,10 +75,20 @@ export function HeaderActions() {
       navigate({
         to: ".",
         params: (prev) => ({ ...prev, league: leagueToSlug(league) }),
+        search: (prev) => prev,
       });
       return;
     }
     setSelectedLeague(league);
+  }
+
+  function handleLeagueClick(event: MouseEvent<HTMLButtonElement>) {
+    const { leagueId } = event.currentTarget.dataset;
+    const league = leagues.find((candidate) => candidate.id === leagueId);
+    if (!league) return;
+
+    handleSelectLeague(league);
+    close();
   }
 
   return (
@@ -126,12 +144,12 @@ export function HeaderActions() {
       </div>
 
       {SHOW_GAME_SELECTOR && (
-        <div className="relative shrink-0 rounded-lg p-1 bg-(--wc-card-darker) ring-1 ring-(--wc-border)">
+        <div className="relative shrink-0 rounded-lg bg-(--wc-card-darker) p-1 ring-1 ring-(--wc-border)">
           <span
             aria-hidden="true"
             className={clsx(
               "absolute inset-y-1 left-1 w-[calc(50%-0.125rem)] rounded-md bg-primary transition-transform duration-250 ease-out",
-              game === EGame.Poe2 && "translate-x-full",
+              { "translate-x-full": game === EGame.Poe2 },
             )}
           />
           <div className="relative z-10 flex items-center">
@@ -141,12 +159,14 @@ export function HeaderActions() {
                 <Button
                   key={gameVersion}
                   aria-pressed={isChecked}
-                  onClick={() => handleSelectGame(gameVersion)}
+                  data-game={gameVersion}
+                  onClick={handleGameClick}
                   className={clsx(
-                    "h-8 min-w-16 px-3.5 flex items-center justify-center rounded-md text-sm font-semibold tracking-wide transition-colors duration-200 cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--wc-gold)",
-                    isChecked
-                      ? "text-primary-content"
-                      : "text-(--wc-text-60)/92",
+                    "flex h-8 min-w-16 cursor-pointer items-center justify-center rounded-md px-3.5 text-sm font-semibold tracking-wide transition-colors duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--wc-gold)",
+                    {
+                      "text-primary-content": isChecked,
+                      "text-(--wc-text-60)/92": !isChecked,
+                    },
                   )}
                 >
                   {gameToLabel(gameVersion)}

@@ -1,8 +1,8 @@
 import { createFileRoute, redirect } from "@tanstack/react-router";
 import { resolveStoredGame } from "../../app/game-context";
 import { resolveDefaultLeagueSlug } from "../../app/league-context";
+import { validateCardsSearch } from "../../features/cards/cardsSearchParams";
 import { gameToSlug } from "../../lib/gameSlug";
-import { validateCardsSearch } from "../$game/$league/cards";
 
 export const Route = createFileRoute("/cards/")({
   validateSearch: validateCardsSearch,
