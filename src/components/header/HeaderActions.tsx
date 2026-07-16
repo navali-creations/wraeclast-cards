@@ -1,5 +1,6 @@
 import { useNavigate, useParams } from "@tanstack/react-router";
 import clsx from "clsx";
+import type { MouseEvent } from "react";
 import { FiCheck, FiChevronDown } from "react-icons/fi";
 import { useGameContext } from "../../app/game-context";
 import { useLeagueContext } from "../../app/league-context";
@@ -32,10 +33,8 @@ export function HeaderActions() {
         <button
           type="button"
           aria-pressed={isSelected}
-          onClick={() => {
-            handleSelectLeague(league);
-            close();
-          }}
+          data-league-id={league.id}
+          onClick={handleLeagueClick}
           className={clsx(
             "flex w-full items-center justify-between gap-2 !min-h-0 !rounded-sm !px-2.5 !py-1.5 text-left font-fontin text-[15px] font-semibold !leading-tight transition-colors",
             isSelected
