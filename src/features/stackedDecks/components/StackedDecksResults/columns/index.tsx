@@ -43,12 +43,20 @@ function rankColumn() {
     header: "#",
     enableSorting: false,
     meta: {
-      thClassName: "w-10 hidden sm:table-cell",
-      tdClassName:
-        "text-xs tabular-nums text-(--wc-text-70) hidden sm:table-cell",
+      thClassName: "w-10",
+      tdClassName: "text-xs tabular-nums text-(--wc-text-70)",
     },
-    cell: ({ row, table }) =>
-      (table.options.meta?.pageOffset ?? 0) + row.index + 1,
+    cell: ({ row, table }) => {
+      const pageRowIndex = table
+        .getRowModel()
+        .rows.findIndex((visibleRow) => visibleRow.id === row.id);
+
+      return (
+        (table.options.meta?.pageOffset ?? 0) +
+        (pageRowIndex === -1 ? row.index : pageRowIndex) +
+        1
+      );
+    },
   });
 }
 
