@@ -1,3 +1,4 @@
+import { fetchDropRatesData } from "../../../../lib/dropRates";
 import type { DropRatesLeague } from "../../types";
 
 type GameIndex = {
@@ -15,13 +16,17 @@ export type DropRatesIndex = {
   };
 };
 
+function isDropRatesIndex(value: unknown): value is DropRatesIndex {
+  if (!value || typeof value !== "object") return false;
+
+  const data = value as Partial<DropRatesIndex>;
+  return !!data.games?.poe1 && !!data.games?.poe2;
+}
+
 export async function getDropRatesIndex() {
-  const res = await fetch("/data/drop-rates/index.json");
-  if (!res.ok)
-    throw new Error(`Failed to fetch drop rates index: ${res.status}`);
-  const data = await res.json();
-  if (!data?.games?.poe1 || !data?.games?.poe2) {
+  const data = await fetchDropRatesData("index.json");
+  if (!isDropRatesIndex(data)) {
     throw new Error("Unexpected drop rates index shape");
   }
-  return data as DropRatesIndex;
+  return data;
 }

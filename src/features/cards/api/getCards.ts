@@ -1,4 +1,5 @@
 import type { EGame } from "../../../enums";
+import { readJsonResponse } from "../../../lib/readJsonResponse";
 import {
   cleanRewardHtml,
   extractRewardTags,
@@ -107,8 +108,7 @@ function toCard(raw: RawCard, source: DivinationCardsDataSource): Card {
 
 async function fetchCards(url: string): Promise<RawCard[]> {
   const res = await fetch(url);
-  if (!res.ok) throw new Error(`Failed to fetch cards: ${res.status}`);
-  return parseRawCards(await res.json());
+  return parseRawCards(await readJsonResponse(res, `Card data from ${url}`));
 }
 
 export async function getCards({

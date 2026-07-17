@@ -1,9 +1,11 @@
+import { type CSSProperties, useEffect, useRef } from "react";
 import { DivinationCard } from "../../../../components/DivinationCard";
 import { CardLink } from "../../../../components/DivinationCard/CardLink/CardLink";
 import { Pagination } from "../../../../components/pagination";
 import { useUrlPagination } from "../../../../lib/useUrlPagination";
 import type { Card } from "../../types";
 import { ScrollToTop } from "..";
+import "./CardsGrid.css";
 import {
   CARDS_GRID_CLASS_NAME,
   CARDS_GRID_SCALE_CLASS_NAME,
@@ -26,10 +28,17 @@ export function CardsGrid({
   isLoading,
 }: CardsGridProps) {
   const { page, setPage } = useUrlPagination("/$game/$league/cards/");
+  const hasAnimatedCardsRef = useRef(false);
   const pageSize = useCardsPageSize();
 
   const totalPages = Math.max(1, Math.ceil(data.length / pageSize));
   const safePage = Math.min(page, totalPages);
+
+  useEffect(() => {
+    if (!isLoading && data.length > 0 && !hasAnimatedCardsRef.current) {
+      hasAnimatedCardsRef.current = true;
+    }
+  }, [data.length, isLoading]);
 
   if (hasError) return <EmptyMessage>Failed to load cards.</EmptyMessage>;
 
@@ -43,13 +52,18 @@ export function CardsGrid({
     );
 
   const pageData = data.slice((safePage - 1) * pageSize, safePage * pageSize);
+  const shouldAnimateCards = !hasAnimatedCardsRef.current;
 
   return (
     <div className="flex flex-col gap-6">
       <ScrollToTop />
       <ul className={CARDS_GRID_CLASS_NAME}>
-        {pageData.map((card) => (
-          <li key={card.id} className="list-none">
+        {pageData.map((card, idx) => (
+          <li
+            key={card.id}
+            className={`list-none${shouldAnimateCards ? " wc-card-enter" : ""}`}
+            style={{ "--card-stagger": idx } as CSSProperties}
+          >
             <CardLink cardId={card.id} className="block">
               <DivinationCard
                 card={card}
