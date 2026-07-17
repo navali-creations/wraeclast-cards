@@ -36,27 +36,3 @@ export function renderRewardHtml(html: string): ReactNode {
   if (!root) return html;
   return [...root.childNodes].map((node, i) => domNodeToReact(node, i));
 }
-
-export function getRewardPlainText(html: string): string {
-  if (!html || typeof DOMParser === "undefined") return html;
-  const doc = new DOMParser().parseFromString(
-    `<div>${html}</div>`,
-    "text/html",
-  );
-  const root = doc.body.firstElementChild;
-  if (!root) return html;
-
-  const segments: string[] = [];
-  let current = "";
-  for (const node of root.childNodes) {
-    if (node.nodeName === "BR") {
-      if (current.trim()) segments.push(current.trim());
-      current = "";
-    } else {
-      current += node.textContent ?? "";
-    }
-  }
-  if (current.trim()) segments.push(current.trim());
-
-  return segments.join(", ");
-}

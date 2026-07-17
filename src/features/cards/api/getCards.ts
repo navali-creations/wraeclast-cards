@@ -68,9 +68,9 @@ function parseRawCards(value: unknown): RawCard[] {
 
 function weightToDropRarity(weight: number | undefined): CardRarity {
   if (typeof weight !== "number" || weight <= 0) return 0;
-  if (weight > 4500) return 4;
-  if (weight > 800) return 3;
-  if (weight > 150) return 2;
+  if (weight > 5000) return 4;
+  if (weight > 1000) return 3;
+  if (weight > 30) return 2;
   return 1;
 }
 

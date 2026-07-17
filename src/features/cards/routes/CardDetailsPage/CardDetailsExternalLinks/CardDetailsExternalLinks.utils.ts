@@ -15,8 +15,8 @@ export function getPoeWikiUrl(name: string) {
   return `https://www.poewiki.net/wiki/${toUnderscoreSlug(name)}`;
 }
 
-export function getPoeNinjaUrl(name: string) {
-  return `https://poe.ninja/poe1/economy/divination-cards/${toKebabSlug(name)}`;
+export function getPoeNinjaUrl(name: string, league: string) {
+  return `https://poe.ninja/poe1/economy/${league.toLowerCase()}/divination-cards/${toKebabSlug(name)}`;
 }
 
 export function getPoeDbUrl(name: string) {

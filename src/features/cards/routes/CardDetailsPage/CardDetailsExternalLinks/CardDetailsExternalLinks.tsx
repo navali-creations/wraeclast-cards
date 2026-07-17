@@ -1,4 +1,5 @@
 import { FiBarChart2, FiBookOpen, FiDatabase } from "react-icons/fi";
+import { useLeagueContext } from "../../../../../app/league-context";
 import { ButtonExternalLink } from "../../../../../components/buttons";
 import type { Card } from "../../../types";
 import {
@@ -8,36 +9,38 @@ import {
 } from "./CardDetailsExternalLinks.utils";
 import "./CardDetailsExternalLinks.css";
 
-const EXTERNAL_LINKS = [
-  {
-    label: "PoE Wiki",
-    getUrl: getPoeWikiUrl,
-    icon: FiBookOpen,
-  },
-  {
-    label: "poe.ninja",
-    getUrl: getPoeNinjaUrl,
-    icon: FiBarChart2,
-  },
-  {
-    label: "PoEDB",
-    getUrl: getPoeDbUrl,
-    icon: FiDatabase,
-  },
-] as const;
-
 export function CardDetailsExternalLinks({ card }: { card: Card }) {
+  const { selectedLeague } = useLeagueContext();
+
+  const externalLinks = [
+    {
+      label: "PoE Wiki",
+      url: getPoeWikiUrl(card.name),
+      icon: FiBookOpen,
+    },
+    {
+      label: "poe.ninja",
+      url: getPoeNinjaUrl(card.name, selectedLeague.name),
+      icon: FiBarChart2,
+    },
+    {
+      label: "PoEDB",
+      url: getPoeDbUrl(card.name),
+      icon: FiDatabase,
+    },
+  ] as const;
+
   return (
     <nav
       aria-label="External card references"
       className="wc-divider-glow w-full pt-5"
     >
       <div className="grid w-full grid-cols-3 gap-2">
-        {EXTERNAL_LINKS.map(({ label, getUrl, icon: Icon }) => (
+        {externalLinks.map(({ label, url, icon: Icon }) => (
           <ButtonExternalLink
             key={label}
             className="wc-card-details-external-link"
-            href={getUrl(card.name)}
+            href={url}
             target="_blank"
             rel="noopener noreferrer"
           >

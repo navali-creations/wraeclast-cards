@@ -17,27 +17,29 @@ export function CardDetailsPage() {
   const { data: cards, isLoading, error } = useCardsQuery();
   const card = cards?.find((candidate) => candidate.id === cardId);
 
-  const content = error ? (
-    <EmptyMessage>Failed to load cards.</EmptyMessage>
-  ) : isLoading ? (
-    <CardDetailsSkeleton />
-  ) : !card ? (
-    <CardDetailsNotFound />
-  ) : (
-    <div className="overflow-hidden rounded-2xl border border-(--wc-border-dimmed) bg-(--wc-bg-dimmed)/40 p-4 sm:p-6">
-      <div className="grid flex-1 items-start justify-items-center gap-8 xl:grid-cols-[minmax(18rem,22rem)_minmax(0,42rem)] xl:justify-center xl:gap-12">
-        <div className="flex w-full max-w-88 flex-col items-center gap-4 xl:sticky xl:top-8 xl:self-start">
-          <DivinationCard
-            card={card}
-            className="shrink-0"
-            scaleClassName="[--wc-card-scale:0.9] xs:[--wc-card-scale:1]"
-          />
-          <CardDetailsExternalLinks card={card} />
+  function renderContent() {
+    if (error) return <EmptyMessage>Failed to load cards.</EmptyMessage>;
+    if (isLoading) return <CardDetailsSkeleton />;
+    if (!card) return <CardDetailsNotFound />;
+
+    return (
+      <div className="overflow-hidden rounded-2xl border border-(--wc-border-dimmed) bg-(--wc-bg-dimmed)/40 p-4 sm:p-6">
+        <div className="grid flex-1 items-start justify-items-center gap-8 xl:grid-cols-[minmax(18rem,22rem)_minmax(0,42rem)] xl:justify-center xl:gap-12">
+          <div className="flex w-full max-w-88 flex-col items-center gap-4 xl:sticky xl:top-8 xl:self-start">
+            <DivinationCard
+              card={card}
+              className="shrink-0"
+              scaleClassName="[--wc-card-scale:0.9] xs:[--wc-card-scale:1]"
+            />
+            <CardDetailsExternalLinks card={card} />
+          </div>
+          <CardDetailsInfo card={card} />
         </div>
-        <CardDetailsInfo card={card} />
       </div>
-    </div>
-  );
+    );
+  }
+
+  const content = renderContent();
 
   return (
     <div className="flex flex-1 flex-col min-h-0">
