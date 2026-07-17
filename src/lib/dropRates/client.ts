@@ -1,4 +1,5 @@
 import { queryOptions, useQuery } from "@tanstack/react-query";
+import { readJsonResponse } from "../readJsonResponse";
 import {
   normalizeGameDropRates,
   normalizeLeagueDropRates,
@@ -6,14 +7,14 @@ import {
 import type { Game, GameDropRates, LeagueDropRates } from "./types";
 
 const ONE_HOUR_MS = 1000 * 60 * 60;
+const DEFAULT_DROP_RATES_BASE_URL = "/data/drop-rates";
+const PRODUCTION_DROP_RATES_BASE_URL =
+  "https://wraeclast.cards/data/drop-rates";
 
 // Raw JSON fetcher; callers normalize the payload before it reaches React.
-async function fetchDropRates(url: string): Promise<unknown> {
+async function readDropRatesUrl(url: string): Promise<unknown> {
   const response = await fetch(url);
-  if (!response.ok) {
-    throw new Error(`Failed to fetch drop rates from ${url}`);
-  }
-  return response.json();
+  return readJsonResponse(response, `Drop rates data from ${url}`);
 }
 
 // Where the static drop-rate JSON files are hosted: an env override for
@@ -27,18 +28,48 @@ function getDropRatesBaseUrl() {
     typeof window !== "undefined" &&
     window.location.hostname.endsWith(".wraeclast-cards.pages.dev")
   ) {
-    return "https://wraeclast.cards/data/drop-rates";
+    return PRODUCTION_DROP_RATES_BASE_URL;
   }
 
-  return "/data/drop-rates";
+  return DEFAULT_DROP_RATES_BASE_URL;
 }
 
 // Joins the base URL with path segments (e.g. game, league id) into a full
 // drop-rates file URL, escaping each segment.
-function buildDropRatesUrl(...segments: string[]) {
-  const baseUrl = getDropRatesBaseUrl().replace(/\/+$/, "");
+function buildDropRatesUrl(baseUrl: string, ...segments: string[]) {
+  const normalizedBaseUrl = baseUrl.replace(/\/+$/, "");
 
-  return `${baseUrl}/${segments.map(encodeURIComponent).join("/")}`;
+  return `${normalizedBaseUrl}/${segments.map(encodeURIComponent).join("/")}`;
+}
+
+function shouldRetryWithProduction(baseUrl: string) {
+  return (
+    import.meta.env.DEV &&
+    !import.meta.env.VITE_DROP_RATES_BASE_URL &&
+    baseUrl === DEFAULT_DROP_RATES_BASE_URL
+  );
+}
+
+export async function fetchDropRatesData(
+  ...segments: string[]
+): Promise<unknown> {
+  const baseUrl = getDropRatesBaseUrl();
+  const primaryUrl = buildDropRatesUrl(baseUrl, ...segments);
+
+  try {
+    return await readDropRatesUrl(primaryUrl);
+  } catch (error) {
+    if (!shouldRetryWithProduction(baseUrl)) throw error;
+
+    console.warn(
+      "Local drop-rate data is unavailable; using production data instead.",
+      error,
+    );
+
+    return readDropRatesUrl(
+      buildDropRatesUrl(PRODUCTION_DROP_RATES_BASE_URL, ...segments),
+    );
+  }
 }
 
 // Fetches a game's league index (`<game>/index.json`), listing all leagues
@@ -49,7 +80,7 @@ export function gameDropRatesQueryOptions(game: Game) {
     queryKey: ["drop-rates", game],
     queryFn: async (): Promise<GameDropRates> =>
       normalizeGameDropRates(
-        await fetchDropRates(buildDropRatesUrl(game, "index.json")),
+        await fetchDropRatesData(game, "index.json"),
         game,
       ),
     staleTime: ONE_HOUR_MS,
@@ -67,7 +98,7 @@ export function useLeagueDropRates(game: Game, leagueId: string | undefined) {
     queryKey: ["drop-rates", game, leagueId],
     queryFn: async (): Promise<LeagueDropRates> =>
       normalizeLeagueDropRates(
-        await fetchDropRates(buildDropRatesUrl(game, `${leagueId}.json`)),
+        await fetchDropRatesData(game, `${leagueId}.json`),
         game,
       ),
     enabled: !!leagueId,

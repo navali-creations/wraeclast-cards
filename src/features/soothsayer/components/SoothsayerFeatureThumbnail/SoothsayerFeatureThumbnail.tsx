@@ -26,7 +26,7 @@ export function SoothsayerFeatureThumbnail({
       className={clsx(
         "aspect-[16/10] w-24 shrink-0 snap-start overflow-hidden rounded-md border bg-(--wc-card-darker) transition duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--wc-gold-dim) sm:w-28 lg:w-full",
         active
-          ? "border-(--wc-gold-dim) shadow-[0_0_0_2px_color-mix(in_oklch,var(--wc-gold-dim)_28%,transparent)]"
+          ? "border-(--wc-gold-dim) shadow-[0_0_0_2px_var(--wc-gold-dim)]/28"
           : "border-(--wc-border-dimmed) opacity-75 hover:border-(--wc-accent-border) hover:opacity-100",
       )}
     >

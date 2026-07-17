@@ -1,7 +1,11 @@
 import type { QueryClient } from "@tanstack/react-query";
 import type { EGame } from "../../enums";
 import { gameDropRatesQueryOptions } from "../../lib/dropRates";
-import { leagueToSlug, resolveSelectedLeague } from "../../lib/leagueSlug";
+import {
+  leagueToSlug,
+  resolveSelectedLeague,
+  STANDARD_LEAGUE_SLUG,
+} from "../../lib/leagueSlug";
 import { loadLeagueSlugs } from "./leagueSlugStorage";
 
 // Resolves which league a game/league-scoped route should redirect to when
@@ -13,10 +17,18 @@ export async function resolveDefaultLeagueSlug(
   queryClient: QueryClient,
   game: EGame,
 ): Promise<string> {
-  const { leagues } = await queryClient.ensureQueryData(
-    gameDropRatesQueryOptions(game),
-  );
-  const stored = loadLeagueSlugs()[game];
-  const league = resolveSelectedLeague(leagues, stored);
-  return leagueToSlug(league);
+  try {
+    const { leagues } = await queryClient.ensureQueryData(
+      gameDropRatesQueryOptions(game),
+    );
+    const stored = loadLeagueSlugs()[game];
+    const league = resolveSelectedLeague(leagues, stored);
+    return leagueToSlug(league);
+  } catch (error) {
+    if (import.meta.env.DEV) {
+      console.warn("Unable to resolve league data; using Standard.", error);
+    }
+
+    return STANDARD_LEAGUE_SLUG;
+  }
 }

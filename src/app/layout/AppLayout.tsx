@@ -7,6 +7,7 @@ import "./AppLayout.css";
 const FULL_WIDTH_ROUTE_IDS = new Set([
   "/$game/$league/cards",
   "/$game/$league/cards/",
+  "/$game/$league/cards/$cardId",
   "/$game/$league/soothsayer",
   "/$game/$league/soothsayer/",
   "/$game/$league/stacked-decks",
