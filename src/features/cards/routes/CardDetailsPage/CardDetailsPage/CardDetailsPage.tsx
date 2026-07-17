@@ -55,7 +55,7 @@ export function CardDetailsPage() {
       />
 
       <div className="mt-3 flex flex-1 flex-col bg-primary-content min-h-0">
-        <div className="mx-auto flex w-full max-w-7xl flex-1 flex-col px-4 py-8">
+        <div className="mx-auto flex w-full max-w-7xl flex-1 flex-col justify-center px-4 py-8">
           {content}
         </div>
       </div>

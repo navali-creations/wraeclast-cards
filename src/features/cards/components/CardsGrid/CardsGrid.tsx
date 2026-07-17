@@ -1,4 +1,4 @@
-import { type CSSProperties, useRef } from "react";
+import { type CSSProperties, useEffect, useRef } from "react";
 import { DivinationCard } from "../../../../components/DivinationCard";
 import { CardLink } from "../../../../components/DivinationCard/CardLink/CardLink";
 import { Pagination } from "../../../../components/pagination";
@@ -28,11 +28,17 @@ export function CardsGrid({
   isLoading,
 }: CardsGridProps) {
   const { page, setPage } = useUrlPagination("/$game/$league/cards/");
-  const animatedPageRef = useRef<number | null>(null);
+  const hasAnimatedCardsRef = useRef(false);
   const pageSize = useCardsPageSize();
 
   const totalPages = Math.max(1, Math.ceil(data.length / pageSize));
   const safePage = Math.min(page, totalPages);
+
+  useEffect(() => {
+    if (!isLoading && data.length > 0 && !hasAnimatedCardsRef.current) {
+      hasAnimatedCardsRef.current = true;
+    }
+  }, [data.length, isLoading]);
 
   if (hasError) return <EmptyMessage>Failed to load cards.</EmptyMessage>;
 
@@ -45,12 +51,8 @@ export function CardsGrid({
       </EmptyMessage>
     );
 
-  if (animatedPageRef.current === null) {
-    animatedPageRef.current = safePage;
-  }
-
   const pageData = data.slice((safePage - 1) * pageSize, safePage * pageSize);
-  const shouldAnimateCards = animatedPageRef.current === safePage;
+  const shouldAnimateCards = !hasAnimatedCardsRef.current;
 
   return (
     <div className="flex flex-col gap-6">
