@@ -1,4 +1,4 @@
-# Wraeclast Cards
+# wraeclast.cards
 
 ## Setup
 

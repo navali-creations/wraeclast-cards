@@ -33,7 +33,7 @@ export interface DropRateCard {
   verified_count: number;
   // Share of verified reported drops for this card.
   verified_ratio: number;
-  // Chance estimated from the external Fateweaver/Prohibited Library reference.
+  // Chance modeled from the Prohibited Library average-weight relationship.
   reference_estimated_chance: number | null;
   // Share of players who reported seeing this card ("Players Saw").
   players_saw: number | null;
@@ -41,7 +41,7 @@ export interface DropRateCard {
   // players_saw vs. reference_estimated_chance.
   seen_vs_reference: number | null;
   verified_seen_vs_reference: number | null;
-  // External modeled drop weight used as the reference.
+  // Modeled comparison value based on the average-weight formula.
   reference_weight: number | null;
   // Weight estimated from community data ("Community Weight").
   community_estimated_weight: number | null;

@@ -16,6 +16,8 @@ export type Card = {
   flavourText?: string;
   rewardText: string;
   rewardHtml: string;
+  rewardSearchText: string;
+  rewardTags: string[];
   stackSize: number;
   dropLocations: string[];
   rarity: CardRarity;

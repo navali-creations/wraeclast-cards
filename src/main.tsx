@@ -9,6 +9,13 @@ const umamiScriptUrl = import.meta.env.VITE_UMAMI_SCRIPT_URL;
 const umamiWebsiteId = import.meta.env.VITE_UMAMI_WEBSITE_ID;
 const enableTelemetry = import.meta.env.PROD;
 
+// Build-time metadata and page content make the initial HTML useful without
+// JavaScript. TanStack Router replaces these tags, and React replaces the
+// static content inside #root, once the application starts.
+document.querySelectorAll("[data-seo-static]").forEach((element) => {
+  element.remove();
+});
+
 if (enableTelemetry && sentryDsn) {
   Sentry.init({
     dsn: sentryDsn,

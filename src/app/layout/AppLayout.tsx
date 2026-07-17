@@ -12,13 +12,14 @@ const FULL_WIDTH_ROUTE_IDS = new Set([
   "/$game/$league/soothsayer/",
   "/$game/$league/stacked-decks",
   "/soothsayer/",
+  "/soothsayer/auth",
 ]);
 
 export function AppLayout() {
   const matches = useMatches();
   const routeId = matches[matches.length - 1]?.routeId;
   const isFullWidthRoute = routeId ? FULL_WIDTH_ROUTE_IDS.has(routeId) : false;
-  const isHomepage = routeId === "/$game/$league/";
+  const isHomepage = routeId === "/" || routeId === "/$game/$league/";
 
   return (
     <div className="min-h-screen flex flex-col">
