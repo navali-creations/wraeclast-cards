@@ -16,9 +16,11 @@ export function HomepagePage() {
 
       {/* Right — feature panels */}
       <div className="flex flex-1 flex-col gap-4">
-        <SoothsayerPanel />
+        <div className="order-2 lg:order-1">
+          <SoothsayerPanel />
+        </div>
 
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-[minmax(0,58%)_minmax(0,1fr)]">
+        <div className="order-1 grid grid-cols-1 gap-4 md:grid-cols-[minmax(0,58%)_minmax(0,1fr)] lg:order-2">
           {/* Card database (wider) */}
           <div>
             <CardDatabasePanel />

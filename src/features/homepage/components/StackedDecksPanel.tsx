@@ -1,10 +1,23 @@
+import { useMemo } from "react";
 import { FiArrowRight } from "react-icons/fi";
 import { ButtonInternalLink } from "../../../components/buttons/ButtonLink";
 import { Heading } from "../../../components/headings";
 import { Text } from "../../../components/text";
-import { topDropRates } from "../api/homepageStats";
+import { useStackedDecksData } from "../../stackedDecks/hooks/useStackedDecksData";
+import { topObservedDropRates } from "../api/homepageStats";
 
 export function StackedDecksPanel() {
+  const { rows, isLoading, error } = useStackedDecksData();
+  const topDropRates = useMemo(() => topObservedDropRates(rows), [rows]);
+  const hasDropRates = topDropRates.length > 0;
+  let emptyMessage = "No drop-rate observations are available yet.";
+
+  if (isLoading) {
+    emptyMessage = "Loading drop rates...";
+  } else if (error) {
+    emptyMessage = "Drop rates are unavailable.";
+  }
+
   return (
     <div className="rounded-xl border border-(--wc-border) bg-base-300 p-5">
       <div className="flex flex-col gap-3">
@@ -22,21 +35,29 @@ export function StackedDecksPanel() {
           </Heading>
         </div>
 
-        <ul className="flex flex-col divide-y divide-(--wc-border)">
-          {topDropRates.map((entry) => (
-            <li
-              key={entry.cardName}
-              className="flex items-center justify-between py-2"
-            >
-              <span className="text-sm text-(--wc-text-70)">
-                {entry.cardName}
-              </span>
-              <span className="text-sm font-semibold text-success">
-                {entry.rate}
-              </span>
-            </li>
-          ))}
-        </ul>
+        {hasDropRates && (
+          <ul className="flex flex-col divide-y divide-(--wc-border)">
+            {topDropRates.map((entry) => (
+              <li
+                key={entry.cardName}
+                className="flex items-center justify-between gap-3 py-2"
+              >
+                <span className="truncate text-sm text-(--wc-text-70)">
+                  {entry.cardName}
+                </span>
+                <span className="shrink-0 text-sm font-semibold text-success">
+                  {entry.rate}
+                </span>
+              </li>
+            ))}
+          </ul>
+        )}
+
+        {!hasDropRates && (
+          <Text size="sm" className="py-6 text-(--wc-text-50)">
+            {emptyMessage}
+          </Text>
+        )}
 
         <ButtonInternalLink
           gameScoped

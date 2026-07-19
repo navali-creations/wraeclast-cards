@@ -3,10 +3,13 @@ import type { CSSProperties } from "react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { useGameContext } from "../../../../../app/game-context";
-import { useLeagueContext } from "../../../../../app/league-context";
 import { DivinationCard } from "../../../../../components/DivinationCard";
 import { CardLink } from "../../../../../components/DivinationCard/CardLink/CardLink";
-import { cardsQueryOptions } from "../../../../cards/hooks";
+import {
+  cardsQueryOptions,
+  legacyCardDataUrlQueryOptions,
+  useSelectedCardsDataSource,
+} from "../../../../cards/hooks";
 import type { Card } from "../../../../cards/types";
 import {
   findCardByName,
@@ -24,7 +27,7 @@ export function CardNamePreview({ cardId, name }: CardNamePreviewProps) {
   const requestIdRef = useRef(0);
   const queryClient = useQueryClient();
   const { game } = useGameContext();
-  const { selectedLeague } = useLeagueContext();
+  const { cardDataUrl, leagueDataUrl } = useSelectedCardsDataSource();
   const [previewStyle, setPreviewStyle] = useState<CSSProperties | null>(null);
   const [previewCard, setPreviewCard] = useState<Card | null>(null);
 
@@ -43,8 +46,17 @@ export function CardNamePreview({ cardId, name }: CardNamePreviewProps) {
     );
 
     try {
+      let resolvedCardDataUrl = cardDataUrl;
+      if (!resolvedCardDataUrl && leagueDataUrl) {
+        resolvedCardDataUrl =
+          (await queryClient.ensureQueryData(
+            legacyCardDataUrlQueryOptions(leagueDataUrl),
+          )) ?? undefined;
+        if (requestIdRef.current !== requestId) return false;
+      }
+
       const cards = await queryClient.ensureQueryData(
-        cardsQueryOptions({ game, leagueName: selectedLeague.name }),
+        cardsQueryOptions({ game, cardDataUrl: resolvedCardDataUrl }),
       );
       if (requestIdRef.current !== requestId) return false;
 
@@ -59,7 +71,7 @@ export function CardNamePreview({ cardId, name }: CardNamePreviewProps) {
       setPreviewStyle(null);
       return false;
     }
-  }, [game, name, queryClient, selectedLeague.name]);
+  }, [cardDataUrl, game, leagueDataUrl, name, queryClient]);
 
   const hidePreview = useCallback(() => {
     requestIdRef.current += 1;

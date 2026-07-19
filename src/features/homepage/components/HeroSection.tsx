@@ -1,21 +1,39 @@
 import clsx from "clsx";
 import { Text } from "../../../components/text";
+import { useCardsQuery } from "../../cards/hooks";
 import { useDropRatesIndex } from "../api/dropRatesIndex";
+import { formatHomepageNumber, totalObservedDrops } from "../api/homepageStats";
 import { useHeroQuote } from "../hooks/useHeroQuote";
 
 export function HeroSection() {
   const { data } = useDropRatesIndex();
+  const { data: cards } = useCardsQuery();
   const { quote, attribution, sizeClass: quoteSizeClass } = useHeroQuote();
-  const leaguesArchived =
-    (data?.games.poe1.league_count ?? 0) + (data?.games.poe2.league_count ?? 0);
+  const games =
+    data === undefined
+      ? undefined
+      : Object.values(data.games).filter((game) => game !== undefined);
+  const leagues = games?.flatMap((game) => game.leagues);
+  const leagueCount = games?.reduce(
+    (total, game) => total + game.league_count,
+    0,
+  );
 
   const heroStats = [
-    { value: "451+", label: "Divination Cards" },
     {
-      value: data ? String(leaguesArchived) : "…",
+      value: formatHomepageNumber(cards?.length),
+      label: "Divination Cards",
+    },
+    {
+      value: formatHomepageNumber(leagueCount),
       label: "Leagues Archived",
     },
-    { value: "45M+", label: "Deck Openings" },
+    {
+      value: formatHomepageNumber(
+        leagues === undefined ? undefined : totalObservedDrops(leagues),
+      ),
+      label: "Deck Openings",
+    },
   ];
 
   return (

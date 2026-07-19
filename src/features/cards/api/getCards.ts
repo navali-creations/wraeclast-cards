@@ -1,4 +1,6 @@
 import type { EGame } from "../../../enums";
+import { resolveDropRatesUrl } from "../../../lib/dropRates/client";
+import { normalizeReference } from "../../../lib/dropRates/normalizers";
 import {
   cleanRewardHtml,
   extractRewardTags,
@@ -7,7 +9,6 @@ import {
 } from "../cards.utils";
 import {
   type DivinationCardsDataSource,
-  getCardsDataUrl,
   getDivinationCardsDataSource,
 } from "../hooks/divinationCardsData";
 import type { Card, CardRarity } from "../types";
@@ -75,7 +76,28 @@ function weightToDropRarity(weight: number | undefined): CardRarity {
 
 interface GetCardsParams {
   game: EGame;
-  leagueName?: string;
+  cardDataUrl?: string;
+}
+
+export async function fetchLegacyCardDataUrl(
+  leagueDataUrl: string | undefined,
+) {
+  if (!leagueDataUrl) return null;
+
+  try {
+    const res = await fetch(resolveDropRatesUrl(leagueDataUrl));
+    if (!res.ok) return null;
+
+    const value = await res.json();
+    if (!value || typeof value !== "object") return null;
+
+    return (
+      normalizeReference((value as { reference?: unknown }).reference)
+        ?.source_url ?? null
+    );
+  } catch {
+    return null;
+  }
 }
 
 function toCard(raw: RawCard, source: DivinationCardsDataSource): Card {
@@ -113,18 +135,11 @@ async function fetchCards(url: string): Promise<RawCard[]> {
 
 export async function getCards({
   game,
-  leagueName,
+  cardDataUrl,
 }: GetCardsParams): Promise<Card[]> {
-  const source = getDivinationCardsDataSource(game);
+  const source = getDivinationCardsDataSource(game, cardDataUrl);
   if (!source) return [];
 
-  try {
-    const data = await fetchCards(getCardsDataUrl(source, leagueName));
-    return data.map((raw) => toCard(raw, source));
-  } catch (error) {
-    if (!leagueName) throw error;
-
-    const data = await fetchCards(getCardsDataUrl(source, undefined));
-    return data.map((raw) => toCard(raw, source));
-  }
+  const data = await fetchCards(source.dataUrl);
+  return data.map((raw) => toCard(raw, source));
 }

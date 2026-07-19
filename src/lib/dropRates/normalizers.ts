@@ -1,10 +1,15 @@
 import type {
   DropRateCard,
   DropRateLeague,
+  DropRateReference,
+  DropRatesIndex,
+  DropRatesRootGame,
   Game,
   GameDropRates,
   LeagueDropRates,
 } from "./types";
+
+const KNOWN_GAMES: Game[] = ["poe1", "poe2"];
 
 type JsonRecord = Record<string, unknown>;
 
@@ -20,8 +25,16 @@ function numberOrZero(value: unknown): number {
   return numberOrNull(value) ?? 0;
 }
 
+function numberOrUndefined(value: unknown): number | undefined {
+  return numberOrNull(value) ?? undefined;
+}
+
 function stringOrEmpty(value: unknown): string {
   return typeof value === "string" ? value : "";
+}
+
+function stringOrUndefined(value: unknown): string | undefined {
+  return typeof value === "string" ? value : undefined;
 }
 
 function booleanOrFalse(value: unknown): boolean {
@@ -41,10 +54,18 @@ function normalizeLeague(value: JsonRecord): DropRateLeague {
     id: stringOrEmpty(value.id),
     name: stringOrEmpty(value.name),
     historical: booleanOrFalse(value.historical),
+    observed_total: numberOrUndefined(value.observed_total),
+    reference_source_url: stringOrUndefined(value.reference_source_url),
     url: stringOrEmpty(value.url),
     card_count: numberOrZero(value.card_count),
     generated_at: stringOrEmpty(value.generated_at),
   };
+}
+
+export function normalizeReference(value: unknown): DropRateReference | null {
+  if (!isRecord(value)) return null;
+  const sourceUrl = stringOrUndefined(value.source_url);
+  return sourceUrl ? { source_url: sourceUrl } : null;
 }
 
 function normalizeCard(value: JsonRecord): DropRateCard {
@@ -89,6 +110,45 @@ export function normalizeGameDropRates(
   };
 }
 
+function normalizeRootGame(value: unknown): DropRatesRootGame {
+  const game = isRecord(value) ? value : {};
+
+  return {
+    url: stringOrEmpty(game.url),
+    league_count: numberOrZero(game.league_count),
+    leagues: records(game.leagues).map(normalizeLeague),
+  };
+}
+
+export function normalizeDropRatesIndex(value: unknown): DropRatesIndex {
+  if (!isRecord(value)) {
+    throw new Error("Unexpected drop rates root index shape");
+  }
+
+  if (!isRecord(value.games)) {
+    throw new Error("Unexpected drop rates root index shape");
+  }
+
+  const rawGames = value.games;
+  const games: Partial<Record<Game, DropRatesRootGame>> = {};
+
+  for (const game of KNOWN_GAMES) {
+    if (isRecord(rawGames[game])) {
+      games[game] = normalizeRootGame(rawGames[game]);
+    }
+  }
+
+  if (Object.keys(games).length === 0) {
+    throw new Error("Unexpected drop rates root index shape");
+  }
+
+  return {
+    schema_version: numberOrZero(value.schema_version),
+    generated_at: stringOrEmpty(value.generated_at),
+    games,
+  };
+}
+
 export function normalizeLeagueDropRates(
   value: unknown,
   requestedGame: Game,
@@ -108,6 +168,7 @@ export function normalizeLeagueDropRates(
       name: stringOrEmpty(league.name),
       historical: booleanOrFalse(league.historical),
     },
+    reference: normalizeReference(value.reference),
     cards: records(value.cards).map(normalizeCard),
   };
 }

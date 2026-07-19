@@ -6,6 +6,7 @@ import {
 import type { Game, GameDropRates, LeagueDropRates } from "./types";
 
 const ONE_HOUR_MS = 1000 * 60 * 60;
+const DROP_RATES_PATH_PREFIX = "/data/drop-rates";
 
 // Raw JSON fetcher; callers normalize the payload before it reaches React.
 async function fetchDropRates(url: string): Promise<unknown> {
@@ -19,7 +20,7 @@ async function fetchDropRates(url: string): Promise<unknown> {
 // Where the static drop-rate JSON files are hosted: an env override for
 // local/preview builds, the production domain when running on a
 // *.wraeclast-cards.pages.dev preview deploy, otherwise a same-origin path.
-function getDropRatesBaseUrl() {
+export function getDropRatesBaseUrl() {
   const configuredBaseUrl = import.meta.env.VITE_DROP_RATES_BASE_URL;
   if (configuredBaseUrl) return configuredBaseUrl;
 
@@ -33,12 +34,24 @@ function getDropRatesBaseUrl() {
   return "/data/drop-rates";
 }
 
+export function resolveDropRatesUrl(pathOrUrl: string) {
+  if (/^https?:\/\//.test(pathOrUrl)) return pathOrUrl;
+
+  const baseUrl = getDropRatesBaseUrl().replace(/\/+$/, "");
+  const normalizedPath = pathOrUrl
+    .replace(
+      new RegExp(`^/?${DROP_RATES_PATH_PREFIX.replace(/^\//, "")}/?`),
+      "",
+    )
+    .replace(/^\/+/, "");
+
+  return normalizedPath ? `${baseUrl}/${normalizedPath}` : baseUrl;
+}
+
 // Joins the base URL with path segments (e.g. game, league id) into a full
 // drop-rates file URL, escaping each segment.
-function buildDropRatesUrl(...segments: string[]) {
-  const baseUrl = getDropRatesBaseUrl().replace(/\/+$/, "");
-
-  return `${baseUrl}/${segments.map(encodeURIComponent).join("/")}`;
+export function buildDropRatesUrl(...segments: string[]) {
+  return resolveDropRatesUrl(segments.map(encodeURIComponent).join("/"));
 }
 
 // Fetches a game's league index (`<game>/index.json`), listing all leagues

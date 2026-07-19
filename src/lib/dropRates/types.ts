@@ -6,6 +6,8 @@ export interface DropRateLeague {
   name: string;
   // Whether this league has ended (vs. currently active).
   historical: boolean;
+  observed_total?: number;
+  reference_source_url?: string;
   // Where to fetch this league's full card data (LeagueDropRates).
   url: string;
   card_count: number;
@@ -19,6 +21,18 @@ export interface GameDropRates {
   generated_at: string;
   game: Game;
   leagues: DropRateLeague[];
+}
+
+export interface DropRatesRootGame {
+  url: string;
+  league_count: number;
+  leagues: DropRateLeague[];
+}
+
+export interface DropRatesIndex {
+  schema_version: number;
+  generated_at: string;
+  games: Partial<Record<Game, DropRatesRootGame>>;
 }
 
 export interface DropRateCard {
@@ -50,6 +64,10 @@ export interface DropRateCard {
   verified_community_estimated_weight_delta_vs_reference: number | null;
 }
 
+export interface DropRateReference {
+  source_url: string;
+}
+
 // Shape of `<game>/<leagueId>.json`: the full per-card drop-rate data for
 // one league, fetched by useLeagueDropRates.
 export interface LeagueDropRates {
@@ -61,5 +79,6 @@ export interface LeagueDropRates {
     name: string;
     historical: boolean;
   };
+  reference: DropRateReference | null;
   cards: DropRateCard[];
 }

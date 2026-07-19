@@ -86,6 +86,26 @@ async function readJson(filePath) {
   return JSON.parse(await readFile(filePath, "utf8"));
 }
 
+async function readUrlJson(url) {
+  const response = await fetch(url);
+  if (!response.ok) {
+    throw new Error(`GET ${url} failed with ${response.status}`);
+  }
+  return response.json();
+}
+
+async function readSourceJson(sourceUrl) {
+  if (/^https?:\/\//.test(sourceUrl)) {
+    return readUrlJson(sourceUrl);
+  }
+
+  if (sourceUrl.startsWith("/")) {
+    return readJson(path.join(DIST_DIR, sourceUrl.replace(/^\//, "")));
+  }
+
+  return readJson(sourceUrl);
+}
+
 async function fileExists(filePath) {
   try {
     await readFile(filePath);
@@ -200,13 +220,15 @@ async function writeRouteDocument(template, metadata) {
   await writeFile(outputPath, renderDocument(template, metadata));
 }
 
-async function loadLeagueCards(game, leagueName) {
+async function loadLeagueCards(game, league) {
   if (game !== "poe1") return [];
 
-  const leagueFile = path.join(CARDS_DATA_DIR, `cards-${leagueName}.json`);
-  const cardsFile = (await fileExists(leagueFile))
-    ? leagueFile
-    : path.join(CARDS_DATA_DIR, "cards.json");
+  if (league.reference_source_url) {
+    const sourceCards = await readSourceJson(league.reference_source_url);
+    return Array.isArray(sourceCards) ? sourceCards : [];
+  }
+
+  const cardsFile = path.join(CARDS_DATA_DIR, "cards.json");
   const cards = await readJson(cardsFile);
   return Array.isArray(cards) ? cards : [];
 }
@@ -581,7 +603,7 @@ async function main() {
     for (const league of leagues) {
       const leagueSlug = slugify(league.name);
       const [cards, dropRates] = await Promise.all([
-        loadLeagueCards(game, league.name),
+        loadLeagueCards(game, league),
         loadLeagueDropRates(league),
       ]);
 

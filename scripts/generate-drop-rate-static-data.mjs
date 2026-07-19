@@ -5,23 +5,10 @@ const DEFAULT_GAMES = ["poe1", "poe2"];
 const DEFAULT_OUTPUT_DIR = "dist/data/drop-rates";
 const DEFAULT_PUBLIC_BASE_URL = "https://wraeclast.cards/data/drop-rates";
 const DEFAULT_REFERENCE_DATA_BASE_URL =
-  "https://raw.githubusercontent.com/navali-creations/fateweaver/main/packages/poe1-divination-cards/data";
+  "https://cdn.jsdelivr.net/gh/navali-creations/fateweaver@main/packages/poe1-divination-cards/data";
 const SCHEMA_VERSION = 4;
 const CACHE_SECONDS = 7 * 24 * 60 * 60;
 const BROWSER_CACHE_SECONDS = 60 * 60;
-const LEAGUE_STAT_FIELDS = [
-  "upload_count",
-  "observed_total",
-  "card_observed_total",
-  "contributors",
-  "verified_observed_total",
-  "verified_card_observed_total",
-  "verified_contributors",
-  "excluded_suspicious_upload_count",
-  "excluded_suspicious_observed_total",
-  "unresolved_card_row_count",
-  "unresolved_card_observed_total",
-];
 
 function parseArgs(argv) {
   const args = {
@@ -106,6 +93,108 @@ function parseOptionalBoolean(value) {
 
 function normalizeBaseUrl(url) {
   return url.replace(/\/+$/, "");
+}
+
+function parseJsdelivrGithubUrl(value) {
+  try {
+    const url = new URL(value);
+    if (url.hostname !== "cdn.jsdelivr.net") return null;
+
+    const match = url.pathname.match(/^\/gh\/([^/]+)\/([^/@]+)@([^/]+)\/(.+)$/);
+    if (!match) return null;
+
+    const [, owner, repo, ref, pathPrefix] = match;
+    return { owner, repo, ref, pathPrefix };
+  } catch {
+    return null;
+  }
+}
+
+function parseRawGithubUrl(value) {
+  try {
+    const url = new URL(value);
+    if (url.hostname !== "raw.githubusercontent.com") return null;
+
+    const match = url.pathname.match(/^\/([^/]+)\/([^/]+)\/([^/]+)\/(.+)$/);
+    if (!match) return null;
+
+    const [, owner, repo, ref, pathPrefix] = match;
+    return { owner, repo, ref, pathPrefix };
+  } catch {
+    return null;
+  }
+}
+
+function isPinnedPackageReferenceBaseUrl(value) {
+  try {
+    const url = new URL(value);
+    return (
+      url.hostname === "cdn.jsdelivr.net" &&
+      /^\/npm\/@navali\/poe1-divination-cards@[0-9]+\.[0-9]+\.[0-9]+(?:[-+][^/]+)?\/data$/.test(
+        url.pathname,
+      )
+    );
+  } catch {
+    return false;
+  }
+}
+
+function isLocalReferenceBaseUrl(value) {
+  try {
+    const url = new URL(value);
+    return ["localhost", "127.0.0.1", "[::1]"].includes(url.hostname);
+  } catch {
+    return false;
+  }
+}
+
+async function resolveGithubCommit({ owner, repo, ref }) {
+  if (/^[0-9a-f]{40}$/i.test(ref)) return ref;
+
+  const headers = {
+    accept: "application/vnd.github+json",
+    "user-agent": "wraeclast-cards-drop-rates",
+  };
+  if (process.env.GITHUB_TOKEN) {
+    headers.authorization = `Bearer ${process.env.GITHUB_TOKEN}`;
+  }
+
+  const metadata = await fetchJson(
+    `https://api.github.com/repos/${owner}/${repo}/commits/${encodeURIComponent(ref)}`,
+    { headers },
+  );
+
+  if (!metadata?.sha || typeof metadata.sha !== "string") {
+    throw new Error(`Could not resolve ${owner}/${repo}@${ref}`);
+  }
+
+  return metadata.sha;
+}
+
+async function resolveReferenceDataBaseUrl(baseUrl) {
+  const normalizedBaseUrl = normalizeBaseUrl(baseUrl);
+  const jsdelivrGithubUrl = parseJsdelivrGithubUrl(normalizedBaseUrl);
+  if (jsdelivrGithubUrl) {
+    const sha = await resolveGithubCommit(jsdelivrGithubUrl);
+    return `https://cdn.jsdelivr.net/gh/${jsdelivrGithubUrl.owner}/${jsdelivrGithubUrl.repo}@${sha}/${jsdelivrGithubUrl.pathPrefix}`;
+  }
+
+  const rawGithubUrl = parseRawGithubUrl(normalizedBaseUrl);
+  if (rawGithubUrl) {
+    const sha = await resolveGithubCommit(rawGithubUrl);
+    return `https://raw.githubusercontent.com/${rawGithubUrl.owner}/${rawGithubUrl.repo}/${sha}/${rawGithubUrl.pathPrefix}`;
+  }
+
+  if (
+    isPinnedPackageReferenceBaseUrl(normalizedBaseUrl) ||
+    isLocalReferenceBaseUrl(normalizedBaseUrl)
+  ) {
+    return normalizedBaseUrl;
+  }
+
+  throw new Error(
+    "DROP_RATES_REFERENCE_DATA_BASE_URL must be a jsDelivr GitHub URL, raw GitHub URL, pinned @navali package URL, or local development URL",
+  );
 }
 
 function jsonStringify(data) {
@@ -197,21 +286,30 @@ function validateDropRatePayload(game, payload) {
   }
 }
 
-function publicLeagueMetadata(league, historical) {
+function publicLeagueMetadata(league, historical, referenceData = null) {
   const metadata = {
     id: league.id,
     name: league.name,
     historical,
   };
 
-  for (const field of LEAGUE_STAT_FIELDS) {
-    const value = league[field];
-    if (Number.isFinite(value)) {
-      metadata[field] = value;
-    }
+  if (Number.isFinite(league.observed_total)) {
+    metadata.observed_total = league.observed_total;
+  }
+
+  if (referenceData?.source_url) {
+    metadata.reference_source_url = referenceData.source_url;
   }
 
   return metadata;
+}
+
+function publicReferenceMetadata(referenceData) {
+  if (!referenceData) return null;
+
+  return {
+    source_url: referenceData.source_url,
+  };
 }
 
 async function fetchDropRates({ supabaseUrl, apiKey, game, includeInactive }) {
@@ -512,12 +610,20 @@ async function writeLeagueFile({
   league,
   cards,
   historical,
+  referenceData,
 }) {
+  const leagueMetadata = publicLeagueMetadata(
+    league,
+    historical,
+    referenceData,
+  );
+  const referenceMetadata = publicReferenceMetadata(referenceData);
   const body = {
     schema_version: SCHEMA_VERSION,
     generated_at: generatedAt,
     game,
-    league: publicLeagueMetadata(league, historical),
+    league: leagueMetadata,
+    ...(referenceMetadata ? { reference: referenceMetadata } : {}),
     cards,
   };
 
@@ -526,7 +632,7 @@ async function writeLeagueFile({
   await writeFile(target, jsonStringify(body));
 
   return {
-    ...publicLeagueMetadata(league, historical),
+    ...leagueMetadata,
     url: leagueUrl(game, league.id),
     card_count: cards.length,
     generated_at: generatedAt,
@@ -635,7 +741,7 @@ async function main() {
       process.env.VITE_DROP_RATES_BASE_URL ??
       DEFAULT_PUBLIC_BASE_URL,
   );
-  const referenceDataBaseUrl = normalizeBaseUrl(
+  const referenceDataBaseUrl = await resolveReferenceDataBaseUrl(
     process.env.DROP_RATES_REFERENCE_DATA_BASE_URL ??
       DEFAULT_REFERENCE_DATA_BASE_URL,
   );
@@ -707,6 +813,7 @@ async function main() {
           league,
           cards: enriched.cards,
           historical: false,
+          referenceData,
         }),
       );
       generatedLeagueIds.add(league.id);
@@ -743,6 +850,7 @@ async function main() {
             league,
             cards: enriched.cards,
             historical: true,
+            referenceData,
           }),
         );
         generatedLeagueIds.add(league.id);

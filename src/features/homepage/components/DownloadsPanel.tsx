@@ -12,7 +12,7 @@ const SKELETON_KEYS = Array.from(
 
 export function DownloadsPanel() {
   const { data, isLoading } = useDropRatesIndex();
-  const leagues = data?.games.poe1.leagues ?? [];
+  const leagues = data?.games.poe1?.leagues ?? [];
   const preview = leagues.slice(0, PREVIEW_COUNT);
   const remaining = leagues.length - preview.length;
 
