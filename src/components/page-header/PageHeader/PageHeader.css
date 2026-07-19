@@ -1,0 +1,20 @@
+/* ── Page title enter animation ───────────────────────────── */
+.wc-page-header-enter {
+  animation: wc-page-header-enter-slide 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes wc-page-header-enter-slide {
+  from {
+    transform: translateY(-16px);
+  }
+
+  to {
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wc-page-header-enter {
+    animation: none;
+  }
+}

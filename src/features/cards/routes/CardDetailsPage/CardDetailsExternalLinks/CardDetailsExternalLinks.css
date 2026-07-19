@@ -1,0 +1,58 @@
+.wc-card-details-external-link {
+  display: inline-flex;
+  min-width: 0;
+  height: 2.5rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.375rem;
+  border: 1px solid var(--wc-border-dimmed);
+  border-radius: 0.375rem;
+  background: color-mix(in oklch, var(--wc-bg-dimmed) 72%, transparent);
+  padding-inline: 0.5rem;
+  color: var(--wc-text-dimmed);
+  font-size: 0.75rem;
+  font-weight: 600;
+  box-shadow: inset 0 1px 0 color-mix(in oklch, var(--wc-gold) 10%, transparent);
+}
+
+.wc-card-details-external-link:hover {
+  border-color: var(--wc-gold-dim);
+  background: color-mix(in oklch, var(--wc-glow) 40%, transparent);
+  color: var(--wc-card-name);
+}
+
+.wc-card-details-external-link:focus-visible {
+  outline: 1px solid var(--wc-gold-dim);
+  outline-offset: 2px;
+}
+
+.wc-card-details-external-link-icon {
+  width: 1rem;
+  height: 1rem;
+  flex-shrink: 0;
+  color: var(--wc-hero-accent);
+  transition: transform 150ms ease;
+}
+
+.wc-card-details-external-link:hover .wc-card-details-external-link-icon {
+  transform: translateY(-0.125rem);
+}
+
+@media (min-width: 426px) {
+  .wc-card-details-external-link {
+    gap: 0.5rem;
+    padding-inline: 0.625rem;
+  }
+}
+
+@media (max-width: 425.98px) {
+  .wc-card-details-external-link {
+    font-size: 11px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wc-card-details-external-link-icon {
+    transition: none;
+  }
+}

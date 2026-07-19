@@ -8,6 +8,18 @@ function scrollToTop() {
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
+const fabClassName = [
+  "fixed z-50 flex h-14 w-14 items-center justify-center rounded-full border border-(--wc-gold-dim)",
+  "bg-(--wc-fab-bg) text-(--wc-gold-bright) shadow-[var(--wc-fab-shadow)]",
+  "transition-[opacity,transform,border-color,background-color,box-shadow] duration-300 ease-out",
+  "hover:border-(--wc-gold) hover:bg-(--wc-fab-bg-hover) hover:shadow-[var(--wc-fab-shadow-hover)]",
+  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--wc-gold) focus-visible:ring-offset-2 focus-visible:ring-offset-(--wc-bg)",
+].join(" ");
+
+const fabVisibleClassName = "translate-y-0 scale-100 opacity-100";
+const fabHiddenClassName =
+  "pointer-events-none translate-y-4 scale-90 opacity-0";
+
 export function ScrollToTop() {
   const { isVisible } = useHeaderVisibility();
   const bottomOffset = useFooterOffset();
@@ -22,7 +34,7 @@ export function ScrollToTop() {
         bottom: `calc(${bottomOffset}px + env(safe-area-inset-bottom))`,
         right: `calc(5rem + env(safe-area-inset-right))`,
       }}
-      className={`fixed z-50 flex h-14 w-14 items-center justify-center rounded-full border border-(--wc-gold-dim) bg-[color-mix(in_oklch,var(--wc-glow)_72%,var(--color-base-100))] text-(--wc-gold-bright) shadow-[0_10px_28px_color-mix(in_oklch,var(--wc-gold-dim)_34%,transparent),0_0_0_1px_color-mix(in_oklch,var(--wc-gold-dim)_18%,transparent)] transition-[opacity,transform,border-color,background-color,box-shadow] duration-300 ease-out hover:border-(--wc-gold) hover:bg-[color-mix(in_oklch,var(--wc-glow)_84%,var(--color-base-100))] hover:shadow-[0_14px_34px_color-mix(in_oklch,var(--wc-gold-dim)_46%,transparent),0_0_0_1px_color-mix(in_oklch,var(--wc-gold-dim)_28%,transparent)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--wc-gold) focus-visible:ring-offset-2 focus-visible:ring-offset-(--wc-bg) ${isVisible ? "translate-y-0 scale-100 opacity-100" : "pointer-events-none translate-y-4 scale-90 opacity-0"}`}
+      className={`${fabClassName} ${isVisible ? fabVisibleClassName : fabHiddenClassName}`}
     >
       <HiChevronUp className="size-7" />
     </Button>,

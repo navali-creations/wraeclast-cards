@@ -1,6 +1,7 @@
 import type { EGame } from "../../../enums";
-import { resolveDropRatesUrl } from "../../../lib/dropRates/client";
+import { resolveDropRatesUrl } from "../../../lib/dropRates";
 import { normalizeReference } from "../../../lib/dropRates/normalizers";
+import { readJsonResponse } from "../../../lib/readJsonResponse";
 import {
   cleanRewardHtml,
   extractRewardTags,
@@ -86,9 +87,10 @@ export async function fetchLegacyCardDataUrl(
 
   try {
     const res = await fetch(resolveDropRatesUrl(leagueDataUrl));
-    if (!res.ok) return null;
-
-    const value = await res.json();
+    const value = await readJsonResponse(
+      res,
+      `League drop-rate data from ${leagueDataUrl}`,
+    );
     if (!value || typeof value !== "object") return null;
 
     return (
@@ -129,8 +131,7 @@ function toCard(raw: RawCard, source: DivinationCardsDataSource): Card {
 
 async function fetchCards(url: string): Promise<RawCard[]> {
   const res = await fetch(url);
-  if (!res.ok) throw new Error(`Failed to fetch cards: ${res.status}`);
-  return parseRawCards(await res.json());
+  return parseRawCards(await readJsonResponse(res, `Card data from ${url}`));
 }
 
 export async function getCards({

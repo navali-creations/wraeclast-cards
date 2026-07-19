@@ -15,8 +15,8 @@ export function SoothsayerFeatureGallery() {
 
   return (
     <section className="w-full min-w-0 rounded-lg border border-(--wc-border-dimmed) bg-(--wc-bg-dimmed) p-4 lg:p-5">
-      <div className="grid min-w-0 gap-4 lg:h-[34rem] lg:grid-cols-[minmax(0,1fr)_17rem]">
-        <div className="aspect-[16/10] min-w-0 overflow-hidden rounded-md border border-(--wc-border-dimmed) bg-(--wc-card-darker) shadow-[inset_0_0_0_1px_color-mix(in_oklch,var(--wc-gold)_8%,transparent)] lg:row-span-2 lg:h-full lg:aspect-auto">
+      <div className="grid min-w-0 gap-4 lg:h-136 lg:grid-cols-[minmax(0,1fr)_17rem]">
+        <div className="aspect-16/10 min-w-0 overflow-hidden rounded-md border border-(--wc-border-dimmed) bg-(--wc-card-darker) shadow-[inset_0_0_0_1px_var(--wc-gold)]/8 lg:row-span-2 lg:h-full lg:aspect-auto">
           <SoothsayerFeatureImage
             key={activeFeature.id}
             feature={activeFeature}

@@ -1,5 +1,5 @@
 import type { Table } from "@tanstack/react-table";
-import type { ReactNode } from "react";
+import { type ReactNode, useEffect, useState } from "react";
 import { Pagination } from "../../../../components/pagination";
 import type {
   DropRateLeague,
@@ -10,6 +10,7 @@ import { DataRow } from "./DataRow";
 import { EmptyState } from "./EmptyState";
 import { Skeleton } from "./Skeleton";
 import { SortableHeaderCell } from "./SortableHeaderCell";
+import "./StackedDecksResultsTable.css";
 
 interface StackedDecksResultsTableProps {
   table: Table<StackedDecksRow>;
@@ -32,6 +33,38 @@ export function StackedDecksResultsTable({
   error,
   toggles,
 }: StackedDecksResultsTableProps) {
+  const [shouldAnimateRows, setShouldAnimateRows] = useState(true);
+  const { rows } = table.getRowModel();
+
+  useEffect(() => {
+    if (
+      !shouldAnimateRows ||
+      isLoading ||
+      error ||
+      !leagueData ||
+      !allRows?.length ||
+      rows.length === 0
+    ) {
+      return;
+    }
+
+    const rowEnterDurationMs = 340;
+    const rowStaggerMs = 32;
+    const animationTimeout = window.setTimeout(
+      () => setShouldAnimateRows(false),
+      rowEnterDurationMs + (rows.length - 1) * rowStaggerMs,
+    );
+
+    return () => window.clearTimeout(animationTimeout);
+  }, [
+    allRows?.length,
+    error,
+    isLoading,
+    leagueData,
+    rows.length,
+    shouldAnimateRows,
+  ]);
+
   if (isLoading) return <Skeleton />;
 
   if (error) return <EmptyState>Failed to load drop rate data.</EmptyState>;
@@ -39,7 +72,6 @@ export function StackedDecksResultsTable({
   if (!leagueData || !allRows?.length)
     return <EmptyState>No stacked deck data available.</EmptyState>;
 
-  const { rows } = table.getRowModel();
   const filteredCount = table.getFilteredRowModel().rows.length;
   const { pageIndex, pageSize } = table.getState().pagination;
   const pageCount = table.getPageCount();
@@ -50,7 +82,7 @@ export function StackedDecksResultsTable({
       <section className="overflow-hidden rounded-lg border border-(--wc-border-dimmed) bg-(--wc-bg-dimmed)">
         {toggles}
 
-        <div className="overflow-x-auto">
+        <div className="wc-stacked-decks-table-scroll overflow-x-auto">
           <table className="w-full border-collapse text-sm text-(--wc-text-dimmed)">
             <thead>
               <tr className="bg-(--wc-glow) text-(--wc-text-80)">
@@ -70,7 +102,14 @@ export function StackedDecksResultsTable({
                   </td>
                 </tr>
               ) : (
-                rows.map((row) => <DataRow key={row.id} row={row} />)
+                rows.map((row, idx) => (
+                  <DataRow
+                    key={row.id}
+                    row={row}
+                    animationIndex={idx}
+                    shouldAnimate={shouldAnimateRows}
+                  />
+                ))
               )}
             </tbody>
           </table>

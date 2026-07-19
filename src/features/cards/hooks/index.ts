@@ -1,3 +1,5 @@
+export { useCardDropRate } from "./useCardDropRate";
+export { useCardStackedDecksRow } from "./useCardStackedDecksRow";
 export {
   cardsQueryOptions,
   legacyCardDataUrlQueryOptions,

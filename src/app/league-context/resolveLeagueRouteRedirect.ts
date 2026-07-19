@@ -1,6 +1,9 @@
 import type { QueryClient } from "@tanstack/react-query";
 import type { EGame } from "../../enums";
-import { gameDropRatesQueryOptions } from "../../lib/dropRates";
+import {
+  type DropRateLeague,
+  gameDropRatesQueryOptions,
+} from "../../lib/dropRates";
 import { isValidLeagueSlug } from "../../lib/leagueSlug";
 import { resolveDefaultLeagueSlug } from "./resolveDefaultLeagueSlug";
 
@@ -15,9 +18,22 @@ export async function resolveLeagueRouteRedirect(
   params: { game: string; league: string },
   href: string,
 ): Promise<string | undefined> {
-  const { leagues } = await queryClient.ensureQueryData(
-    gameDropRatesQueryOptions(game),
-  );
+  let leagues: DropRateLeague[];
+  try {
+    ({ leagues } = await queryClient.ensureQueryData(
+      gameDropRatesQueryOptions(game),
+    ));
+  } catch (error) {
+    if (import.meta.env.DEV) {
+      console.warn(
+        "Unable to validate league route; keeping current URL.",
+        error,
+      );
+    }
+
+    return undefined;
+  }
+
   if (isValidLeagueSlug(leagues, params.league)) return undefined;
 
   const fallbackSlug = await resolveDefaultLeagueSlug(queryClient, game);
