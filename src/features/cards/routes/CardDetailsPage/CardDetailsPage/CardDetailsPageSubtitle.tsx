@@ -1,8 +1,8 @@
-import type { CardRarity } from "../../../types";
-import { CardRarityBadge } from "../CardRarityBadge";
+import type { DivinationCardRarity } from "../../../../../lib/divinationCards";
+import { CardRarityBadge } from "../CardRarityBadge/CardRarityBadge";
 
 interface CardDetailsPageSubtitleProps {
-  rarity: CardRarity;
+  rarity: DivinationCardRarity;
   leagueName: string;
 }
 

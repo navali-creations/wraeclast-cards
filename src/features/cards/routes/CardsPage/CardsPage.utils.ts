@@ -1,5 +1,6 @@
 import type { SortingState } from "@tanstack/react-table";
 import { getColorForClass } from "../../../../components/DivinationCard/utils/tc-colors";
+import type { DivinationCardRarity } from "../../../../lib/divinationCards";
 import { getRewardTagLabel } from "../../cards.utils";
 import {
   type CardsBossFilter,
@@ -11,7 +12,7 @@ import type {
   FilterOption,
   FilterRange,
 } from "../../components/CardsFilters/FilterBar/FilterBar.utils";
-import type { Card, CardRarity } from "../../types";
+import type { Card } from "../../types";
 
 export const CARDS_FILTER_IDS = {
   reward: "reward",
@@ -47,7 +48,7 @@ export interface CardsFilterState {
   rarities: CardsRarityFilter[];
 }
 
-const CARD_RARITY_BY_FILTER: Record<CardsRarityFilter, CardRarity> = {
+const CARD_RARITY_BY_FILTER: Record<CardsRarityFilter, DivinationCardRarity> = {
   common: 4,
   "less-common": 3,
   rare: 2,
@@ -135,7 +136,7 @@ export function getBossFilterOptions(cards: Card[]): FilterOption[] {
 }
 
 export function getRarityFilterOptions(cards: Card[]): FilterOption[] {
-  const counts = new Map<CardRarity, number>();
+  const counts = new Map<DivinationCardRarity, number>();
 
   for (const card of cards) {
     counts.set(card.rarity, (counts.get(card.rarity) ?? 0) + 1);

@@ -6,6 +6,15 @@ import { renderToStaticMarkup } from "react-dom/server";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import {
+  divinationCardRewardText,
+  divinationCardSlug,
+  getDivinationCardsDataSource,
+  parseDivinationCards,
+} from "../src/lib/divinationCards.ts";
+import { normalizeLeagueDropRates } from "../src/lib/dropRates/normalizers.ts";
+import { GAME_METADATA } from "../src/lib/gameSlug.ts";
+import { leagueNameToSlug } from "../src/lib/leagueSlug.ts";
+import {
   fallbackPage,
   htmlEscape,
   renderSeoDocument,
@@ -30,34 +39,14 @@ const TEMPLATE_CACHE_PATH = path.join(ROOT_DIR, ".tanstack/seo-template.html");
 const MAX_URLS_PER_SITEMAP = 50_000;
 // Leave room for future generated routes without ever crossing Google's limit.
 const SITEMAP_CHUNK_SIZE = 45_000;
+const FETCH_TIMEOUT_MS = 15_000;
 const CARDS_DATA_DIR = path.join(
   ROOT_DIR,
   "node_modules/@navali/poe1-divination-cards/data",
 );
 
-const GAME_CONFIG = {
-  poe1: {
-    label: "PoE 1",
-    seoLabel: "Path of Exile",
-    slug: "path-of-exile",
-  },
-  poe2: {
-    label: "PoE 2",
-    seoLabel: "Path of Exile 2",
-    slug: "path-of-exile-2",
-  },
-};
-
 function xmlEscape(value) {
   return htmlEscape(value).replace(/&#39;/g, "&apos;");
-}
-
-function slugify(value) {
-  return value
-    .toLowerCase()
-    .trim()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "");
 }
 
 function absoluteUrl(pathname) {
@@ -69,23 +58,13 @@ async function readJson(filePath) {
 }
 
 async function readUrlJson(url) {
-  const response = await fetch(url);
+  const response = await fetch(url, {
+    signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
+  });
   if (!response.ok) {
     throw new Error(`GET ${url} failed with ${response.status}`);
   }
   return response.json();
-}
-
-async function readSourceJson(sourceUrl) {
-  if (/^https?:\/\//.test(sourceUrl)) {
-    return readUrlJson(sourceUrl);
-  }
-
-  if (sourceUrl.startsWith("/")) {
-    return readJson(path.join(DIST_DIR, sourceUrl.replace(/^\//, "")));
-  }
-
-  return readJson(sourceUrl);
 }
 
 async function fileExists(filePath) {
@@ -129,21 +108,32 @@ async function writeRouteDocument(template, metadata) {
 async function loadLeagueCards(game, league) {
   if (game !== "poe1") return [];
 
-  if (league.reference_source_url) {
-    const sourceCards = await readSourceJson(league.reference_source_url);
-    return Array.isArray(sourceCards) ? sourceCards : [];
+  if (league.reference_source_url !== undefined) {
+    const source = getDivinationCardsDataSource(
+      game,
+      league.reference_source_url,
+      { allowDefaultSource: false },
+    );
+    if (!source) {
+      throw new Error(
+        `Unsupported card data source for ${game}/${league.name}`,
+      );
+    }
+
+    return parseDivinationCards(await readUrlJson(source.dataUrl));
   }
 
+  if (league.historical) return [];
+
   const cardsFile = path.join(CARDS_DATA_DIR, "cards.json");
-  const cards = await readJson(cardsFile);
-  return Array.isArray(cards) ? cards : [];
+  return parseDivinationCards(await readJson(cardsFile));
 }
 
-async function loadLeagueDropRates(league) {
+async function loadLeagueDropRates(game, league) {
   if (!league.url) return { cards: [] };
 
   const filePath = path.join(DIST_DIR, league.url.replace(/^\//, ""));
-  return readJson(filePath);
+  return normalizeLeagueDropRates(await readJson(filePath), game);
 }
 
 function formatInteger(value) {
@@ -158,27 +148,52 @@ function renderCardList(cards, cardsPath) {
   const items = cards
     .map(
       (card) =>
-        `<li><a href="${htmlEscape(`${cardsPath}/${encodeURIComponent(card.name)}`)}"><strong>${htmlEscape(card.name)}</strong></a> - ${htmlEscape(card.description)}</li>`,
+        `<li><a href="${htmlEscape(`${cardsPath}/${divinationCardSlug(card.name)}`)}"><strong>${htmlEscape(card.name)}</strong></a> - ${htmlEscape(divinationCardRewardText(card))}</li>`,
     )
     .join("");
 
   return `<ul>${items}</ul>`;
 }
 
-function cardSitemapEntry({ gameConfig, league, leagueSlug, card, dropRates }) {
+function renderObservedCardList(cards, cardsPath) {
+  if (cards.length === 0) {
+    return "<p>No observed card data is available for this league.</p>";
+  }
+
+  const items = cards
+    .map(
+      (card) =>
+        `<li><a href="${htmlEscape(`${cardsPath}/${divinationCardSlug(card.name)}`)}"><strong>${htmlEscape(card.name)}</strong></a> - ${formatInteger(card.count)} reported drops</li>`,
+    )
+    .join("");
+
+  return `<ul>${items}</ul>`;
+}
+
+function cardSitemapEntry({ gameConfig, leagueSlug, card }) {
   return {
-    pathname: `/${gameConfig.slug}/${leagueSlug}/cards/${encodeURIComponent(card.name)}`,
-    lastmod: league.generated_at || dropRates.generated_at || null,
+    pathname: `/${gameConfig.slug}/${leagueSlug}/cards/${divinationCardSlug(card.name)}`,
     dynamic: true,
   };
 }
 
+function cardSitemapCandidates(cards, observedCards) {
+  const cardsBySlug = new Map();
+
+  for (const card of [...cards, ...observedCards]) {
+    cardsBySlug.set(divinationCardSlug(card.name), card);
+  }
+
+  return cardsBySlug.values();
+}
+
 function renderDropRateTable(cards) {
-  if (cards.length === 0) {
+  const observedCards = cards.filter((card) => Number(card.count) > 0);
+  if (observedCards.length === 0) {
     return "<p>No community drop-rate observations are available yet.</p>";
   }
 
-  const rows = cards
+  const rows = observedCards
     .slice()
     .sort((left, right) => right.count - left.count)
     .map(
@@ -227,18 +242,17 @@ function leaguePageMetadata({
   page,
 }) {
   const leaguePath = `/${gameConfig.slug}/${leagueSlug}`;
-  const observedTotal = Number(
-    league.observed_total ??
-      dropRates.summary?.observed_total ??
-      dropRates.observed_total ??
-      0,
+  const observedCards = dropRates.cards.filter(
+    (card) => Number(card.count) > 0,
   );
+  const representedCardCount = cards.length || observedCards.length;
+  const observedTotal = Number(league.observed_total ?? 0);
   const robots =
     cards.length === 0 && dropRates.cards.length === 0
       ? "noindex, follow"
       : "index, follow";
   const seoPageFacts = {
-    cardCount: cards.length,
+    cardCount: representedCardCount,
     observedTotal,
     generatedAt: league.generated_at || dropRates.generated_at || undefined,
     dataPath: league.url || undefined,
@@ -262,8 +276,8 @@ function leaguePageMetadata({
       body: fallbackPage(`<article class="prose max-w-none">
         <h1>${htmlEscape(league.name)} ${htmlEscape(gameConfig.label)} Divination Cards</h1>
         <p>${htmlEscape(sharedMetadata.description)}</p>
-        <p><strong>${formatInteger(cards.length)}</strong> cards are available in this league dataset.</p>
-        ${renderCardList(cards, `${leaguePath}/cards`)}
+        <p><strong>${formatInteger(representedCardCount)}</strong> cards are represented in this league dataset.</p>
+        ${cards.length > 0 ? renderCardList(cards, `${leaguePath}/cards`) : renderObservedCardList(observedCards, `${leaguePath}/cards`)}
       </article>`),
     };
   }
@@ -284,6 +298,7 @@ function leaguePageMetadata({
   }
 
   const topRates = dropRates.cards
+    .filter((card) => Number(card.count) > 0)
     .slice()
     .sort((left, right) => right.count - left.count)
     .slice(0, 10);
@@ -303,8 +318,8 @@ function leaguePageMetadata({
       <p>${htmlEscape(sharedMetadata.description)}</p>
       <section>
         <h2>Divination card database</h2>
-        <p>Browse rewards, stack sizes, card artwork, flavour text, and rarity information for this league.</p>
-        <p><a href="${htmlEscape(`${leaguePath}/cards`)}">Browse ${formatInteger(cards.length)} divination cards</a></p>
+        <p>${cards.length > 0 ? "Browse rewards, stack sizes, card artwork, flavour text, and rarity information for this league." : "Browse divination cards with community observations from this archived league."}</p>
+        <p><a href="${htmlEscape(`${leaguePath}/cards`)}">Browse ${formatInteger(representedCardCount)} divination cards</a></p>
       </section>
       <section>
         <h2>Observed stacked deck drop rates</h2>
@@ -495,7 +510,7 @@ async function main() {
   const entries = [];
   const defaultLeagueByGame = {};
 
-  for (const [game, gameConfig] of Object.entries(GAME_CONFIG)) {
+  for (const [game, gameConfig] of Object.entries(GAME_METADATA)) {
     const publishedLeagues = dropRatesIndex.games[game]?.leagues ?? [];
     const leagues =
       publishedLeagues.length > 0
@@ -512,13 +527,13 @@ async function main() {
           ];
     const defaultLeague =
       leagues.find((league) => !league.historical) ?? leagues[0];
-    defaultLeagueByGame[game] = slugify(defaultLeague.name);
+    defaultLeagueByGame[game] = leagueNameToSlug(defaultLeague.name);
 
     for (const league of leagues) {
-      const leagueSlug = slugify(league.name);
+      const leagueSlug = leagueNameToSlug(league.name);
       const [cards, dropRates] = await Promise.all([
         loadLeagueCards(game, league),
-        loadLeagueDropRates(league),
+        loadLeagueDropRates(game, league),
       ]);
 
       for (const page of ["home", "cards", "stacked-decks"]) {
@@ -534,14 +549,12 @@ async function main() {
         );
       }
 
-      for (const card of cards) {
+      for (const card of cardSitemapCandidates(cards, dropRates.cards)) {
         entries.push(
           cardSitemapEntry({
             gameConfig,
-            league,
             leagueSlug,
             card,
-            dropRates,
           }),
         );
       }

@@ -16,8 +16,7 @@ export function useCardStackedDecksRow(card: Card) {
   } = useLeagueDropRates(game, selectedLeagueId);
 
   const row = leagueData?.cards.find(
-    (candidate) =>
-      candidate.card_id === card.id || candidate.name === card.name,
+    (candidate) => candidate.name === card.name,
   );
 
   const totalCount = useMemo(

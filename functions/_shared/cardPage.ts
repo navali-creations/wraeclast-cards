@@ -1,10 +1,19 @@
-import { EGame } from "../../src/enums";
-import { getDivinationCardsDataSource } from "../../src/features/cards/hooks/divinationCardsData";
+import {
+  createDivinationCardRouteIndex,
+  divinationCardImageUrl,
+  divinationCardRarityLabel,
+  divinationCardRewardText,
+  divinationCardSlug,
+  getDivinationCardsDataSource,
+  parseDivinationCards,
+  type RawDivinationCard,
+} from "../../src/lib/divinationCards";
 import {
   normalizeDropRatesIndex,
   normalizeLeagueDropRates,
 } from "../../src/lib/dropRates/normalizers";
 import type { DropRateLeague, Game } from "../../src/lib/dropRates/types";
+import { GAME_METADATA, type GameMetadata } from "../../src/lib/gameSlug";
 import { findLeagueBySlug } from "../../src/lib/leagueSlug";
 import {
   fallbackPage,
@@ -13,17 +22,22 @@ import {
 } from "../../src/lib/seoDocument";
 import {
   type CardSeoFacts,
+  createCardNotFoundSeoMetadata,
   createCardSeoMetadata,
-  SITE_NAME,
   SITE_URL,
 } from "../../src/lib/seoMetadata";
 
 const APP_SHELL_PATH = "/_app-shell";
 const DROP_RATES_INDEX_PATH = "/data/drop-rates/index.json";
 const MAX_JSON_BYTES = 2_000_000;
-const PAGE_CACHE_CONTROL =
-  "public, max-age=300, s-maxage=3600, stale-while-revalidate=86400";
+const EXTERNAL_FETCH_TIMEOUT_MS = 8_000;
+const MAX_CARD_CATALOG_CACHE_ENTRIES = 8;
+const PAGE_CACHE_CONTROL = "public, max-age=300, s-maxage=3600";
 const NOT_FOUND_CACHE_CONTROL = "public, max-age=60, s-maxage=300";
+const cardCatalogCache = new Map<
+  string,
+  Promise<Map<string, RawDivinationCard>>
+>();
 
 type CardRouteParam = "league" | "cardId";
 type CardPageContext = EventContext<
@@ -32,36 +46,9 @@ type CardPageContext = EventContext<
   Record<string, unknown>
 >;
 
-interface GameConfig {
+interface GameConfig extends GameMetadata {
   game: Game;
-  gameLabel: string;
-  gameSeoLabel: string;
-  gameSlug: "path-of-exile" | "path-of-exile-2";
 }
-
-interface RawCard {
-  name: string;
-  stack_size: number;
-  description: string;
-  art_src?: string;
-  from_boss?: boolean;
-  weight?: number;
-}
-
-const GAME_CONFIG: Record<Game, GameConfig> = {
-  poe1: {
-    game: "poe1",
-    gameLabel: "PoE 1",
-    gameSeoLabel: "Path of Exile",
-    gameSlug: "path-of-exile",
-  },
-  poe2: {
-    game: "poe2",
-    gameLabel: "PoE 2",
-    gameSeoLabel: "Path of Exile 2",
-    gameSlug: "path-of-exile-2",
-  },
-};
 
 function routeParam(value: string | string[]): string {
   const parameter = Array.isArray(value) ? value[0] : value;
@@ -73,36 +60,19 @@ function routeParam(value: string | string[]): string {
   }
 }
 
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === "object" && value !== null && !Array.isArray(value);
-}
+function canonicalCardRedirect(
+  context: CardPageContext,
+  config: GameConfig,
+  leagueSlug: string,
+  routeId: string,
+  cardName: string,
+): Response | null {
+  const slug = divinationCardSlug(cardName);
+  if (routeId === slug) return null;
 
-function optionalString(value: unknown): value is string | undefined {
-  return value === undefined || typeof value === "string";
-}
-
-function optionalBoolean(value: unknown): value is boolean | undefined {
-  return value === undefined || typeof value === "boolean";
-}
-
-function optionalNumber(value: unknown): value is number | undefined {
-  return (
-    value === undefined || (typeof value === "number" && Number.isFinite(value))
-  );
-}
-
-function isRawCard(value: unknown): value is RawCard {
-  if (!isRecord(value)) return false;
-
-  return (
-    typeof value.name === "string" &&
-    typeof value.stack_size === "number" &&
-    Number.isFinite(value.stack_size) &&
-    typeof value.description === "string" &&
-    optionalString(value.art_src) &&
-    optionalBoolean(value.from_boss) &&
-    optionalNumber(value.weight)
-  );
+  const url = new URL(context.request.url);
+  url.pathname = `/${config.slug}/${leagueSlug}/cards/${slug}`;
+  return Response.redirect(url.href, 308);
 }
 
 async function readJson(response: Response, label: string): Promise<unknown> {
@@ -127,6 +97,31 @@ async function readJson(response: Response, label: string): Promise<unknown> {
   }
 }
 
+function loadCardCatalog(
+  dataUrl: string,
+): Promise<Map<string, RawDivinationCard>> {
+  const cached = cardCatalogCache.get(dataUrl);
+  if (cached) return cached;
+
+  if (cardCatalogCache.size >= MAX_CARD_CATALOG_CACHE_ENTRIES) {
+    const oldestKey = cardCatalogCache.keys().next().value;
+    if (oldestKey !== undefined) cardCatalogCache.delete(oldestKey);
+  }
+
+  const loading = fetch(dataUrl, {
+    signal: AbortSignal.timeout(EXTERNAL_FETCH_TIMEOUT_MS),
+  })
+    .then((response) => readJson(response, `Card data from ${dataUrl}`))
+    .then(parseDivinationCards)
+    .then(createDivinationCardRouteIndex)
+    .catch((error) => {
+      cardCatalogCache.delete(dataUrl);
+      throw error;
+    });
+  cardCatalogCache.set(dataUrl, loading);
+  return loading;
+}
+
 function productionAssetUrl(pathname: string): string {
   return new URL(pathname, SITE_URL).href;
 }
@@ -144,7 +139,9 @@ async function fetchPublishedAsset(
     return response;
   }
 
-  return fetch(productionAssetUrl(pathname));
+  return fetch(productionAssetUrl(pathname), {
+    signal: AbortSignal.timeout(EXTERNAL_FETCH_TIMEOUT_MS),
+  });
 }
 
 function leagueDataPath(league: DropRateLeague): string {
@@ -158,39 +155,6 @@ function leagueDataPath(league: DropRateLeague): string {
   }
 
   return url.pathname;
-}
-
-function findCard(value: unknown, cardName: string): RawCard | undefined {
-  if (!Array.isArray(value)) {
-    throw new Error("Invalid divination card data");
-  }
-
-  const candidate = value.find(
-    (item) => isRecord(item) && item.name === cardName,
-  );
-  if (!candidate) return undefined;
-  if (!isRawCard(candidate)) {
-    throw new Error(`Invalid divination card data for ${cardName}`);
-  }
-
-  return candidate;
-}
-
-function cardRarity(weight: number | undefined): string {
-  if (typeof weight !== "number" || weight <= 0) return "Unknown";
-  if (weight > 5000) return "Common";
-  if (weight > 1000) return "Less common";
-  if (weight > 30) return "Rare";
-  return "Extremely rare";
-}
-
-function cardImageUrl(
-  card: RawCard,
-  imagesBaseUrl: string,
-): string | undefined {
-  if (!card.art_src) return undefined;
-
-  return `${imagesBaseUrl}/${encodeURIComponent(card.art_src)}`;
 }
 
 function htmlResponse(
@@ -226,11 +190,8 @@ function renderNotFound(
   cardsPath: string,
 ): Response {
   const html = renderSeoDocument(shell, {
-    pathname,
-    title: `Card Not Found | ${SITE_NAME}`,
-    description: "The requested divination card could not be found.",
-    robots: "noindex, nofollow",
-    canonical: false,
+    ...createCardNotFoundSeoMetadata(pathname),
+    seoPageStatus: "not-found",
     body: fallbackPage(`<article class="prose text-center">
       <h1>Card not found</h1>
       <p>The requested divination card is not available in this league.</p>
@@ -247,34 +208,41 @@ function renderCardPage(
   config: GameConfig,
   league: DropRateLeague,
   leagueSlug: string,
-  card: RawCard,
+  card: RawDivinationCard,
   imagesBaseUrl: string,
   observedCard: { count: number; ratio: number } | undefined,
 ): Response {
+  const rewardText = divinationCardRewardText(card);
   const facts: CardSeoFacts = {
     name: card.name,
-    rewardText: card.description,
+    slug: divinationCardSlug(card.name),
+    rewardText,
     stackSize: card.stack_size,
     fromBoss: card.from_boss ?? false,
-    rarity: cardRarity(card.weight),
-    imageUrl: cardImageUrl(card, imagesBaseUrl),
+    rarity: divinationCardRarityLabel(card.weight),
+    imageUrl: divinationCardImageUrl(card, imagesBaseUrl),
     observedCount: observedCard?.count,
     observedRate: observedCard?.ratio,
   };
   const metadata = createCardSeoMetadata({
-    gameLabel: config.gameLabel,
-    gameSeoLabel: config.gameSeoLabel,
-    gameSlug: config.gameSlug,
+    gameLabel: config.label,
+    gameSeoLabel: config.seoLabel,
+    gameSlug: config.slug,
     leagueName: league.name,
     leagueSlug,
     facts,
+    robots: "index, follow",
   });
-  const observedSection = observedCard
-    ? `<section>
+  const observedSection =
+    observedCard && observedCard.count > 0
+      ? `<section>
         <h2>${htmlEscape(league.name)} observed drop rate</h2>
         <p>${observedCard.count.toLocaleString("en-US")} reported drops, representing ${htmlEscape(`${(observedCard.ratio * 100).toFixed(6)}%`)} of observed stacked deck openings.</p>
       </section>`
-    : "";
+      : `<section>
+        <h2>${htmlEscape(league.name)} observed drop rate</h2>
+        <p>No stacked deck drops have been reported for this card in ${htmlEscape(league.name)}.</p>
+      </section>`;
   const image = facts.imageUrl
     ? `<img src="${htmlEscape(facts.imageUrl)}" alt="${htmlEscape(`${card.name} divination card artwork`)}">`
     : "";
@@ -285,7 +253,7 @@ function renderCardPage(
     ${image}
     <dl>
       <dt>Reward</dt>
-      <dd>${htmlEscape(card.description)}</dd>
+      <dd>${htmlEscape(rewardText)}</dd>
       <dt>Stack size</dt>
       <dd>${card.stack_size.toLocaleString("en-US")} ${cardLabel}</dd>
       <dt>Rarity</dt>
@@ -294,7 +262,7 @@ function renderCardPage(
       <dd>${facts.fromBoss ? "Boss drop" : "Not boss-specific"}</dd>
     </dl>
     ${observedSection}
-    <p><a href="/${config.gameSlug}/${htmlEscape(leagueSlug)}/cards">Browse all ${htmlEscape(league.name)} divination cards</a></p>
+    <p><a href="/${config.slug}/${htmlEscape(leagueSlug)}/cards">Browse all ${htmlEscape(league.name)} divination cards</a></p>
   </article>`);
   const html = renderSeoDocument(shell, {
     ...metadata,
@@ -305,11 +273,93 @@ function renderCardPage(
   return htmlResponse(html, shellResponse, 200, PAGE_CACHE_CONTROL);
 }
 
+function renderObservedCardPage(
+  shell: string,
+  shellResponse: Response,
+  config: GameConfig,
+  league: DropRateLeague,
+  leagueSlug: string,
+  cardName: string,
+  observedCard: { count: number; ratio: number },
+): Response {
+  const facts: CardSeoFacts = {
+    name: cardName,
+    slug: divinationCardSlug(cardName),
+    observedCount: observedCard.count,
+    observedRate: observedCard.ratio,
+  };
+  const metadata = createCardSeoMetadata({
+    gameLabel: config.label,
+    gameSeoLabel: config.seoLabel,
+    gameSlug: config.slug,
+    leagueName: league.name,
+    leagueSlug,
+    facts,
+  });
+  const body = fallbackPage(`<article class="prose max-w-none">
+    <h1>${htmlEscape(cardName)} Divination Card</h1>
+    <p>${htmlEscape(metadata.description)}</p>
+    <section>
+      <h2>${htmlEscape(league.name)} observed drop rate</h2>
+      <p>${observedCard.count.toLocaleString("en-US")} reported drops, representing ${htmlEscape(`${(observedCard.ratio * 100).toFixed(6)}%`)} of observed stacked deck openings.</p>
+    </section>
+    <p>The archived card catalog for this league is not available, so current reward and stack-size details are intentionally omitted.</p>
+    <p><a href="/${config.slug}/${htmlEscape(leagueSlug)}/stacked-decks">View all ${htmlEscape(league.name)} stacked deck rates</a></p>
+  </article>`);
+  const html = renderSeoDocument(shell, {
+    ...metadata,
+    body,
+    seoPageFacts: facts,
+  });
+
+  return htmlResponse(html, shellResponse, 200, PAGE_CACHE_CONTROL);
+}
+
+function renderMissingCardPage(
+  context: CardPageContext,
+  shell: string,
+  shellResponse: Response,
+  config: GameConfig,
+  league: DropRateLeague,
+  leagueSlug: string,
+  cardRouteId: string,
+  cardsPath: string,
+  observedCard: { name: string; count: number; ratio: number } | undefined,
+): Response {
+  if (observedCard && observedCard.count > 0) {
+    const redirect = canonicalCardRedirect(
+      context,
+      config,
+      leagueSlug,
+      cardRouteId,
+      observedCard.name,
+    );
+    if (redirect) return redirect;
+
+    return renderObservedCardPage(
+      shell,
+      shellResponse,
+      config,
+      league,
+      leagueSlug,
+      observedCard.name,
+      observedCard,
+    );
+  }
+
+  return renderNotFound(
+    shell,
+    shellResponse,
+    new URL(context.request.url).pathname,
+    cardsPath,
+  );
+}
+
 async function buildCardPage(
   context: CardPageContext,
   config: GameConfig,
   leagueSlug: string,
-  cardName: string,
+  cardRouteId: string,
 ): Promise<Response> {
   const [shellResponse, indexResponse] = await Promise.all([
     context.env.ASSETS.fetch(new URL(APP_SHELL_PATH, context.request.url)),
@@ -328,7 +378,7 @@ async function buildCardPage(
     index.games[config.game]?.leagues ?? [],
     leagueSlug,
   );
-  const cardsPath = `/${config.gameSlug}/${leagueSlug}/cards`;
+  const cardsPath = `/${config.slug}/${leagueSlug}/cards`;
   if (!league?.url) {
     return renderNotFound(
       shell,
@@ -338,44 +388,117 @@ async function buildCardPage(
     );
   }
 
-  const leagueResponse = await fetchPublishedAsset(
+  const rootSourceUrl = league.reference_source_url;
+  let source =
+    rootSourceUrl === undefined
+      ? null
+      : getDivinationCardsDataSource(config.game, rootSourceUrl, {
+          allowDefaultSource: false,
+        });
+  if (rootSourceUrl !== undefined && !source) {
+    throw new Error(`Unsupported card data source for ${league.name}`);
+  }
+
+  const leagueResponsePromise = fetchPublishedAsset(
     context,
     leagueDataPath(league),
   );
+  let cardCatalogError: unknown;
+  const loadCatalog = (dataUrl: string) =>
+    loadCardCatalog(dataUrl).catch((error) => {
+      cardCatalogError = error;
+      return null;
+    });
+  let cardCatalogPromise = source ? loadCatalog(source.dataUrl) : null;
+  const leagueResponse = await leagueResponsePromise;
   const leagueData = normalizeLeagueDropRates(
     await readJson(leagueResponse, `${league.name} drop rates`),
     config.game,
   );
-  const source = getDivinationCardsDataSource(
-    config.game === "poe1" ? EGame.Poe1 : EGame.Poe2,
-    league.reference_source_url ?? leagueData.reference?.source_url,
-  );
-  if (!source) {
-    return renderNotFound(
-      shell,
-      shellResponse,
-      new URL(context.request.url).pathname,
-      cardsPath,
-    );
-  }
-
-  const cardData = await readJson(
-    await fetch(source.dataUrl),
-    `${league.name} card data`,
-  );
-  const card = findCard(cardData, cardName);
-  if (!card) {
-    return renderNotFound(
-      shell,
-      shellResponse,
-      new URL(context.request.url).pathname,
-      cardsPath,
-    );
-  }
-
+  const canonicalRouteId = divinationCardSlug(cardRouteId);
   const observedCard = leagueData.cards.find(
-    (candidate) => (candidate.card_id ?? candidate.name) === card.name,
+    (candidate) => divinationCardSlug(candidate.name) === canonicalRouteId,
   );
+  const legacySourceUrl = leagueData.reference?.source_url;
+  if (!source || !cardCatalogPromise) {
+    source = getDivinationCardsDataSource(config.game, legacySourceUrl, {
+      allowDefaultSource: !league.historical,
+    });
+    if (legacySourceUrl !== undefined && !source) {
+      throw new Error(`Unsupported card data source for ${league.name}`);
+    }
+    cardCatalogPromise = source ? loadCatalog(source.dataUrl) : null;
+  }
+
+  if (!source || !cardCatalogPromise) {
+    return renderMissingCardPage(
+      context,
+      shell,
+      shellResponse,
+      config,
+      league,
+      leagueSlug,
+      cardRouteId,
+      cardsPath,
+      observedCard,
+    );
+  }
+
+  const cardsByRouteId = await cardCatalogPromise;
+  if (!cardsByRouteId) {
+    if (observedCard && observedCard.count > 0) {
+      console.warn(
+        JSON.stringify({
+          event: "card_catalog_fallback",
+          pathname: new URL(context.request.url).pathname,
+          message:
+            cardCatalogError instanceof Error
+              ? cardCatalogError.message
+              : String(cardCatalogError),
+        }),
+      );
+      return renderMissingCardPage(
+        context,
+        shell,
+        shellResponse,
+        config,
+        league,
+        leagueSlug,
+        cardRouteId,
+        cardsPath,
+        observedCard,
+      );
+    }
+
+    throw cardCatalogError instanceof Error
+      ? cardCatalogError
+      : new Error(`Could not load the card catalog for ${league.name}`);
+  }
+
+  const card = cardsByRouteId.get(canonicalRouteId);
+  if (!card) {
+    return renderMissingCardPage(
+      context,
+      shell,
+      shellResponse,
+      config,
+      league,
+      leagueSlug,
+      cardRouteId,
+      cardsPath,
+      observedCard,
+    );
+  }
+
+  const redirect = canonicalCardRedirect(
+    context,
+    config,
+    leagueSlug,
+    cardRouteId,
+    card.name,
+  );
+  if (redirect) return redirect;
+
   return renderCardPage(
     shell,
     shellResponse,
@@ -419,11 +542,13 @@ export async function handleCardPage(
   try {
     const response = await buildCardPage(
       context,
-      GAME_CONFIG[game],
+      { game, ...GAME_METADATA[game] },
       routeParam(context.params.league),
       routeParam(context.params.cardId),
     );
-    context.waitUntil(cache.put(cacheKey, response.clone()));
+    if (response.status < 300 || response.status >= 400) {
+      context.waitUntil(cache.put(cacheKey, response.clone()));
+    }
     return context.request.method === "HEAD"
       ? headResponse(response)
       : response;

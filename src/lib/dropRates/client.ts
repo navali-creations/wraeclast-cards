@@ -112,15 +112,21 @@ export function useGameDropRates(game: Game) {
 
 // Fetches the card drop rates for one league (`<game>/<leagueId>.json`).
 // Disabled until a leagueId is known.
-export function useLeagueDropRates(game: Game, leagueId: string | undefined) {
-  return useQuery({
+export function leagueDropRatesQueryOptions(game: Game, leagueId: string) {
+  return queryOptions({
     queryKey: ["drop-rates", game, leagueId],
     queryFn: async (): Promise<LeagueDropRates> =>
       normalizeLeagueDropRates(
         await fetchDropRatesData(game, `${leagueId}.json`),
         game,
       ),
-    enabled: !!leagueId,
     staleTime: ONE_HOUR_MS,
+  });
+}
+
+export function useLeagueDropRates(game: Game, leagueId: string | undefined) {
+  return useQuery({
+    ...leagueDropRatesQueryOptions(game, leagueId ?? ""),
+    enabled: !!leagueId,
   });
 }

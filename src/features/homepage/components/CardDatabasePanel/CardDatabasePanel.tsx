@@ -1,5 +1,6 @@
 import { preload } from "react-dom";
 import { FiArrowRight } from "react-icons/fi";
+import { useLeagueContext } from "../../../../app/league-context";
 import { ButtonInternalLink } from "../../../../components/buttons/ButtonLink";
 import {
   DIVINATION_CARD_HEIGHT,
@@ -18,9 +19,13 @@ const SKELETON_KEYS = Array.from(
 );
 
 export function CardDatabasePanel() {
+  const { selectedLeague } = useLeagueContext();
   const { data: allCards, isLoading } = useCardsQuery();
   const cards = useRarityPreviewCards();
   const hasCards = cards.length > 0;
+  const cardCount = allCards
+    ? Math.max(allCards.length, selectedLeague.card_count)
+    : undefined;
 
   for (const card of cards) {
     if (card.imageUrl) preload(card.imageUrl, { as: "image" });
@@ -38,8 +43,8 @@ export function CardDatabasePanel() {
           Card Database
         </Text>
         <Heading as="h2" size="xl" className="text-(--wc-text-90)">
-          {allCards
-            ? `${allCards.length} divination cards`
+          {cardCount !== undefined
+            ? `${cardCount} divination cards`
             : "Divination cards"}
         </Heading>
         <Text size="sm" className="text-(--wc-text-60)">
@@ -70,7 +75,9 @@ export function CardDatabasePanel() {
             size="sm"
             className="col-span-2 py-8 text-center text-(--wc-text-50)"
           >
-            No card data available for this game yet.
+            {selectedLeague.historical
+              ? "Detailed card previews are unavailable for this archived league."
+              : "No card data available for this game yet."}
           </Text>
         )}
       </div>

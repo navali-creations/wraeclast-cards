@@ -1,4 +1,5 @@
 import clsx from "clsx";
+import { useLeagueContext } from "../../../app/league-context";
 import { Text } from "../../../components/text";
 import { useCardsQuery } from "../../cards/hooks";
 import { useDropRatesIndex } from "../api/dropRatesIndex";
@@ -6,32 +7,37 @@ import { formatHomepageNumber, totalObservedDrops } from "../api/homepageStats";
 import { useHeroQuote } from "../hooks/useHeroQuote";
 
 export function HeroSection() {
-  const { data } = useDropRatesIndex();
-  const { data: cards } = useCardsQuery();
+  const { selectedLeague } = useLeagueContext();
+  const { data, error: dropRatesError } = useDropRatesIndex();
+  const { data: cards, error: cardsError } = useCardsQuery();
   const { quote, attribution, sizeClass: quoteSizeClass } = useHeroQuote();
   const games =
     data === undefined
       ? undefined
       : Object.values(data.games).filter((game) => game !== undefined);
   const leagues = games?.flatMap((game) => game.leagues);
-  const leagueCount = games?.reduce(
-    (total, game) => total + game.league_count,
-    0,
-  );
+  const archivedLeagueCount = leagues?.filter(
+    (league) => league.historical,
+  ).length;
+  const cardCount = cards
+    ? Math.max(cards.length, selectedLeague.card_count)
+    : undefined;
 
   const heroStats = [
     {
-      value: formatHomepageNumber(cards?.length),
+      value: cardsError ? "N/A" : formatHomepageNumber(cardCount),
       label: "Divination Cards",
     },
     {
-      value: formatHomepageNumber(leagueCount),
+      value: dropRatesError ? "N/A" : formatHomepageNumber(archivedLeagueCount),
       label: "Leagues Archived",
     },
     {
-      value: formatHomepageNumber(
-        leagues === undefined ? undefined : totalObservedDrops(leagues),
-      ),
+      value: dropRatesError
+        ? "N/A"
+        : formatHomepageNumber(
+            leagues === undefined ? undefined : totalObservedDrops(leagues),
+          ),
       label: "Deck Openings",
     },
   ];

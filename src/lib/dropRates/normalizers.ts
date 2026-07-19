@@ -1,3 +1,4 @@
+import { createDivinationCardRouteIndex } from "../divinationCards.ts";
 import type {
   DropRateCard,
   DropRateLeague,
@@ -114,8 +115,6 @@ function normalizeRootGame(value: unknown): DropRatesRootGame {
   const game = isRecord(value) ? value : {};
 
   return {
-    url: stringOrEmpty(game.url),
-    league_count: numberOrZero(game.league_count),
     leagues: records(game.leagues).map(normalizeLeague),
   };
 }
@@ -159,6 +158,9 @@ export function normalizeLeagueDropRates(
 
   const league = isRecord(value.league) ? value.league : {};
 
+  const cards = records(value.cards).map(normalizeCard);
+  createDivinationCardRouteIndex(cards);
+
   return {
     schema_version: numberOrZero(value.schema_version),
     generated_at: stringOrEmpty(value.generated_at),
@@ -169,6 +171,6 @@ export function normalizeLeagueDropRates(
       historical: booleanOrFalse(league.historical),
     },
     reference: normalizeReference(value.reference),
-    cards: records(value.cards).map(normalizeCard),
+    cards,
   };
 }

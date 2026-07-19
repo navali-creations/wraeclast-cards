@@ -24,8 +24,6 @@ export interface GameDropRates {
 }
 
 export interface DropRatesRootGame {
-  url: string;
-  league_count: number;
   leagues: DropRateLeague[];
 }
 
@@ -36,8 +34,6 @@ export interface DropRatesIndex {
 }
 
 export interface DropRateCard {
-  // Website card route id. Older generated files may not have this yet.
-  card_id?: string;
   name: string;
   // Drops reported for this card across all sources.
   count: number;

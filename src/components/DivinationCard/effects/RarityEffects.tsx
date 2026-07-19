@@ -1,11 +1,11 @@
-import type { CardRarity } from "../../../features/cards/types";
+import type { DivinationCardRarity } from "../../../lib/divinationCards";
 import { CommonEffect } from "./CommonEffect";
 import { ExtremelyRareEffect } from "./ExtremelyRareEffect";
 import { RareEffect } from "./RareEffect";
 import type { CardEffectProps } from "./types";
 
 interface RarityEffectsProps extends CardEffectProps {
-  rarity: CardRarity;
+  rarity: DivinationCardRarity;
 }
 
 export function RarityEffects({ rarity, ...effectProps }: RarityEffectsProps) {

@@ -10,5 +10,6 @@ export function useSelectedCardsDataSource() {
   return {
     cardDataUrl: selectedLeague.reference_source_url,
     leagueDataUrl,
+    allowDefaultSource: !selectedLeague.historical,
   };
 }

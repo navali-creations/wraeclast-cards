@@ -6,9 +6,10 @@ const DEFAULT_OUTPUT_DIR = "dist/data/drop-rates";
 const DEFAULT_PUBLIC_BASE_URL = "https://wraeclast.cards/data/drop-rates";
 const DEFAULT_REFERENCE_DATA_BASE_URL =
   "https://cdn.jsdelivr.net/gh/navali-creations/fateweaver@main/packages/poe1-divination-cards/data";
-const SCHEMA_VERSION = 4;
+const SCHEMA_VERSION = 5;
 const CACHE_SECONDS = 7 * 24 * 60 * 60;
 const BROWSER_CACHE_SECONDS = 60 * 60;
+const FETCH_TIMEOUT_MS = 15_000;
 
 function parseArgs(argv) {
   const args = {
@@ -202,7 +203,10 @@ function jsonStringify(data) {
 }
 
 async function fetchJson(url, options = {}) {
-  const response = await fetch(url, options);
+  const response = await fetch(url, {
+    ...options,
+    signal: options.signal ?? AbortSignal.timeout(FETCH_TIMEOUT_MS),
+  });
   if (!response.ok) {
     throw new Error(`GET ${url} failed with ${response.status}`);
   }
@@ -215,10 +219,12 @@ async function fetchOptionalJson(url) {
   try {
     response = await fetch(url, {
       headers: { Accept: "application/json" },
+      signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
     });
-  } catch {
-    console.warn(`[drop-rates] Could not fetch previous manifest from ${url}`);
-    return null;
+  } catch (error) {
+    throw new Error(`Could not fetch previous manifest from ${url}`, {
+      cause: error,
+    });
   }
 
   if (response.status === 404) {
@@ -226,23 +232,24 @@ async function fetchOptionalJson(url) {
   }
 
   if (!response.ok) {
-    console.warn(
-      `[drop-rates] Could not fetch previous data from ${url}: ${response.status}`,
+    throw new Error(
+      `Could not fetch previous manifest from ${url}: ${response.status}`,
     );
-    return null;
   }
 
   const contentType = response.headers.get("content-type") ?? "";
   if (!contentType.includes("application/json")) {
-    console.warn(`[drop-rates] No previous JSON manifest found at ${url}`);
-    return null;
+    throw new Error(
+      `Could not fetch previous manifest from ${url}: expected JSON, received ${contentType || "unknown content type"}`,
+    );
   }
 
   try {
     return await response.json();
-  } catch {
-    console.warn(`[drop-rates] Previous manifest at ${url} is not valid JSON`);
-    return null;
+  } catch (error) {
+    throw new Error(`Previous manifest at ${url} is not valid JSON`, {
+      cause: error,
+    });
   }
 }
 
@@ -251,10 +258,12 @@ async function fetchOptionalRawJson(url) {
   try {
     response = await fetch(url, {
       headers: { Accept: "application/json" },
+      signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
     });
-  } catch {
-    console.warn(`[drop-rates] Could not fetch optional JSON from ${url}`);
-    return null;
+  } catch (error) {
+    throw new Error(`Could not fetch optional JSON from ${url}`, {
+      cause: error,
+    });
   }
 
   if (response.status === 404) {
@@ -262,17 +271,17 @@ async function fetchOptionalRawJson(url) {
   }
 
   if (!response.ok) {
-    console.warn(
-      `[drop-rates] Could not fetch optional JSON from ${url}: ${response.status}`,
+    throw new Error(
+      `Could not fetch optional JSON from ${url}: ${response.status}`,
     );
-    return null;
   }
 
   try {
     return await response.json();
-  } catch {
-    console.warn(`[drop-rates] Optional JSON at ${url} is not valid JSON`);
-    return null;
+  } catch (error) {
+    throw new Error(`Optional JSON at ${url} is not valid JSON`, {
+      cause: error,
+    });
   }
 }
 
@@ -406,14 +415,19 @@ function isReferenceCardFromBoss(card) {
   return card.from_boss === true;
 }
 
-async function fetchReferenceData({ game, leagueName, referenceDataBaseUrl }) {
+async function fetchReferenceData({
+  game,
+  leagueName,
+  referenceDataBaseUrl,
+  allowLatestFallback,
+}) {
   if (game !== "poe1") return null;
 
   const sourceUrl = referenceFileUrl(referenceDataBaseUrl, leagueName);
   let resolvedSourceUrl = sourceUrl;
   let cards = await fetchOptionalRawJson(sourceUrl);
 
-  if (!cards) {
+  if (!cards && allowLatestFallback) {
     const fallbackUrl = latestReferenceFileUrl(referenceDataBaseUrl);
     cards = await fetchOptionalRawJson(fallbackUrl);
 
@@ -430,6 +444,13 @@ async function fetchReferenceData({ game, leagueName, referenceDataBaseUrl }) {
     );
   }
 
+  if (!cards) {
+    console.warn(
+      `[drop-rates] No league-specific reference data found for historical league ${game}/${leagueName}`,
+    );
+    return null;
+  }
+
   validateReferenceCards(cards, leagueName);
 
   const eligibleCards = cards.filter(
@@ -438,13 +459,12 @@ async function fetchReferenceData({ game, leagueName, referenceDataBaseUrl }) {
       !isReferenceCardFromBoss(card) &&
       card.weight > 0,
   );
-  const totalWeight = eligibleCards.reduce((sum, card) => sum + card.weight, 0);
   const totalChanceWeight = eligibleCards.reduce(
     (sum, card) => sum + (chanceWeight(card.weight) ?? 0),
     0,
   );
 
-  if (totalWeight <= 0 || totalChanceWeight <= 0) {
+  if (totalChanceWeight <= 0) {
     console.warn(
       `[drop-rates] Reference weights for ${game}/${leagueName} have no eligible cards`,
     );
@@ -455,12 +475,8 @@ async function fetchReferenceData({ game, leagueName, referenceDataBaseUrl }) {
   const eligibleCardNames = new Set(eligibleCards.map((card) => card.name));
 
   return {
-    source: "fateweaver",
     source_url: resolvedSourceUrl,
-    total_weight: totalWeight,
     total_chance_weight: totalChanceWeight,
-    eligible_card_count: eligibleCards.length,
-    card_count: cards.length,
     cardByName,
     eligibleCardNames,
   };
@@ -474,7 +490,6 @@ function enrichCardsWithReference(cards, referenceData) {
       if (cardsByName.has(cardName)) continue;
 
       const missingCard = {
-        card_id: cardName,
         name: cardName,
         count: 0,
         ratio: 0,
@@ -569,9 +584,6 @@ function splitCardsByLeague(payload) {
       if (!leagueIds.has(leagueId)) continue;
 
       byLeague.get(leagueId)?.cards.push({
-        // Keep this aligned with the website card route id. Today the card
-        // catalog uses the card name as its id.
-        card_id: card.name,
         name: card.name,
         count: stats.count,
         ratio: stats.ratio,
@@ -597,10 +609,6 @@ function leagueFilePath(outputDir, game, leagueId) {
 
 function leagueUrl(game, leagueId) {
   return `/data/drop-rates/${game}/${leagueId}.json`;
-}
-
-function gameIndexUrl(game) {
-  return `/data/drop-rates/${game}/index.json`;
 }
 
 async function writeLeagueFile({
@@ -639,6 +647,133 @@ async function writeLeagueFile({
   };
 }
 
+function requiredPreservedNumber(value, field, leagueName) {
+  if (typeof value !== "number" || !Number.isFinite(value)) {
+    throw new Error(`Invalid ${field} in preserved data for ${leagueName}`);
+  }
+
+  return value;
+}
+
+const REQUIRED_PRESERVED_CARD_FIELDS = [
+  "count",
+  "ratio",
+  "verified_count",
+  "verified_ratio",
+];
+const NULLABLE_PRESERVED_CARD_FIELDS = [
+  "reference_weight",
+  "players_saw",
+  "reference_estimated_chance",
+  "seen_vs_reference",
+  "verified_players_saw",
+  "verified_seen_vs_reference",
+  "community_estimated_weight",
+  "community_estimated_weight_delta_vs_reference",
+  "verified_community_estimated_weight",
+  "verified_community_estimated_weight_delta_vs_reference",
+];
+
+function normalizePreservedCard(card, leagueName) {
+  if (
+    !card ||
+    typeof card !== "object" ||
+    typeof card.name !== "string" ||
+    card.name.trim().length === 0
+  ) {
+    throw new Error(`Invalid card in preserved data for ${leagueName}`);
+  }
+
+  const normalized = { name: card.name };
+  for (const field of REQUIRED_PRESERVED_CARD_FIELDS) {
+    normalized[field] = requiredPreservedNumber(card[field], field, leagueName);
+  }
+  for (const field of NULLABLE_PRESERVED_CARD_FIELDS) {
+    normalized[field] =
+      card[field] === null || card[field] === undefined
+        ? null
+        : requiredPreservedNumber(card[field], field, leagueName);
+  }
+
+  return normalized;
+}
+
+function normalizePreservedLeagueDocument(value, game, previousLeague) {
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    throw new Error(`Invalid preserved data for ${game}/${previousLeague.id}`);
+  }
+
+  const league = value.league;
+  if (
+    value.game !== game ||
+    !league ||
+    typeof league !== "object" ||
+    Array.isArray(league) ||
+    league.id !== previousLeague.id ||
+    !Array.isArray(value.cards)
+  ) {
+    throw new Error(`Invalid preserved data for ${game}/${previousLeague.id}`);
+  }
+
+  const name =
+    typeof league.name === "string" && league.name.trim().length > 0
+      ? league.name
+      : previousLeague.name;
+  if (typeof name !== "string" || name.trim().length === 0) {
+    throw new Error(`Invalid league name for ${game}/${previousLeague.id}`);
+  }
+
+  const observedTotal = Number.isFinite(previousLeague.observed_total)
+    ? previousLeague.observed_total
+    : Number.isFinite(league.observed_total)
+      ? league.observed_total
+      : undefined;
+  const referenceSourceUrl =
+    typeof previousLeague.reference_source_url === "string"
+      ? previousLeague.reference_source_url
+      : typeof league.reference_source_url === "string"
+        ? league.reference_source_url
+        : typeof value.reference?.source_url === "string"
+          ? value.reference.source_url
+          : undefined;
+  const cards = value.cards
+    .map((card) => normalizePreservedCard(card, name))
+    .filter((card) => referenceSourceUrl !== undefined || card.count > 0);
+  const generatedAt =
+    typeof value.generated_at === "string"
+      ? value.generated_at
+      : previousLeague.generated_at;
+  const leagueMetadata = {
+    id: previousLeague.id,
+    name,
+    historical: true,
+    ...(observedTotal === undefined ? {} : { observed_total: observedTotal }),
+    ...(referenceSourceUrl === undefined
+      ? {}
+      : { reference_source_url: referenceSourceUrl }),
+  };
+  const document = {
+    schema_version: SCHEMA_VERSION,
+    generated_at: generatedAt,
+    game,
+    league: leagueMetadata,
+    ...(referenceSourceUrl === undefined
+      ? {}
+      : { reference: { source_url: referenceSourceUrl } }),
+    cards,
+  };
+
+  return {
+    document,
+    league: {
+      ...leagueMetadata,
+      url: leagueUrl(game, previousLeague.id),
+      card_count: cards.length,
+      generated_at: generatedAt,
+    },
+  };
+}
+
 async function preservePreviousLeague({
   outputDir,
   publicBaseUrl,
@@ -653,25 +788,41 @@ async function preservePreviousLeague({
   ).toString();
   const response = await fetch(previousUrl, {
     headers: { Accept: "application/json" },
+    signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
   });
 
   if (!response.ok) {
-    console.warn(
-      `[drop-rates] Could not preserve ${game}/${previousLeague.id}: ${response.status}`,
+    throw new Error(
+      `Could not preserve ${game}/${previousLeague.id}: ${response.status}`,
     );
-    return null;
+  }
+
+  const contentType = response.headers.get("content-type")?.toLowerCase() ?? "";
+  if (!contentType.includes("application/json")) {
+    throw new Error(
+      `Could not preserve ${game}/${previousLeague.id}: expected JSON, received ${contentType || "unknown content type"}`,
+    );
   }
 
   const body = await response.text();
+  let value;
+  try {
+    value = JSON.parse(body);
+  } catch {
+    throw new Error(
+      `Could not preserve ${game}/${previousLeague.id}: invalid JSON`,
+    );
+  }
+  const preserved = normalizePreservedLeagueDocument(
+    value,
+    game,
+    previousLeague,
+  );
   const target = leagueFilePath(outputDir, game, previousLeague.id);
   await mkdir(path.dirname(target), { recursive: true });
-  await writeFile(target, body.endsWith("\n") ? body : `${body}\n`);
+  await writeFile(target, jsonStringify(preserved.document));
 
-  return {
-    ...previousLeague,
-    historical: true,
-    url: leagueUrl(game, previousLeague.id),
-  };
+  return preserved.league;
 }
 
 async function writeGameIndex({ outputDir, generatedAt, game, leagues }) {
@@ -758,9 +909,9 @@ async function main() {
     args.backfillHistorical === true || envBackfillHistorical === true;
   const generatedAt = new Date().toISOString();
 
-  const previousManifest = forceBackfill
-    ? null
-    : await fetchOptionalJson(`${publicBaseUrl}/index.json`);
+  const previousManifest = await fetchOptionalJson(
+    `${publicBaseUrl}/index.json`,
+  );
   const requiresSchemaBackfill =
     previousManifest !== null &&
     previousManifest?.schema_version !== SCHEMA_VERSION;
@@ -775,8 +926,8 @@ async function main() {
   }
 
   if (!previousManifest && !shouldBackfill) {
-    console.warn(
-      "[drop-rates] Previous manifest unavailable; historical backfill is disabled",
+    throw new Error(
+      "Previous manifest is missing while historical backfill is disabled; rerun with DROP_RATES_BACKFILL_HISTORICAL=true",
     );
   }
 
@@ -802,6 +953,7 @@ async function main() {
         game,
         leagueName: league.name,
         referenceDataBaseUrl,
+        allowLatestFallback: true,
       });
       const enriched = enrichCardsWithReference(cards, referenceData);
 
@@ -839,6 +991,7 @@ async function main() {
           game,
           leagueName: league.name,
           referenceDataBaseUrl,
+          allowLatestFallback: false,
         });
         const enriched = enrichCardsWithReference(cards, referenceData);
 
@@ -882,11 +1035,7 @@ async function main() {
       leagues: leagueEntries,
     });
 
-    rootGames[game] = {
-      url: gameIndexUrl(game),
-      league_count: leagueEntries.length,
-      leagues: leagueEntries,
-    };
+    rootGames[game] = { leagues: leagueEntries };
   }
 
   await writeRootIndex({ outputDir, generatedAt, games: rootGames });

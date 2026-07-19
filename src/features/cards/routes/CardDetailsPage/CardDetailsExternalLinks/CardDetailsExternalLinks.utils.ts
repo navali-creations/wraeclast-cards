@@ -1,14 +1,7 @@
+import { divinationCardSlug } from "../../../../../lib/divinationCards";
+
 function toUnderscoreSlug(name: string) {
   return name.trim().replace(/\s+/g, "_");
-}
-
-function toKebabSlug(name: string) {
-  return name
-    .trim()
-    .toLowerCase()
-    .replace(/'/g, "")
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "");
 }
 
 export function getPoeWikiUrl(name: string) {
@@ -16,7 +9,7 @@ export function getPoeWikiUrl(name: string) {
 }
 
 export function getPoeNinjaUrl(name: string, league: string) {
-  return `https://poe.ninja/poe1/economy/${league.toLowerCase()}/divination-cards/${toKebabSlug(name)}`;
+  return `https://poe.ninja/poe1/economy/${league.toLowerCase()}/divination-cards/${divinationCardSlug(name)}`;
 }
 
 export function getPoeDbUrl(name: string) {

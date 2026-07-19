@@ -1,3 +1,4 @@
+import { divinationCardSlug } from "../../../../../lib/divinationCards";
 import type { StackedDecksRow } from "../../../hooks";
 import { CardNamePreview } from "../CardNamePreview/CardNamePreview";
 import { ColumnHeader } from "./ColumnHeader";
@@ -65,7 +66,7 @@ function nameColumn() {
     tdClassName: "font-fontin-sc text-(--wc-accent-border)",
     cell: (ctx) => (
       <CardNamePreview
-        cardId={ctx.row.original.card_id ?? ctx.row.original.name}
+        cardId={divinationCardSlug(ctx.row.original.name)}
         name={ctx.getValue()}
       />
     ),

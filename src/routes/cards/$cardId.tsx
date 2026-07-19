@@ -1,6 +1,7 @@
 import { createFileRoute, redirect } from "@tanstack/react-router";
 import { resolveStoredGame } from "../../app/game-context";
 import { resolveDefaultLeagueSlug } from "../../app/league-context";
+import { divinationCardSlug } from "../../lib/divinationCards";
 import { gameToSlug } from "../../lib/gameSlug";
 
 export const Route = createFileRoute("/cards/$cardId")({
@@ -13,7 +14,7 @@ export const Route = createFileRoute("/cards/$cardId")({
       params: {
         game: gameToSlug(game),
         league,
-        cardId: params.cardId,
+        cardId: divinationCardSlug(params.cardId),
       },
     });
   },

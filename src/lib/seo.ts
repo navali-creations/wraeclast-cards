@@ -1,7 +1,9 @@
 import { EGame } from "../enums";
-import { gameToLabel, gameToSlug } from "./gameSlug";
+import { gameToLabel, gameToSeoLabel, gameToSlug } from "./gameSlug";
+import { serializeJsonForHtml } from "./seoDocument";
 import {
   type CardSeoFacts,
+  createCardNotFoundSeoMetadata,
   createCardSeoMetadata,
   createLeagueSeoMetadata,
   createRootSeoMetadata,
@@ -22,22 +24,24 @@ interface GameLeagueCardSeoOptions {
   game: EGame;
   leagueSlug: string;
   cardId: string;
+  leagueName?: string;
+  facts?: CardSeoFacts;
+  status?: "not-found";
 }
 
 interface StaticSeoFactsPayload<T> {
   pathname: string;
-  facts: T;
+  facts?: T;
+  status?: "not-found";
 }
 
 function absoluteUrl(pathname: string): string {
   return new URL(pathname, SITE_URL).href;
 }
 
-function safeJsonLd(data: Record<string, unknown>): string {
-  return JSON.stringify(data).replace(/</g, "\\u003c");
-}
-
-function readStaticPageFacts<T>(pathname: string): T | undefined {
+function readStaticPagePayload<T>(
+  pathname: string,
+): StaticSeoFactsPayload<T> | undefined {
   if (typeof document === "undefined") return undefined;
 
   const element = document.querySelector<HTMLScriptElement>(
@@ -47,7 +51,7 @@ function readStaticPageFacts<T>(pathname: string): T | undefined {
 
   try {
     const payload = JSON.parse(element.textContent) as StaticSeoFactsPayload<T>;
-    return payload.pathname === pathname ? payload.facts : undefined;
+    return payload.pathname === pathname ? payload : undefined;
   } catch {
     return undefined;
   }
@@ -72,7 +76,9 @@ function createSeoHead(metadata: SeoMetadata) {
       { property: "og:locale", content: "en_US" },
       { property: "og:title", content: metadata.title },
       { property: "og:description", content: metadata.description },
-      { property: "og:url", content: canonicalUrl },
+      metadata.canonical === false
+        ? undefined
+        : { property: "og:url", content: canonicalUrl },
       imageUrl ? { property: "og:image", content: imageUrl } : undefined,
       metadata.imageAlt
         ? { property: "og:image:alt", content: metadata.imageAlt }
@@ -88,10 +94,13 @@ function createSeoHead(metadata: SeoMetadata) {
         ? { name: "twitter:image:alt", content: metadata.imageAlt }
         : undefined,
     ],
-    links: [{ rel: "canonical", href: canonicalUrl }],
+    links:
+      metadata.canonical === false
+        ? []
+        : [{ rel: "canonical", href: canonicalUrl }],
     scripts: metadata.structuredData?.map((structuredData) => ({
       type: "application/ld+json",
-      children: safeJsonLd(structuredData),
+      children: serializeJsonForHtml(structuredData),
     })),
   };
 }
@@ -124,7 +133,7 @@ export function createGameLeagueSeoHead({
   return createSeoHead(
     createLeagueSeoMetadata({
       gameLabel,
-      gameSeoLabel: game === EGame.Poe1 ? "Path of Exile" : "Path of Exile 2",
+      gameSeoLabel: gameToSeoLabel(game),
       gameSlug,
       leagueName,
       leagueSlug,
@@ -133,7 +142,7 @@ export function createGameLeagueSeoHead({
       robots: game === EGame.Poe2 ? "noindex, follow" : "index, follow",
       // Production HTML embeds the same facts used by the static generator so
       // React recreates identical metadata after replacing the initial tags.
-      facts: readStaticPageFacts<LeagueSeoFacts>(pathname),
+      facts: readStaticPagePayload<LeagueSeoFacts>(pathname)?.facts,
     }),
   );
 }
@@ -142,27 +151,41 @@ export function createGameLeagueCardSeoHead({
   game,
   leagueSlug,
   cardId,
+  leagueName = leagueSlugToName(leagueSlug),
+  facts: routeFacts,
+  status: routeStatus,
 }: GameLeagueCardSeoOptions) {
   const sharedOptions = {
     gameLabel: gameToLabel(game),
-    gameSeoLabel: game === EGame.Poe1 ? "Path of Exile" : "Path of Exile 2",
+    gameSeoLabel: gameToSeoLabel(game),
     gameSlug: gameToSlug(game),
-    leagueName: leagueSlugToName(leagueSlug),
+    leagueName,
     leagueSlug,
   };
   const fallbackMetadata = createCardSeoMetadata({
     ...sharedOptions,
-    facts: { name: cardId },
-    robots: game === EGame.Poe2 ? "noindex, follow" : "index, follow",
+    facts: { name: leagueSlugToName(cardId), slug: cardId },
+    robots: "noindex, follow",
   });
-  const facts = readStaticPageFacts<CardSeoFacts>(fallbackMetadata.pathname);
+  const hasRouteResult = routeFacts !== undefined || routeStatus !== undefined;
+  const payload = hasRouteResult
+    ? undefined
+    : readStaticPagePayload<CardSeoFacts>(fallbackMetadata.pathname);
+  const status = routeStatus ?? payload?.status;
+  if (status === "not-found") {
+    return createSeoHead(
+      createCardNotFoundSeoMetadata(fallbackMetadata.pathname),
+    );
+  }
+
+  const facts = routeFacts ?? payload?.facts;
 
   return createSeoHead(
     facts
       ? createCardSeoMetadata({
           ...sharedOptions,
           facts,
-          robots: game === EGame.Poe2 ? "noindex, follow" : "index, follow",
+          robots: "index, follow",
         })
       : fallbackMetadata,
   );

@@ -4,6 +4,7 @@ import { clsx } from "clsx";
 import type { CSSProperties, MouseEvent } from "react";
 import { useGameContext } from "../../../../app/game-context";
 import { useLeagueContext } from "../../../../app/league-context";
+import { divinationCardSlug } from "../../../../lib/divinationCards";
 import { gameToSlug } from "../../../../lib/gameSlug";
 import { leagueToSlug } from "../../../../lib/leagueSlug";
 import type { StackedDecksRow } from "../../hooks";
@@ -32,7 +33,7 @@ export function DataRow({ row, animationIndex, shouldAnimate }: DataRowProps) {
   const navigate = useNavigate();
   const { game } = useGameContext();
   const { selectedLeague } = useLeagueContext();
-  const cardId = row.original.card_id ?? row.original.name;
+  const cardId = divinationCardSlug(row.original.name);
 
   const handleOpenCard = () => {
     navigate({

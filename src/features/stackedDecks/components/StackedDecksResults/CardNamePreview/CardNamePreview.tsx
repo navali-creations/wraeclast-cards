@@ -27,7 +27,8 @@ export function CardNamePreview({ cardId, name }: CardNamePreviewProps) {
   const requestIdRef = useRef(0);
   const queryClient = useQueryClient();
   const { game } = useGameContext();
-  const { cardDataUrl, leagueDataUrl } = useSelectedCardsDataSource();
+  const { cardDataUrl, leagueDataUrl, allowDefaultSource } =
+    useSelectedCardsDataSource();
   const [previewStyle, setPreviewStyle] = useState<CSSProperties | null>(null);
   const [previewCard, setPreviewCard] = useState<Card | null>(null);
 
@@ -56,7 +57,11 @@ export function CardNamePreview({ cardId, name }: CardNamePreviewProps) {
       }
 
       const cards = await queryClient.ensureQueryData(
-        cardsQueryOptions({ game, cardDataUrl: resolvedCardDataUrl }),
+        cardsQueryOptions({
+          game,
+          cardDataUrl: resolvedCardDataUrl,
+          allowDefaultSource,
+        }),
       );
       if (requestIdRef.current !== requestId) return false;
 
@@ -71,7 +76,7 @@ export function CardNamePreview({ cardId, name }: CardNamePreviewProps) {
       setPreviewStyle(null);
       return false;
     }
-  }, [cardDataUrl, game, leagueDataUrl, name, queryClient]);
+  }, [allowDefaultSource, cardDataUrl, game, leagueDataUrl, name, queryClient]);
 
   const hidePreview = useCallback(() => {
     requestIdRef.current += 1;

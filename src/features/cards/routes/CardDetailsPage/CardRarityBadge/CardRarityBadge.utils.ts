@@ -1,15 +1,10 @@
 import type { CSSProperties } from "react";
-import type { CardRarity } from "../../../types";
+import type { DivinationCardRarity } from "../../../../../lib/divinationCards";
 
-export const CARD_RARITY_LABELS: Record<CardRarity, string> = {
-  0: "Unknown",
-  1: "Extremely rare",
-  2: "Rare",
-  3: "Less common",
-  4: "Common",
-};
-
-export const CARD_RARITY_BADGE_STYLES: Record<CardRarity, CSSProperties> = {
+export const CARD_RARITY_BADGE_STYLES: Record<
+  DivinationCardRarity,
+  CSSProperties
+> = {
   0: {
     backgroundColor: "rgba(245, 158, 11, 0.15)",
     color: "rgba(245, 158, 11, 0.85)",

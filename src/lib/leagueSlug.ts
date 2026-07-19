@@ -1,4 +1,4 @@
-import type { DropRateLeague } from "./dropRates/types";
+import type { DropRateLeague } from "./dropRates/types.ts";
 
 export const STANDARD_LEAGUE_SLUG = "standard";
 
@@ -13,12 +13,16 @@ const STANDARD_LEAGUE: DropRateLeague = {
   generated_at: "",
 };
 
-export function leagueToSlug(league: DropRateLeague): string {
-  return league.name
+export function leagueNameToSlug(name: string): string {
+  return name
     .toLowerCase()
     .trim()
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "");
+}
+
+export function leagueToSlug(league: DropRateLeague): string {
+  return leagueNameToSlug(league.name);
 }
 
 export function findLeagueBySlug(

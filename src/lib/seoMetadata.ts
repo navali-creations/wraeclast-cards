@@ -21,6 +21,7 @@ export interface SeoMetadata {
   imagePath?: string;
   imageAlt?: string;
   structuredData?: StructuredData[];
+  canonical?: boolean;
 }
 
 export interface LeagueSeoFacts {
@@ -32,6 +33,7 @@ export interface LeagueSeoFacts {
 
 export interface CardSeoFacts {
   name: string;
+  slug: string;
   rewardText?: string;
   stackSize?: number;
   fromBoss?: boolean;
@@ -78,79 +80,21 @@ function organizationReference(siteUrl: string) {
 }
 
 function createBreadcrumbs(
-  gameLabel: string,
-  leagueName: string,
-  leaguePath: string,
   siteUrl: string,
-  page?: { name: string; pathname: string },
+  items: readonly { name: string; pathname: string }[],
 ) {
-  const itemListElement = [
-    {
+  const itemListElement = [{ name: SITE_NAME, pathname: "/" }, ...items].map(
+    ({ name, pathname }, index) => ({
       "@type": "ListItem",
-      position: 1,
-      name: SITE_NAME,
-      item: absoluteUrl("/", siteUrl),
-    },
-    {
-      "@type": "ListItem",
-      position: 2,
-      name: `${gameLabel} ${leagueName}`,
-      item: absoluteUrl(leaguePath, siteUrl),
-    },
-  ];
-
-  if (page) {
-    itemListElement.push({
-      "@type": "ListItem",
-      position: 3,
-      name: page.name,
-      item: absoluteUrl(page.pathname, siteUrl),
-    });
-  }
+      position: index + 1,
+      name,
+      item: absoluteUrl(pathname, siteUrl),
+    }),
+  );
 
   return {
     "@type": "BreadcrumbList",
     itemListElement,
-  };
-}
-
-function createCardBreadcrumbs(
-  gameLabel: string,
-  leagueName: string,
-  leaguePath: string,
-  cardsPath: string,
-  cardName: string,
-  cardPath: string,
-  siteUrl: string,
-) {
-  return {
-    "@type": "BreadcrumbList",
-    itemListElement: [
-      {
-        "@type": "ListItem",
-        position: 1,
-        name: SITE_NAME,
-        item: absoluteUrl("/", siteUrl),
-      },
-      {
-        "@type": "ListItem",
-        position: 2,
-        name: `${gameLabel} ${leagueName}`,
-        item: absoluteUrl(leaguePath, siteUrl),
-      },
-      {
-        "@type": "ListItem",
-        position: 3,
-        name: "Divination Cards",
-        item: absoluteUrl(cardsPath, siteUrl),
-      },
-      {
-        "@type": "ListItem",
-        position: 4,
-        name: cardName,
-        item: absoluteUrl(cardPath, siteUrl),
-      },
-    ],
   };
 }
 
@@ -236,13 +180,19 @@ export function createLeagueSeoMetadata({
               description,
               url: absoluteUrl(pathname, siteUrl),
               isPartOf: { "@id": `${siteUrl}/#website` },
-              ...(cardCount === undefined ? {} : { numberOfItems: cardCount }),
+              mainEntity: {
+                "@type": "ItemList",
+                "@id": `${absoluteUrl(pathname, siteUrl)}#cards`,
+                ...(cardCount === undefined
+                  ? {}
+                  : { numberOfItems: cardCount }),
+              },
               inLanguage: "en",
             },
-            createBreadcrumbs(gameLabel, leagueName, leaguePath, siteUrl, {
-              name: "Divination Cards",
-              pathname,
-            }),
+            createBreadcrumbs(siteUrl, [
+              { name: `${gameLabel} ${leagueName}`, pathname: leaguePath },
+              { name: "Divination Cards", pathname },
+            ]),
           ],
         },
       ],
@@ -295,10 +245,10 @@ export function createLeagueSeoMetadata({
               isBasedOn: PROHIBITED_LIBRARY_REFERENCE_URL,
               inLanguage: "en",
             },
-            createBreadcrumbs(gameLabel, leagueName, leaguePath, siteUrl, {
-              name: "Stacked Deck Drop Rates",
-              pathname,
-            }),
+            createBreadcrumbs(siteUrl, [
+              { name: `${gameLabel} ${leagueName}`, pathname: leaguePath },
+              { name: "Stacked Deck Drop Rates", pathname },
+            ]),
           ],
         },
       ],
@@ -337,7 +287,9 @@ export function createLeagueSeoMetadata({
             ],
             inLanguage: "en",
           },
-          createBreadcrumbs(gameLabel, leagueName, leaguePath, siteUrl),
+          createBreadcrumbs(siteUrl, [
+            { name: `${gameLabel} ${leagueName}`, pathname: leaguePath },
+          ]),
         ],
       },
     ],
@@ -356,7 +308,7 @@ export function createCardSeoMetadata({
 }: CardSeoOptions): SeoMetadata {
   const leaguePath = `/${gameSlug}/${leagueSlug}`;
   const cardsPath = `${leaguePath}/cards`;
-  const cardPath = `${cardsPath}/${encodeURIComponent(facts.name)}`;
+  const cardPath = `${cardsPath}/${facts.slug}`;
   const title = `${facts.name} Divination Card | ${leagueName} | ${SITE_NAME}`;
   const descriptionParts = [
     `${facts.name} is a ${gameSeoLabel} divination card for the ${leagueName} league.`,
@@ -420,7 +372,8 @@ export function createCardSeoMetadata({
       ? {
           "@type": "PropertyValue",
           name: "Observed drop rate",
-          value: facts.observedRate,
+          value: facts.observedRate * 100,
+          unitText: "%",
         }
       : undefined,
   ].filter((property) => property !== undefined);
@@ -457,18 +410,24 @@ export function createCardSeoMetadata({
             about: { "@type": "VideoGame", name: gameSeoLabel },
             inLanguage: "en",
           },
-          createCardBreadcrumbs(
-            gameLabel,
-            leagueName,
-            leaguePath,
-            cardsPath,
-            facts.name,
-            cardPath,
-            siteUrl,
-          ),
+          createBreadcrumbs(siteUrl, [
+            { name: `${gameLabel} ${leagueName}`, pathname: leaguePath },
+            { name: "Divination Cards", pathname: cardsPath },
+            { name: facts.name, pathname: cardPath },
+          ]),
         ],
       },
     ],
+  };
+}
+
+export function createCardNotFoundSeoMetadata(pathname: string): SeoMetadata {
+  return {
+    pathname,
+    title: `Card Not Found | ${SITE_NAME}`,
+    description: "The requested divination card could not be found.",
+    robots: "noindex, nofollow",
+    canonical: false,
   };
 }
 

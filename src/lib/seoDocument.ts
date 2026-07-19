@@ -2,9 +2,12 @@ import { type SeoMetadata, SITE_NAME, SITE_URL } from "./seoMetadata.ts";
 
 export interface SeoDocumentMetadata extends SeoMetadata {
   body?: string;
-  canonical?: boolean;
   seoPageFacts?: unknown;
+  seoPageStatus?: "not-found";
 }
+
+const SEO_HEAD_MARKER = "<!--wraeclast-seo-head-->";
+const SEO_BODY_MARKER = "<!--wraeclast-seo-body-->";
 
 export function htmlEscape(value: unknown): string {
   return String(value).replace(/[&<>"']/g, (character) => {
@@ -33,7 +36,7 @@ function absoluteUrl(pathname: string, siteUrl: string): string {
   return new URL(pathname, siteUrl).href;
 }
 
-function safeJsonLd(data: unknown): string {
+export function serializeJsonForHtml(data: unknown): string {
   return JSON.stringify(data).replace(/</g, "\\u003c");
 }
 
@@ -85,16 +88,22 @@ export function renderSeoMetadata(
 
   for (const structuredData of metadata.structuredData ?? []) {
     tags.push(
-      `<script data-seo-static type="application/ld+json">${safeJsonLd(structuredData)}</script>`,
+      `<script data-seo-static type="application/ld+json">${serializeJsonForHtml(structuredData)}</script>`,
     );
   }
 
-  if (metadata.seoPageFacts) {
+  if (
+    metadata.seoPageFacts !== undefined ||
+    metadata.seoPageStatus !== undefined
+  ) {
     tags.push(
-      `<script data-seo-page-facts type="application/json">${safeJsonLd({
-        pathname: metadata.pathname,
-        facts: metadata.seoPageFacts,
-      })}</script>`,
+      `<script data-seo-page-facts type="application/json">${serializeJsonForHtml(
+        {
+          pathname: metadata.pathname,
+          facts: metadata.seoPageFacts,
+          status: metadata.seoPageStatus,
+        },
+      )}</script>`,
     );
   }
 
@@ -108,18 +117,27 @@ export function renderSeoDocument(
 ): string {
   const withoutExistingSeo = template
     .replace(/\s*<title(?:\s[^>]*)?>[\s\S]*?<\/title>/gi, "")
-    .replace(/\s*<[^>]+data-seo-static[^>]*>(?:[\s\S]*?<\/[^>]+>)?/gi, "")
+    .replace(/\s*<(?:meta|link)\b[^>]*data-seo-static[^>]*>/gi, "")
+    .replace(/\s*<script\b[^>]*data-seo-static[^>]*>[\s\S]*?<\/script>/gi, "")
     .replace(
       /\s*<script[^>]+data-seo-page-facts[^>]*>[\s\S]*?<\/script>/gi,
       "",
     );
+
+  if (
+    !withoutExistingSeo.includes(SEO_HEAD_MARKER) ||
+    !withoutExistingSeo.includes(SEO_BODY_MARKER)
+  ) {
+    throw new Error("SEO template markers are missing from the app shell");
+  }
+
   const withHead = withoutExistingSeo.replace(
-    "</head>",
-    `    ${renderSeoMetadata(metadata, siteUrl)}\n  </head>`,
+    SEO_HEAD_MARKER,
+    `${renderSeoMetadata(metadata, siteUrl)}\n    ${SEO_HEAD_MARKER}`,
   );
 
   return withHead.replace(
-    '<div id="root"></div>',
-    `<div id="root">${metadata.body ?? ""}</div>`,
+    SEO_BODY_MARKER,
+    `${metadata.body ?? ""}${SEO_BODY_MARKER}`,
   );
 }

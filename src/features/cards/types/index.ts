@@ -1,11 +1,4 @@
-/*
-0 = unknown, no data
-1 = extremely rare
-2 = rare
-3 = less common
-4 = common
-*/
-export type CardRarity = 0 | 1 | 2 | 3 | 4;
+import type { DivinationCardRarity } from "../../../lib/divinationCards";
 
 export type Card = {
   id: string;
@@ -20,7 +13,7 @@ export type Card = {
   rewardTags: string[];
   stackSize: number;
   dropLocations: string[];
-  rarity: CardRarity;
+  rarity: DivinationCardRarity;
   weight?: number;
   fromBoss: boolean;
   isDisabled: boolean;

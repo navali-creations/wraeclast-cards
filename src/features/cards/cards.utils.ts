@@ -1,3 +1,8 @@
+import {
+  divinationCardMarkupToText,
+  normalizeDivinationCardWikiMarkup,
+} from "../../lib/divinationCards";
+
 const REWARD_TAG_LABELS: Record<string, string> = {
   augmented: "Quality",
   corrupted: "Corrupted",
@@ -15,22 +20,12 @@ const REWARD_TAG_LABELS: Record<string, string> = {
   white: "White",
 };
 
-function normalizeWikiMarkup(value: string, fileReplacement: string) {
-  return value
-    .replace(/\[\[File:[^\]]*\]\]/gi, fileReplacement)
-    .replace(/\[\[[^\]|]*\|([^\]]+)\]\]/g, "$1")
-    .replace(/\[\[([^\]]+)\]\]/g, "$1");
-}
-
 export function stripHtmlText(html: string): string {
-  return html
-    .replace(/<br\s*\/?>/gi, " ")
-    .replace(/<[^>]+>/g, "")
-    .trim();
+  return divinationCardMarkupToText(html);
 }
 
 export function cleanRewardHtml(html: string): string {
-  let result = normalizeWikiMarkup(html, "");
+  let result = normalizeDivinationCardWikiMarkup(html, "");
 
   let prev = "";
   while (prev !== result) {
@@ -46,11 +41,7 @@ export function cleanRewardHtml(html: string): string {
 }
 
 export function getRewardSearchText(html: string): string {
-  return normalizeWikiMarkup(html, " ")
-    .replace(/<br\s*\/?>/gi, " ")
-    .replace(/<[^>]+>/g, " ")
-    .replace(/\s+/g, " ")
-    .trim();
+  return divinationCardMarkupToText(html);
 }
 
 export function extractRewardTags(html: string | undefined): string[] {

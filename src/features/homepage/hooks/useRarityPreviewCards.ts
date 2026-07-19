@@ -1,8 +1,9 @@
 import { useMemo } from "react";
+import type { DivinationCardRarity } from "../../../lib/divinationCards";
 import { useCardsQuery } from "../../cards/hooks";
-import type { Card, CardRarity } from "../../cards/types";
+import type { Card } from "../../cards/types";
 
-const PREVIEW_RARITIES: CardRarity[] = [4, 3, 2, 1];
+const PREVIEW_RARITIES: DivinationCardRarity[] = [4, 3, 2, 1];
 
 function pickRandomCard(cards: Card[]) {
   return cards[Math.floor(Math.random() * cards.length)];
