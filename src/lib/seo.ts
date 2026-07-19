@@ -1,6 +1,8 @@
 import { EGame } from "../enums";
 import { gameToLabel, gameToSlug } from "./gameSlug";
 import {
+  type CardSeoFacts,
+  createCardSeoMetadata,
   createLeagueSeoMetadata,
   createRootSeoMetadata,
   createStaticPageSeoMetadata,
@@ -16,9 +18,15 @@ interface GameLeagueSeoOptions {
   page: "home" | "cards" | "stacked-decks";
 }
 
-interface StaticLeagueFactsPayload {
+interface GameLeagueCardSeoOptions {
+  game: EGame;
+  leagueSlug: string;
+  cardId: string;
+}
+
+interface StaticSeoFactsPayload<T> {
   pathname: string;
-  facts: LeagueSeoFacts;
+  facts: T;
 }
 
 function absoluteUrl(pathname: string): string {
@@ -29,7 +37,7 @@ function safeJsonLd(data: Record<string, unknown>): string {
   return JSON.stringify(data).replace(/</g, "\\u003c");
 }
 
-function readStaticLeagueFacts(pathname: string): LeagueSeoFacts | undefined {
+function readStaticPageFacts<T>(pathname: string): T | undefined {
   if (typeof document === "undefined") return undefined;
 
   const element = document.querySelector<HTMLScriptElement>(
@@ -38,7 +46,7 @@ function readStaticLeagueFacts(pathname: string): LeagueSeoFacts | undefined {
   if (!element?.textContent) return undefined;
 
   try {
-    const payload = JSON.parse(element.textContent) as StaticLeagueFactsPayload;
+    const payload = JSON.parse(element.textContent) as StaticSeoFactsPayload<T>;
     return payload.pathname === pathname ? payload.facts : undefined;
   } catch {
     return undefined;
@@ -125,8 +133,38 @@ export function createGameLeagueSeoHead({
       robots: game === EGame.Poe2 ? "noindex, follow" : "index, follow",
       // Production HTML embeds the same facts used by the static generator so
       // React recreates identical metadata after replacing the initial tags.
-      facts: readStaticLeagueFacts(pathname),
+      facts: readStaticPageFacts<LeagueSeoFacts>(pathname),
     }),
+  );
+}
+
+export function createGameLeagueCardSeoHead({
+  game,
+  leagueSlug,
+  cardId,
+}: GameLeagueCardSeoOptions) {
+  const sharedOptions = {
+    gameLabel: gameToLabel(game),
+    gameSeoLabel: game === EGame.Poe1 ? "Path of Exile" : "Path of Exile 2",
+    gameSlug: gameToSlug(game),
+    leagueName: leagueSlugToName(leagueSlug),
+    leagueSlug,
+  };
+  const fallbackMetadata = createCardSeoMetadata({
+    ...sharedOptions,
+    facts: { name: cardId },
+    robots: game === EGame.Poe2 ? "noindex, follow" : "index, follow",
+  });
+  const facts = readStaticPageFacts<CardSeoFacts>(fallbackMetadata.pathname);
+
+  return createSeoHead(
+    facts
+      ? createCardSeoMetadata({
+          ...sharedOptions,
+          facts,
+          robots: game === EGame.Poe2 ? "noindex, follow" : "index, follow",
+        })
+      : fallbackMetadata,
   );
 }
 

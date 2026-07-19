@@ -6,6 +6,11 @@ import { renderToStaticMarkup } from "react-dom/server";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import {
+  fallbackPage,
+  htmlEscape,
+  renderSeoDocument,
+} from "../src/lib/seoDocument.ts";
+import {
   createLeagueSeoMetadata,
   createRootSeoMetadata,
   createStaticPageSeoMetadata,
@@ -43,31 +48,8 @@ const GAME_CONFIG = {
   },
 };
 
-function htmlEscape(value) {
-  return String(value).replace(/[&<>"']/g, (character) => {
-    switch (character) {
-      case "&":
-        return "&amp;";
-      case "<":
-        return "&lt;";
-      case ">":
-        return "&gt;";
-      case '"':
-        return "&quot;";
-      case "'":
-        return "&#39;";
-      default:
-        return character;
-    }
-  });
-}
-
 function xmlEscape(value) {
   return htmlEscape(value).replace(/&#39;/g, "&apos;");
-}
-
-function safeJsonLd(data) {
-  return JSON.stringify(data).replace(/</g, "\\u003c");
 }
 
 function slugify(value) {
@@ -137,87 +119,11 @@ async function loadBuildTemplate() {
   );
 }
 
-function fallbackPage(body) {
-  return `<main class="mx-auto w-full max-w-300 px-4 py-8 text-(--wc-text-70)">${body}</main>`;
-}
-
-function renderMetadata(metadata) {
-  const canonicalUrl =
-    metadata.canonical === false ? null : absoluteUrl(metadata.pathname);
-  const imageUrl = metadata.imagePath ? absoluteUrl(metadata.imagePath) : null;
-  const tags = [
-    `<title data-seo-static>${htmlEscape(metadata.title)}</title>`,
-    `<meta data-seo-static name="description" content="${htmlEscape(metadata.description)}">`,
-    `<meta data-seo-static name="robots" content="${htmlEscape(metadata.robots ?? "index, follow")}">`,
-    `<meta data-seo-static property="og:type" content="website">`,
-    `<meta data-seo-static property="og:site_name" content="${SITE_NAME}">`,
-    `<meta data-seo-static property="og:locale" content="en_US">`,
-    `<meta data-seo-static property="og:title" content="${htmlEscape(metadata.title)}">`,
-    `<meta data-seo-static property="og:description" content="${htmlEscape(metadata.description)}">`,
-    `<meta data-seo-static name="twitter:card" content="${imageUrl ? "summary_large_image" : "summary"}">`,
-    `<meta data-seo-static name="twitter:title" content="${htmlEscape(metadata.title)}">`,
-    `<meta data-seo-static name="twitter:description" content="${htmlEscape(metadata.description)}">`,
-  ];
-
-  if (canonicalUrl) {
-    tags.push(
-      `<link data-seo-static rel="canonical" href="${htmlEscape(canonicalUrl)}">`,
-      `<meta data-seo-static property="og:url" content="${htmlEscape(canonicalUrl)}">`,
-    );
-  }
-
-  if (imageUrl) {
-    tags.push(
-      `<meta data-seo-static property="og:image" content="${htmlEscape(imageUrl)}">`,
-      `<meta data-seo-static name="twitter:image" content="${htmlEscape(imageUrl)}">`,
-    );
-  }
-
-  if (metadata.imageAlt) {
-    tags.push(
-      `<meta data-seo-static property="og:image:alt" content="${htmlEscape(metadata.imageAlt)}">`,
-      `<meta data-seo-static name="twitter:image:alt" content="${htmlEscape(metadata.imageAlt)}">`,
-    );
-  }
-
-  for (const structuredData of metadata.structuredData ?? []) {
-    tags.push(
-      `<script data-seo-static type="application/ld+json">${safeJsonLd(structuredData)}</script>`,
-    );
-  }
-
-  if (metadata.seoPageFacts) {
-    tags.push(
-      `<script data-seo-page-facts type="application/json">${safeJsonLd({
-        pathname: metadata.pathname,
-        facts: metadata.seoPageFacts,
-      })}</script>`,
-    );
-  }
-
-  return tags.join("\n    ");
-}
-
-function renderDocument(template, metadata) {
-  const withoutExistingSeo = template
-    .replace(/\s*<title(?:\s[^>]*)?>[\s\S]*?<\/title>/gi, "")
-    .replace(/\s*<[^>]+data-seo-static[^>]*>(?:[\s\S]*?<\/[^>]+>)?/gi, "");
-  const withHead = withoutExistingSeo.replace(
-    "</head>",
-    `    ${renderMetadata(metadata)}\n  </head>`,
-  );
-
-  return withHead.replace(
-    '<div id="root"></div>',
-    `<div id="root">${metadata.body ?? ""}</div>`,
-  );
-}
-
 async function writeRouteDocument(template, metadata) {
   const relativePath = `${metadata.pathname.replace(/^\//, "")}.html`;
   const outputPath = path.join(DIST_DIR, relativePath);
   await mkdir(path.dirname(outputPath), { recursive: true });
-  await writeFile(outputPath, renderDocument(template, metadata));
+  await writeFile(outputPath, renderSeoDocument(template, metadata, SITE_URL));
 }
 
 async function loadLeagueCards(game, league) {
@@ -244,7 +150,7 @@ function formatInteger(value) {
   return Number(value ?? 0).toLocaleString("en-US");
 }
 
-function renderCardList(cards) {
+function renderCardList(cards, cardsPath) {
   if (cards.length === 0) {
     return "<p>Card data is not available for this game yet.</p>";
   }
@@ -252,11 +158,19 @@ function renderCardList(cards) {
   const items = cards
     .map(
       (card) =>
-        `<li><strong>${htmlEscape(card.name)}</strong> — ${htmlEscape(card.description)}</li>`,
+        `<li><a href="${htmlEscape(`${cardsPath}/${encodeURIComponent(card.name)}`)}"><strong>${htmlEscape(card.name)}</strong></a> - ${htmlEscape(card.description)}</li>`,
     )
     .join("");
 
   return `<ul>${items}</ul>`;
+}
+
+function cardSitemapEntry({ gameConfig, league, leagueSlug, card, dropRates }) {
+  return {
+    pathname: `/${gameConfig.slug}/${leagueSlug}/cards/${encodeURIComponent(card.name)}`,
+    lastmod: league.generated_at || dropRates.generated_at || null,
+    dynamic: true,
+  };
 }
 
 function renderDropRateTable(cards) {
@@ -349,7 +263,7 @@ function leaguePageMetadata({
         <h1>${htmlEscape(league.name)} ${htmlEscape(gameConfig.label)} Divination Cards</h1>
         <p>${htmlEscape(sharedMetadata.description)}</p>
         <p><strong>${formatInteger(cards.length)}</strong> cards are available in this league dataset.</p>
-        ${renderCardList(cards)}
+        ${renderCardList(cards, `${leaguePath}/cards`)}
       </article>`),
     };
   }
@@ -547,17 +461,18 @@ function buildRedirects(entries, defaultLeagueByGame) {
   ];
 
   for (const entry of entries) {
-    if (entry.pathname !== "/") {
+    const isCardDetails = /^\/path-of-exile(?:-2)?\/[^/]+\/cards\/[^/]+$/.test(
+      entry.pathname,
+    );
+    if (entry.pathname !== "/" && !isCardDetails) {
       redirects.push(`${entry.pathname}/ ${entry.pathname} 308`);
     }
   }
 
   redirects.push(
     `/cards/* /path-of-exile/${poe1Default}/cards/:splat 308`,
-    "",
-    "# Card details are intentionally still client-rendered while that page is under development.",
-    "/path-of-exile/:league/cards/:cardId /index.html 200",
-    "/path-of-exile-2/:league/cards/:cardId /index.html 200",
+    "/path-of-exile/:league/cards/:cardId/ /path-of-exile/:league/cards/:cardId 308",
+    "/path-of-exile-2/:league/cards/:cardId/ /path-of-exile-2/:league/cards/:cardId 308",
   );
 
   return `${redirects.join("\n")}\n`;
@@ -577,7 +492,6 @@ async function main() {
     path.join(ROOT_DIR, "content/attributions.md"),
     "utf8",
   );
-
   const entries = [];
   const defaultLeagueByGame = {};
 
@@ -619,12 +533,25 @@ async function main() {
           }),
         );
       }
+
+      for (const card of cards) {
+        entries.push(
+          cardSitemapEntry({
+            gameConfig,
+            league,
+            leagueSlug,
+            card,
+            dropRates,
+          }),
+        );
+      }
     }
   }
 
   entries.push(...staticPageMetadata(privacyMarkdown, attributionsMarkdown));
 
-  for (const entry of entries) {
+  const staticEntries = entries.filter((entry) => !entry.dynamic);
+  for (const entry of staticEntries) {
     await writeRouteDocument(template, entry);
   }
 
@@ -652,19 +579,23 @@ async function main() {
       ${renderDiscoveryLinks(entries)}
     </article>`),
   };
-  const rootDocument = renderDocument(template, rootMetadata);
+  const rootDocument = renderSeoDocument(template, rootMetadata, SITE_URL);
   await writeFile(templatePath, rootDocument);
 
-  const notFoundDocument = renderDocument(template, {
-    pathname: "/404",
-    title: `Page Not Found | ${SITE_NAME}`,
-    description: "The requested wraeclast.cards page could not be found.",
-    robots: "noindex, nofollow",
-    canonical: false,
-    body: fallbackPage(
-      '<article class="prose text-center"><h1>404 — Page not found</h1><p>The page you requested does not exist or has moved.</p><p><a href="/">Return to wraeclast.cards</a></p></article>',
-    ),
-  });
+  const notFoundDocument = renderSeoDocument(
+    template,
+    {
+      pathname: "/404",
+      title: `Page Not Found | ${SITE_NAME}`,
+      description: "The requested wraeclast.cards page could not be found.",
+      robots: "noindex, nofollow",
+      canonical: false,
+      body: fallbackPage(
+        '<article class="prose text-center"><h1>404 — Page not found</h1><p>The page you requested does not exist or has moved.</p><p><a href="/">Return to wraeclast.cards</a></p></article>',
+      ),
+    },
+    SITE_URL,
+  );
   await writeFile(path.join(DIST_DIR, "404.html"), notFoundDocument);
 
   const sitemapEntries = [rootMetadata, ...entries];
@@ -675,7 +606,7 @@ async function main() {
   );
 
   console.log(
-    `[seo] Wrote ${entries.length + 1} static pages and ${indexedCount} sitemap URLs across ${sitemapCount} sitemap file(s) to ${DIST_DIR}`,
+    `[seo] Wrote ${staticEntries.length + 1} static pages and ${indexedCount} sitemap URLs (${entries.length - staticEntries.length} dynamically rendered card pages) across ${sitemapCount} sitemap file(s) to ${DIST_DIR}`,
   );
 }
 

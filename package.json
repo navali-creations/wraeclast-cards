@@ -35,6 +35,7 @@
   },
   "devDependencies": {
     "@biomejs/biome": "^2.4.12",
+    "@cloudflare/workers-types": "5.20260711.1",
     "@tailwindcss/vite": "^4.2.2",
     "@tanstack/router-plugin": "^1.168.18",
     "@types/node": "^24.12.2",

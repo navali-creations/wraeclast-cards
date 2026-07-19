@@ -1,4 +1,4 @@
-import type { DropRateLeague } from "./dropRates";
+import type { DropRateLeague } from "./dropRates/types";
 
 export const STANDARD_LEAGUE_SLUG = "standard";
 

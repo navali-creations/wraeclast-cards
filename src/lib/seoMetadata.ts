@@ -30,6 +30,17 @@ export interface LeagueSeoFacts {
   dataPath?: string;
 }
 
+export interface CardSeoFacts {
+  name: string;
+  rewardText?: string;
+  stackSize?: number;
+  fromBoss?: boolean;
+  rarity?: string;
+  imageUrl?: string;
+  observedCount?: number;
+  observedRate?: number;
+}
+
 interface LeagueSeoOptions {
   gameLabel: string;
   gameSeoLabel: string;
@@ -39,6 +50,17 @@ interface LeagueSeoOptions {
   page: "home" | "cards" | "stacked-decks";
   robots?: RobotsDirective;
   facts?: LeagueSeoFacts;
+  siteUrl?: string;
+}
+
+interface CardSeoOptions {
+  gameLabel: string;
+  gameSeoLabel: string;
+  gameSlug: string;
+  leagueName: string;
+  leagueSlug: string;
+  facts: CardSeoFacts;
+  robots?: RobotsDirective;
   siteUrl?: string;
 }
 
@@ -90,6 +112,59 @@ function createBreadcrumbs(
     "@type": "BreadcrumbList",
     itemListElement,
   };
+}
+
+function createCardBreadcrumbs(
+  gameLabel: string,
+  leagueName: string,
+  leaguePath: string,
+  cardsPath: string,
+  cardName: string,
+  cardPath: string,
+  siteUrl: string,
+) {
+  return {
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      {
+        "@type": "ListItem",
+        position: 1,
+        name: SITE_NAME,
+        item: absoluteUrl("/", siteUrl),
+      },
+      {
+        "@type": "ListItem",
+        position: 2,
+        name: `${gameLabel} ${leagueName}`,
+        item: absoluteUrl(leaguePath, siteUrl),
+      },
+      {
+        "@type": "ListItem",
+        position: 3,
+        name: "Divination Cards",
+        item: absoluteUrl(cardsPath, siteUrl),
+      },
+      {
+        "@type": "ListItem",
+        position: 4,
+        name: cardName,
+        item: absoluteUrl(cardPath, siteUrl),
+      },
+    ],
+  };
+}
+
+function sentence(value: string): string {
+  const normalized = value.replace(/\s+/g, " ").trim();
+  return /[.!?]$/.test(normalized) ? normalized : `${normalized}.`;
+}
+
+function truncateDescription(value: string, maxLength = 200): string {
+  if (value.length <= maxLength) return value;
+
+  const truncated = value.slice(0, maxLength - 3);
+  const lastSpace = truncated.lastIndexOf(" ");
+  return `${truncated.slice(0, Math.max(lastSpace, maxLength - 30)).trimEnd()}...`;
 }
 
 export function createRootSeoMetadata(siteUrl = SITE_URL): SeoMetadata {
@@ -263,6 +338,134 @@ export function createLeagueSeoMetadata({
             inLanguage: "en",
           },
           createBreadcrumbs(gameLabel, leagueName, leaguePath, siteUrl),
+        ],
+      },
+    ],
+  };
+}
+
+export function createCardSeoMetadata({
+  gameLabel,
+  gameSeoLabel,
+  gameSlug,
+  leagueName,
+  leagueSlug,
+  facts,
+  robots = "index, follow",
+  siteUrl = SITE_URL,
+}: CardSeoOptions): SeoMetadata {
+  const leaguePath = `/${gameSlug}/${leagueSlug}`;
+  const cardsPath = `${leaguePath}/cards`;
+  const cardPath = `${cardsPath}/${encodeURIComponent(facts.name)}`;
+  const title = `${facts.name} Divination Card | ${leagueName} | ${SITE_NAME}`;
+  const descriptionParts = [
+    `${facts.name} is a ${gameSeoLabel} divination card for the ${leagueName} league.`,
+  ];
+
+  if (facts.rewardText) {
+    descriptionParts.push(`Reward: ${sentence(facts.rewardText)}`);
+  }
+
+  if (facts.stackSize !== undefined) {
+    const cardLabel = facts.stackSize === 1 ? "card" : "cards";
+    descriptionParts.push(
+      `Complete a stack with ${facts.stackSize.toLocaleString("en-US")} ${cardLabel}.`,
+    );
+  }
+
+  if (facts.observedCount) {
+    descriptionParts.push(
+      `${facts.observedCount.toLocaleString("en-US")} drops have been observed.`,
+    );
+  }
+
+  const description = truncateDescription(descriptionParts.join(" "));
+  const additionalProperty = [
+    facts.rewardText
+      ? {
+          "@type": "PropertyValue",
+          name: "Reward",
+          value: facts.rewardText,
+        }
+      : undefined,
+    facts.stackSize !== undefined
+      ? {
+          "@type": "PropertyValue",
+          name: "Stack size",
+          value: facts.stackSize,
+        }
+      : undefined,
+    facts.rarity
+      ? {
+          "@type": "PropertyValue",
+          name: "Rarity",
+          value: facts.rarity,
+        }
+      : undefined,
+    facts.fromBoss !== undefined
+      ? {
+          "@type": "PropertyValue",
+          name: "Source",
+          value: facts.fromBoss ? "Boss drop" : "Not boss-specific",
+        }
+      : undefined,
+    facts.observedCount !== undefined
+      ? {
+          "@type": "PropertyValue",
+          name: "Observed drops",
+          value: facts.observedCount,
+        }
+      : undefined,
+    facts.observedRate !== undefined
+      ? {
+          "@type": "PropertyValue",
+          name: "Observed drop rate",
+          value: facts.observedRate,
+        }
+      : undefined,
+  ].filter((property) => property !== undefined);
+
+  return {
+    pathname: cardPath,
+    title,
+    description,
+    robots,
+    imagePath: facts.imageUrl,
+    imageAlt: facts.imageUrl
+      ? `${facts.name} divination card artwork`
+      : undefined,
+    structuredData: [
+      {
+        "@context": "https://schema.org",
+        "@graph": [
+          {
+            "@type": "ItemPage",
+            name: title,
+            description,
+            url: absoluteUrl(cardPath, siteUrl),
+            isPartOf: {
+              "@type": "CollectionPage",
+              "@id": absoluteUrl(cardsPath, siteUrl),
+            },
+            mainEntity: {
+              "@type": "Thing",
+              name: facts.name,
+              description: facts.rewardText,
+              ...(facts.imageUrl ? { image: facts.imageUrl } : {}),
+              additionalProperty,
+            },
+            about: { "@type": "VideoGame", name: gameSeoLabel },
+            inLanguage: "en",
+          },
+          createCardBreadcrumbs(
+            gameLabel,
+            leagueName,
+            leaguePath,
+            cardsPath,
+            facts.name,
+            cardPath,
+            siteUrl,
+          ),
         ],
       },
     ],

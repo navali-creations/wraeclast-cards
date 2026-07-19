@@ -2,3 +2,9 @@
 # new URL, so browsers can safely retain old JS, CSS, and fonts indefinitely.
 /assets/*
   Cache-Control: public, max-age=31536000, immutable
+
+/_app-shell
+  X-Robots-Tag: noindex, nofollow
+
+/_app-shell.html
+  X-Robots-Tag: noindex, nofollow
