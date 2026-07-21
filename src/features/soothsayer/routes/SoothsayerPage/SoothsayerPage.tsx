@@ -1,3 +1,4 @@
+import { PageContent } from "../../../../components/page-content/PageContent/PageContent";
 import { PageHeader } from "../../../../components/page-header/PageHeader/PageHeader";
 import { Route } from "../../../../routes/soothsayer";
 import { SoothsayerFeatureGallery } from "../../components/SoothsayerFeatureGallery/SoothsayerFeatureGallery";
@@ -31,14 +32,14 @@ export function SoothsayerPage() {
   };
 
   return (
-    <div className="flex flex-1 flex-col min-h-0 bg-primary-content">
+    <div className="flex flex-1 flex-col min-h-0">
       <PageHeader
         title="Soothsayer"
         subtitle={<SoothsayerPageSubtitle />}
         actions={<SoothsayerPageActions />}
       />
 
-      <div className="mt-3 flex flex-1 flex-col bg-primary-content min-h-0">
+      <PageContent>
         <div className="justify-center mx-auto flex w-full max-w-300 flex-1 flex-col min-h-0">
           <SoothsayerGalleryProvider
             activeFeatureId={activeFeatureId}
@@ -47,7 +48,7 @@ export function SoothsayerPage() {
             <SoothsayerFeatureGallery />
           </SoothsayerGalleryProvider>
         </div>
-      </div>
+      </PageContent>
     </div>
   );
 }

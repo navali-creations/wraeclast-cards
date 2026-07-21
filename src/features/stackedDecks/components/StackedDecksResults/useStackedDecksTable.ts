@@ -13,7 +13,7 @@ const BASIC_RESPONSIVE_COLUMNS = {
 
 export function useStackedDecksTable() {
   return useStackedDecksTableVariant({
-    defaultSort: "players_saw",
+    defaultSort: "ratio",
     sortByKey: "sortBy",
     sortAscKey: "sortAsc",
     createColumns,

@@ -5,7 +5,7 @@ import { useCardStackedDecksRow } from "./useCardStackedDecksRow";
 // per-league drop-rate dataset the Stacked Decks results table uses.
 export function useCardDropRate(card: Card) {
   const { row, isLoading, error } = useCardStackedDecksRow(card);
-  const dropRate = row ? (row.players_saw ?? row.ratio) : null;
+  const dropRate = row?.ratio ?? null;
 
   return { dropRate, isLoading, error };
 }

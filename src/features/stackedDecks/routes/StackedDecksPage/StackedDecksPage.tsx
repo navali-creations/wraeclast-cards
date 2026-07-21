@@ -1,3 +1,4 @@
+import { PageContent } from "../../../../components/page-content/PageContent/PageContent";
 import { Route } from "../../../../routes/$game/$league/stacked-decks";
 import {
   Methodology,
@@ -24,7 +25,7 @@ export function StackedDecksPage() {
         }
       />
 
-      <div className="mt-3 flex flex-1 flex-col bg-primary-content min-h-0">
+      <PageContent>
         <div className="mx-auto flex w-full max-w-300 flex-1 flex-col gap-6 px-4 py-6 min-h-0">
           <Methodology />
           {/*
@@ -39,7 +40,7 @@ export function StackedDecksPage() {
             <StackedDecksAdvancedResults />
           </div>
         </div>
-      </div>
+      </PageContent>
     </div>
   );
 }

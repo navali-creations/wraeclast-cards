@@ -70,15 +70,18 @@ export function normalizeReference(value: unknown): DropRateReference | null {
 }
 
 function normalizeCard(value: JsonRecord): DropRateCard {
+  const ratio = numberOrNull(value.ratio) ?? numberOrZero(value.players_saw);
+  const verifiedRatio =
+    numberOrNull(value.verified_ratio) ??
+    numberOrZero(value.verified_players_saw);
+
   return {
     name: stringOrEmpty(value.name),
     count: numberOrZero(value.count),
-    ratio: numberOrZero(value.ratio),
+    ratio,
     verified_count: numberOrZero(value.verified_count),
-    verified_ratio: numberOrZero(value.verified_ratio),
+    verified_ratio: verifiedRatio,
     reference_estimated_chance: numberOrNull(value.reference_estimated_chance),
-    players_saw: numberOrNull(value.players_saw),
-    verified_players_saw: numberOrNull(value.verified_players_saw),
     seen_vs_reference: numberOrNull(value.seen_vs_reference),
     verified_seen_vs_reference: numberOrNull(value.verified_seen_vs_reference),
     reference_weight: numberOrNull(value.reference_weight),

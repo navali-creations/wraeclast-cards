@@ -1,6 +1,6 @@
 export const SECONDARY_COLUMNS = [
   { id: "reference_estimated_chance", label: "Reference Estimate" },
-  { id: "players_saw", label: "Players Saw" },
+  { id: "ratio", label: "Players Saw" },
   { id: "chance_difference", label: "Chance Difference" },
   { id: "seen_vs_reference", label: "Compared to Reference" },
   { id: "count", label: "Drops Reported" },

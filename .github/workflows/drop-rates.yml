@@ -21,6 +21,29 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Validate publishing secrets
+        run: |
+          missing=0
+          for name in \
+            SUPABASE_URL \
+            WRAECLAST_CARDS_API_KEY \
+            WRAECLAST_CARDS_CALLER_TOKEN \
+            CLOUDFLARE_ACCOUNT_ID \
+            CLOUDFLARE_API_TOKEN
+          do
+            if [ -z "${!name}" ]; then
+              echo "::error::Missing $name repository secret"
+              missing=1
+            fi
+          done
+          exit "$missing"
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          WRAECLAST_CARDS_API_KEY: ${{ secrets.WRAECLAST_CARDS_API_KEY }}
+          WRAECLAST_CARDS_CALLER_TOKEN: ${{ secrets.WRAECLAST_CARDS_CALLER_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+
       - uses: actions/checkout@v6
 
       - uses: pnpm/action-setup@v6
@@ -43,6 +66,7 @@ jobs:
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           WRAECLAST_CARDS_API_KEY: ${{ secrets.WRAECLAST_CARDS_API_KEY }}
+          WRAECLAST_CARDS_CALLER_TOKEN: ${{ secrets.WRAECLAST_CARDS_CALLER_TOKEN }}
           DROP_RATES_PUBLIC_BASE_URL: https://wraeclast-cards.pages.dev/data/drop-rates
           DROP_RATES_REFERENCE_DATA_BASE_URL: https://cdn.jsdelivr.net/gh/navali-creations/fateweaver@main/packages/poe1-divination-cards/data
           DROP_RATES_BACKFILL_HISTORICAL: ${{ github.event.inputs.backfill_historical || 'false' }}

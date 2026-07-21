@@ -1,10 +1,6 @@
 import { Text } from "../../../../../components/text";
 import type { DropRateCard } from "../../../../../lib/dropRates";
-
-const PERCENT_FORMATTER = new Intl.NumberFormat("en-US", {
-  maximumFractionDigits: 6,
-  style: "percent",
-});
+import { formatPercentage } from "../../../../../lib/percentage";
 
 interface CardDetailsObservedOnlyProps {
   card: DropRateCard;
@@ -30,7 +26,7 @@ export function CardDetailsObservedOnly({
         <div>
           <dt className="text-xs text-(--wc-text-50)">Observed rate</dt>
           <dd className="mt-1 tabular-nums text-(--wc-text-80)">
-            {PERCENT_FORMATTER.format(card.ratio)}
+            {formatPercentage(card.ratio)}
           </dd>
         </div>
       </dl>

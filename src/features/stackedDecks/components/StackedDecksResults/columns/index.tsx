@@ -1,4 +1,8 @@
 import { divinationCardSlug } from "../../../../../lib/divinationCards";
+import {
+  formatPercentage,
+  formatSignedPercentage,
+} from "../../../../../lib/percentage";
 import type { StackedDecksRow } from "../../../hooks";
 import { CardNamePreview } from "../CardNamePreview/CardNamePreview";
 import { ColumnHeader } from "./ColumnHeader";
@@ -17,7 +21,7 @@ const headerWithTooltip = (
   };
 
 function formatPercent(value: number | null | undefined) {
-  return value == null ? "—" : `${(value * 100).toFixed(6)}%`;
+  return value == null ? "—" : formatPercentage(value);
 }
 
 function formatEstimatedPercent(value: number | null | undefined) {
@@ -25,12 +29,7 @@ function formatEstimatedPercent(value: number | null | undefined) {
 }
 
 function formatSignedPercent(value: number | null | undefined) {
-  if (value == null) return "—";
-
-  const displayedPercent = (Math.abs(value) * 100).toFixed(6);
-  if (displayedPercent === "0.000000") return "0.000000%";
-
-  return `${value > 0 ? "+" : "-"}${displayedPercent}%`;
+  return value == null ? "—" : formatSignedPercentage(value);
 }
 
 function formatPlainInteger(value: number | null | undefined) {
@@ -76,18 +75,19 @@ function nameColumn() {
   });
 }
 
-function playersSaw(row: StackedDecksRow, verified: boolean) {
+function observedChance(row: StackedDecksRow, verified: boolean) {
   return verified
-    ? (row.verified_players_saw ??
-        (row.verified_count > 0 ? row.verified_ratio : null))
-    : (row.players_saw ?? row.ratio);
+    ? row.verified_count > 0
+      ? row.verified_ratio
+      : null
+    : row.ratio;
 }
 
 function playersSawColumn(verified: boolean) {
   return columnHelper.accessor(
-    (row) => playersSaw(row, verified) ?? undefined,
+    (row) => observedChance(row, verified) ?? undefined,
     {
-      id: "players_saw",
+      id: "ratio",
       header: headerWithTooltip(
         "Players Saw",
         "This card's share of reported drops for the selected league and verification mode.",
@@ -105,10 +105,10 @@ function playersSawColumn(verified: boolean) {
 function chanceDifferenceColumn(verified: boolean) {
   return columnHelper.accessor(
     (row) => {
-      const observedChance = playersSaw(row, verified);
-      return observedChance === null || row.reference_estimated_chance === null
+      const chance = observedChance(row, verified);
+      return chance === null || row.reference_estimated_chance === null
         ? undefined
-        : observedChance - row.reference_estimated_chance;
+        : chance - row.reference_estimated_chance;
     },
     {
       id: "chance_difference",

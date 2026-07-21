@@ -9,14 +9,12 @@ import {
 
 export function buildTiles(mode: TableViewMode, row: StackedDecksRow) {
   if (mode === "basic") {
-    const observedChance = row.players_saw ?? row.ratio;
-
     return [
       {
         label: "Reference",
         value: formatPercent(row.reference_estimated_chance, true),
       },
-      { label: "Players Saw", value: formatPercent(observedChance) },
+      { label: "Players Saw", value: formatPercent(row.ratio) },
       {
         label: "Compared to Reference",
         value: formatComparedToReference(row.seen_vs_reference),

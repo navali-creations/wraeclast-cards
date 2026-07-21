@@ -7,7 +7,7 @@ export function CardDetailsPageActions() {
       gameScoped
       to="/cards"
       variant="control"
-      className="mt-1 whitespace-nowrap lg:mt-2"
+      className="whitespace-nowrap"
     >
       <HiArrowLeft aria-hidden="true" />
       Back to cards

@@ -16,10 +16,6 @@ const PERCENT_FORMATTER = new Intl.NumberFormat("en-US", {
   style: "percent",
 });
 
-function observedChance(card: DropRateCard) {
-  return card.players_saw ?? card.ratio;
-}
-
 export function formatHomepageNumber(value: number | undefined) {
   if (value === undefined) return "...";
 
@@ -41,10 +37,10 @@ export function topObservedDropRates(
   return cards
     .filter((card) => card.count > 0)
     .slice()
-    .sort((left, right) => observedChance(right) - observedChance(left))
+    .sort((left, right) => right.ratio - left.ratio)
     .slice(0, 5)
     .map((card) => ({
       cardName: card.name,
-      rate: PERCENT_FORMATTER.format(observedChance(card)),
+      rate: PERCENT_FORMATTER.format(card.ratio),
     }));
 }

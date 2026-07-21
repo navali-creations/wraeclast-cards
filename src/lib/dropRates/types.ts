@@ -45,10 +45,7 @@ export interface DropRateCard {
   verified_ratio: number;
   // Chance modeled from the Prohibited Library average-weight relationship.
   reference_estimated_chance: number | null;
-  // Share of players who reported seeing this card ("Players Saw").
-  players_saw: number | null;
-  verified_players_saw: number | null;
-  // players_saw vs. reference_estimated_chance.
+  // ratio vs. reference_estimated_chance.
   seen_vs_reference: number | null;
   verified_seen_vs_reference: number | null;
   // Modeled comparison value based on the average-weight formula.

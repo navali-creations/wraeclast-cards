@@ -84,6 +84,19 @@ The app uses:
 The root app providers are defined in `src/app/providers.tsx`.
 The router bootstrap lives in `src/router.tsx`.
 
+## Automated drop-rate publishing
+
+The drop-rate workflow identifies trusted requests without exposing that
+identity in a caller-controlled header. Configure the same high-entropy value
+in both places:
+
+- GitHub Actions repository secret: `WRAECLAST_CARDS_CALLER_TOKEN`
+- Soothsayer Supabase Edge Function secret: `WRAECLAST_CARDS_CALLER_TOKEN`
+
+When the token matches, Soothsayer records the canonical app version
+`gha:wraeclast-cards`. Missing or invalid tokens are recorded with a null app
+version.
+
 ## Architecture
 
 This project follows a structure inspired by [bulletproof-react](https://github.com/alan2207/bulletproof-react), adapted to the needs of this codebase.

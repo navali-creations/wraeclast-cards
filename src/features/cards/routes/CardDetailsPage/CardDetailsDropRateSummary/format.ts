@@ -1,20 +1,21 @@
+import {
+  formatPercentage,
+  formatSignedPercentage,
+} from "../../../../../lib/percentage";
+
 const REFERENCE_TOLERANCE = 0.03;
 
 type NumericInput = number | null | undefined;
 
 export function formatPercent(value: NumericInput, approximate = false) {
   if (value == null) return "-";
-  const valueText = `${(value * 100).toFixed(6)}%`;
+  const valueText = formatPercentage(value);
   return approximate ? `~${valueText}` : valueText;
 }
 
 export function formatDeltaPercent(value: NumericInput) {
   if (value == null) return "-";
-
-  const displayedPercent = (Math.abs(value) * 100).toFixed(6);
-  if (Number(displayedPercent) === 0) return "0.000000%";
-
-  return `${value > 0 ? "+" : "-"}${displayedPercent}%`;
+  return formatSignedPercentage(value);
 }
 
 export function formatComparedToReference(value: NumericInput) {

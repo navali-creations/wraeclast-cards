@@ -1,12 +1,13 @@
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
+import { createDropRateRequestHeaders } from "./drop-rate-request.mjs";
 
 const DEFAULT_GAMES = ["poe1", "poe2"];
 const DEFAULT_OUTPUT_DIR = "dist/data/drop-rates";
 const DEFAULT_PUBLIC_BASE_URL = "https://wraeclast.cards/data/drop-rates";
 const DEFAULT_REFERENCE_DATA_BASE_URL =
   "https://cdn.jsdelivr.net/gh/navali-creations/fateweaver@main/packages/poe1-divination-cards/data";
-const SCHEMA_VERSION = 5;
+const SCHEMA_VERSION = 6;
 const CACHE_SECONDS = 7 * 24 * 60 * 60;
 const BROWSER_CACHE_SECONDS = 60 * 60;
 const FETCH_TIMEOUT_MS = 15_000;
@@ -321,7 +322,13 @@ function publicReferenceMetadata(referenceData) {
   };
 }
 
-async function fetchDropRates({ supabaseUrl, apiKey, game, includeInactive }) {
+async function fetchDropRates({
+  supabaseUrl,
+  apiKey,
+  callerToken,
+  game,
+  includeInactive,
+}) {
   const url = new URL(
     `${normalizeBaseUrl(supabaseUrl)}/functions/v1/get-community-drop-rates`,
   );
@@ -332,10 +339,7 @@ async function fetchDropRates({ supabaseUrl, apiKey, game, includeInactive }) {
   }
 
   const payload = await fetchJson(url.toString(), {
-    headers: {
-      Accept: "application/json",
-      "x-api-key": apiKey,
-    },
+    headers: createDropRateRequestHeaders({ apiKey, callerToken }),
   });
 
   validateDropRatePayload(game, payload);
@@ -523,8 +527,8 @@ function enrichCardsWithReference(cards, referenceData) {
               referenceData.total_chance_weight,
             )
           : null;
-        const playersSaw = card.ratio ?? null;
-        const verifiedPlayersSaw =
+        const observedChance = card.ratio ?? null;
+        const verifiedObservedChance =
           verifiedObservedTotal > 0 ? (card.verified_ratio ?? null) : null;
         const communityEstimatedWeight = floorCount(
           card.community_estimated_weight,
@@ -540,16 +544,14 @@ function enrichCardsWithReference(cards, referenceData) {
           verified_count: card.verified_count,
           verified_ratio: card.verified_ratio,
           reference_weight: referenceCard?.weight ?? null,
-          players_saw: roundRatio(playersSaw),
           reference_estimated_chance: roundRatio(referenceEstimatedChance),
           seen_vs_reference:
-            referenceEstimatedChance && playersSaw !== null
-              ? roundRatio(playersSaw / referenceEstimatedChance)
+            referenceEstimatedChance && observedChance !== null
+              ? roundRatio(observedChance / referenceEstimatedChance)
               : null,
-          verified_players_saw: roundRatio(verifiedPlayersSaw),
           verified_seen_vs_reference:
-            referenceEstimatedChance && verifiedPlayersSaw !== null
-              ? roundRatio(verifiedPlayersSaw / referenceEstimatedChance)
+            referenceEstimatedChance && verifiedObservedChance !== null
+              ? roundRatio(verifiedObservedChance / referenceEstimatedChance)
               : null,
           community_estimated_weight: communityEstimatedWeight,
           community_estimated_weight_delta_vs_reference: ratioDelta(
@@ -663,10 +665,8 @@ const REQUIRED_PRESERVED_CARD_FIELDS = [
 ];
 const NULLABLE_PRESERVED_CARD_FIELDS = [
   "reference_weight",
-  "players_saw",
   "reference_estimated_chance",
   "seen_vs_reference",
-  "verified_players_saw",
   "verified_seen_vs_reference",
   "community_estimated_weight",
   "community_estimated_weight_delta_vs_reference",
@@ -882,6 +882,7 @@ async function main() {
 
   const supabaseUrl = requiredEnv("SUPABASE_URL");
   const apiKey = requiredEnv("WRAECLAST_CARDS_API_KEY");
+  const callerToken = process.env.WRAECLAST_CARDS_CALLER_TOKEN?.trim() || null;
   const outputDir = path.resolve(
     args.outputDir ?? process.env.DROP_RATES_OUTPUT_DIR ?? DEFAULT_OUTPUT_DIR,
   );
@@ -938,6 +939,7 @@ async function main() {
     const activePayload = await fetchDropRates({
       supabaseUrl,
       apiKey,
+      callerToken,
       game,
       includeInactive: false,
     });
@@ -979,6 +981,7 @@ async function main() {
       const allPayload = await fetchDropRates({
         supabaseUrl,
         apiKey,
+        callerToken,
         game,
         includeInactive: true,
       });

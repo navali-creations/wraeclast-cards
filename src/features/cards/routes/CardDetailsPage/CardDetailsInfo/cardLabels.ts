@@ -1,3 +1,4 @@
+import { formatPercentage } from "../../../../../lib/percentage";
 import type { Card } from "../../../types";
 
 function formatInteger(value: number) {
@@ -21,7 +22,7 @@ export function getWeightLabel(card: Card) {
 export function getDropRateLabel(dropRate: number | null, isLoading: boolean) {
   if (isLoading) return "Loading...";
   if (dropRate == null) return "No data";
-  return `${(dropRate * 100).toFixed(6)}%`;
+  return formatPercentage(dropRate);
 }
 
 export function getSourceLabel(card: Card) {

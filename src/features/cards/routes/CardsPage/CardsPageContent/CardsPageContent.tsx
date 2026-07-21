@@ -1,3 +1,4 @@
+import { PageContent } from "../../../../../components/page-content/PageContent/PageContent";
 import { PageHeader } from "../../../../../components/page-header/PageHeader/PageHeader";
 import { CardsGrid } from "../../../components/CardsGrid/CardsGrid";
 import { CardsPageActions } from "../CardsPageActions/CardsPageActions";
@@ -15,7 +16,7 @@ export function CardsPageContent() {
         actions={<CardsPageActions />}
       />
 
-      <div className="mt-3 flex min-h-0 flex-1 flex-col bg-primary-content">
+      <PageContent>
         <div className="mx-auto flex min-h-0 w-full max-w-300 flex-1 flex-col px-4 py-6">
           <CardsGrid
             data={filteredCards}
@@ -23,7 +24,7 @@ export function CardsPageContent() {
             isLoading={isLoading}
           />
         </div>
-      </div>
+      </PageContent>
     </div>
   );
 }

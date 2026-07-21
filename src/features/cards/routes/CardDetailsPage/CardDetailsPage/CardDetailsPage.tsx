@@ -1,6 +1,7 @@
 import { useGameContext } from "../../../../../app/game-context";
 import { useLeagueContext } from "../../../../../app/league-context";
 import { DivinationCard } from "../../../../../components/DivinationCard";
+import { PageContent } from "../../../../../components/page-content/PageContent/PageContent";
 import { PageHeader } from "../../../../../components/page-header/PageHeader/PageHeader";
 import { divinationCardSlug } from "../../../../../lib/divinationCards";
 import { useLeagueDropRates } from "../../../../../lib/dropRates";
@@ -85,11 +86,11 @@ export function CardDetailsPage() {
         actions={<CardDetailsPageActions />}
       />
 
-      <div className="mt-3 flex flex-1 flex-col bg-primary-content min-h-0">
-        <div className="mx-auto flex w-full max-w-7xl flex-1 flex-col justify-center px-4 py-8">
+      <PageContent>
+        <div className="mx-auto flex w-full max-w-300 flex-1 flex-col justify-center px-4 py-6">
           {content}
         </div>
-      </div>
+      </PageContent>
     </div>
   );
 }
