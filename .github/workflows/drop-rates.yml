@@ -70,7 +70,6 @@ jobs:
           DROP_RATES_PUBLIC_BASE_URL: https://wraeclast-cards.pages.dev/data/drop-rates
           DROP_RATES_REFERENCE_DATA_BASE_URL: https://cdn.jsdelivr.net/gh/navali-creations/fateweaver@main/packages/poe1-divination-cards/data
           DROP_RATES_BACKFILL_HISTORICAL: ${{ github.event.inputs.backfill_historical || 'false' }}
-          GITHUB_TOKEN: ${{ github.token }}
 
       - name: Generate sitemap
         run: pnpm sitemap:generate

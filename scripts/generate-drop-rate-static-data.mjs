@@ -1,5 +1,7 @@
+import { execFile } from "node:child_process";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
+import { promisify } from "node:util";
 import { createDropRateRequestHeaders } from "./drop-rate-request.mjs";
 
 const DEFAULT_GAMES = ["poe1", "poe2"];
@@ -11,6 +13,7 @@ const SCHEMA_VERSION = 6;
 const CACHE_SECONDS = 7 * 24 * 60 * 60;
 const BROWSER_CACHE_SECONDS = 60 * 60;
 const FETCH_TIMEOUT_MS = 15_000;
+const execFileAsync = promisify(execFile);
 
 function parseArgs(argv) {
   const args = {
@@ -153,24 +156,45 @@ function isLocalReferenceBaseUrl(value) {
 async function resolveGithubCommit({ owner, repo, ref }) {
   if (/^[0-9a-f]{40}$/i.test(ref)) return ref;
 
-  const headers = {
-    accept: "application/vnd.github+json",
-    "user-agent": "wraeclast-cards-drop-rates",
-  };
-  if (process.env.GITHUB_TOKEN) {
-    headers.authorization = `Bearer ${process.env.GITHUB_TOKEN}`;
+  const remoteUrl = `https://github.com/${owner}/${repo}.git`;
+  const branchRef = `refs/heads/${ref}`;
+  const peeledTagRef = `refs/tags/${ref}^{}`;
+  const tagRef = `refs/tags/${ref}`;
+  let stdout;
+
+  try {
+    ({ stdout } = await execFileAsync(
+      "git",
+      ["ls-remote", "--exit-code", remoteUrl, branchRef, peeledTagRef, tagRef],
+      {
+        env: { ...process.env, GIT_TERMINAL_PROMPT: "0" },
+        timeout: FETCH_TIMEOUT_MS,
+        windowsHide: true,
+      },
+    ));
+  } catch (error) {
+    throw new Error(`Could not resolve ${owner}/${repo}@${ref}`, {
+      cause: error,
+    });
   }
 
-  const metadata = await fetchJson(
-    `https://api.github.com/repos/${owner}/${repo}/commits/${encodeURIComponent(ref)}`,
-    { headers },
+  const commitsByRef = new Map(
+    stdout
+      .trim()
+      .split(/\r?\n/)
+      .filter(Boolean)
+      .map((line) => line.split(/\s+/, 2).reverse()),
   );
+  const sha =
+    commitsByRef.get(branchRef) ??
+    commitsByRef.get(peeledTagRef) ??
+    commitsByRef.get(tagRef);
 
-  if (!metadata?.sha || typeof metadata.sha !== "string") {
+  if (!sha || !/^[0-9a-f]{40}$/i.test(sha)) {
     throw new Error(`Could not resolve ${owner}/${repo}@${ref}`);
   }
 
-  return metadata.sha;
+  return sha;
 }
 
 async function resolveReferenceDataBaseUrl(baseUrl) {
