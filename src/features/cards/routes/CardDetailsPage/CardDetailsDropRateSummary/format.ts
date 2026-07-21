@@ -1,9 +1,8 @@
+import { comparedToReferenceDelta } from "../../../../../lib/dropRates/referenceComparison";
 import {
   formatPercentage,
   formatSignedPercentage,
 } from "../../../../../lib/percentage";
-
-const REFERENCE_TOLERANCE = 0.03;
 
 type NumericInput = number | null | undefined;
 
@@ -19,16 +18,11 @@ export function formatDeltaPercent(value: NumericInput) {
 }
 
 export function formatComparedToReference(value: NumericInput) {
-  if (value == null) return "-";
+  const delta = comparedToReferenceDelta(value);
+  if (delta == null) return "-";
+  if (delta === 0) return "About expected";
 
-  const difference = value - 1;
-  if (Math.abs(difference) <= REFERENCE_TOLERANCE + Number.EPSILON) {
-    return "About expected";
-  }
-
-  return formatDeltaPercent(
-    difference - Math.sign(difference) * REFERENCE_TOLERANCE,
-  );
+  return formatDeltaPercent(delta);
 }
 
 export function formatInteger(value: NumericInput) {

@@ -1,26 +1,20 @@
 import type { CellContext } from "@tanstack/react-table";
+import { comparedToReferenceDelta } from "../../../../../../lib/dropRates/referenceComparison";
 import type { StackedDecksRow } from "../../../../hooks";
 import { DeltaPercentCell } from "./DeltaPercentCell";
-
-const REFERENCE_TOLERANCE = 0.03;
 
 export function ComparedToReferenceCell({
   getValue,
 }: CellContext<StackedDecksRow, number | null | undefined>) {
-  const value = getValue();
+  const delta = comparedToReferenceDelta(getValue());
 
-  if (value == null) {
+  if (delta == null) {
     return <span className="tabular-nums">—</span>;
   }
 
-  const difference = value - 1;
-
-  if (Math.abs(difference) <= REFERENCE_TOLERANCE + Number.EPSILON) {
+  if (delta === 0) {
     return <DeltaPercentCell value={0} neutralLabel="About expected" />;
   }
 
-  const differenceBeyondTolerance =
-    difference - Math.sign(difference) * REFERENCE_TOLERANCE;
-
-  return <DeltaPercentCell value={differenceBeyondTolerance} />;
+  return <DeltaPercentCell value={delta} />;
 }

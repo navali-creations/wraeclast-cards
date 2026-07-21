@@ -2,15 +2,14 @@ import { preload } from "react-dom";
 import { FiArrowRight } from "react-icons/fi";
 import { useLeagueContext } from "../../../../app/league-context";
 import { ButtonInternalLink } from "../../../../components/buttons/ButtonLink";
-import {
-  DIVINATION_CARD_HEIGHT,
-  DIVINATION_CARD_WIDTH,
-} from "../../../../components/DivinationCard/constants";
 import { Heading } from "../../../../components/headings";
 import { Text } from "../../../../components/text";
 import { useCardsQuery } from "../../../cards/hooks";
 import { useRarityPreviewCards } from "../../hooks/useRarityPreviewCards";
-import { SCALE, ScaledCard } from "./ScaledCard";
+import {
+  CARD_DATABASE_SKELETON_CARD_CLASS_NAME,
+  ScaledCard,
+} from "./ScaledCard";
 
 const CARD_COUNT = 4;
 const SKELETON_KEYS = Array.from(
@@ -60,14 +59,7 @@ export function CardDatabasePanel() {
         {!hasCards &&
           isLoading &&
           SKELETON_KEYS.map((key) => (
-            <div
-              key={key}
-              className="wc-card-shimmer rounded border border-(--wc-border)"
-              style={{
-                width: DIVINATION_CARD_WIDTH * SCALE,
-                height: DIVINATION_CARD_HEIGHT * SCALE,
-              }}
-            />
+            <div key={key} className={CARD_DATABASE_SKELETON_CARD_CLASS_NAME} />
           ))}
 
         {!hasCards && !isLoading && (
