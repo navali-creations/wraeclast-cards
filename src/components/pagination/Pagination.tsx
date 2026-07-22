@@ -94,9 +94,6 @@ export function Pagination({
           <HiChevronRight className="size-4" />
         </Button>
       </div>
-      <p className="hidden text-xs text-(--wc-text-40) sm:block">
-        Page {page} of {totalPages}
-      </p>
     </nav>
   );
 }

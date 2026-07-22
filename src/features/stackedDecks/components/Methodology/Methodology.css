@@ -1,0 +1,21 @@
+.wc-methodology-expanded {
+  display: none;
+}
+
+.wc-methodology-compact summary::-webkit-details-marker {
+  display: none;
+}
+
+.wc-methodology-compact[open] .wc-methodology-chevron {
+  transform: rotate(180deg);
+}
+
+@media (min-width: 1025px) {
+  .wc-methodology-compact {
+    display: none;
+  }
+
+  .wc-methodology-expanded {
+    display: block;
+  }
+}

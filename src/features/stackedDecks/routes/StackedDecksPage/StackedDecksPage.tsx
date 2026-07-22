@@ -9,8 +9,8 @@ import { useStackedDecksData } from "../../hooks";
 import { StackedDecksHeader } from "./StackedDecksHeader";
 
 export function StackedDecksPage() {
-  const { view = "standard" } = Route.useSearch();
-  const { league, leagueData, totalCount } = useStackedDecksData();
+  const { view = "standard", verified = false } = Route.useSearch();
+  const { league, leagueData, totalCount } = useStackedDecksData({ verified });
   const isAdvancedView = view === "advanced";
 
   return (

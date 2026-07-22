@@ -49,7 +49,7 @@ export function FooterNavigation() {
           ))}
           <li>
             <a
-              href="https://github.com/navali-creations/wraeclast-cards.git"
+              href="https://github.com/navali-creations/wraeclast-cards"
               target="_blank"
               rel="noreferrer noopener"
               className={`${LINK_CLASS_NAME} gap-1.5`}

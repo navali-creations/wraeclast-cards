@@ -6,7 +6,13 @@ import { useLeagueDropRates } from "../../../lib/dropRates";
 
 export type StackedDecksRow = DropRateCard;
 
-export function useStackedDecksData() {
+interface UseStackedDecksDataOptions {
+  verified?: boolean;
+}
+
+export function useStackedDecksData({
+  verified = false,
+}: UseStackedDecksDataOptions = {}) {
   const { game } = useGameContext();
   const { selectedLeague, selectedLeagueId, isLoadingLeagues, leaguesError } =
     useLeagueContext();
@@ -16,8 +22,12 @@ export function useStackedDecksData() {
   const rows = leagueQuery.data?.cards;
 
   const totalCount = useMemo(
-    () => leagueQuery.data?.cards.reduce((sum, c) => sum + c.count, 0) ?? 0,
-    [leagueQuery.data],
+    () =>
+      leagueQuery.data?.cards.reduce(
+        (sum, card) => sum + (verified ? card.verified_count : card.count),
+        0,
+      ) ?? 0,
+    [leagueQuery.data, verified],
   );
 
   return {

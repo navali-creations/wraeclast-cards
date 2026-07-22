@@ -18,7 +18,7 @@ export function useStackedDecksTableData({
     totalCount,
     isLoading,
     error,
-  } = useStackedDecksData();
+  } = useStackedDecksData({ verified });
 
   const columnFilters: ColumnFiltersState = useMemo(
     () => (searchTerm ? [{ id: "name", value: searchTerm }] : []),
