@@ -110,7 +110,7 @@ export function DivinationCard({
     <div
       className={clsx(
         "relative h-[calc(29.75rem*var(--wc-card-scale))] w-[calc(20rem*var(--wc-card-scale))]",
-        "[--wc-card-scale:1]",
+        !scaleClassName && "[--wc-card-scale:1]",
         scaleClassName,
         className,
       )}

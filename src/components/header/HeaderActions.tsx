@@ -92,20 +92,20 @@ export function HeaderActions() {
   }
 
   return (
-    <div className="flex items-center justify-self-end gap-3">
+    <div className="flex min-w-0 items-center justify-self-end gap-2 xs:gap-3">
       <div ref={containerRef} className="relative shrink-0">
         <Button
           onClick={toggle}
           disabled={!leagues.length}
           aria-haspopup="menu"
           aria-expanded={open}
-          className="h-9 w-40 rounded-lg border-0 bg-primary px-3 text-left shadow-md hover:bg-(--wc-primary-hover) focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--wc-gold) cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+          className="h-9 w-28 rounded-lg border-0 bg-primary px-2.5 text-left shadow-md hover:bg-(--wc-primary-hover) focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--wc-gold) cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed xs:w-40 xs:px-3"
         >
-          <span className="flex items-center justify-between font-fontin font-semibold text-primary-content">
-            {selectedLeague.name}
+          <span className="flex min-w-0 items-center justify-between font-fontin font-semibold text-primary-content">
+            <span className="min-w-0 truncate">{selectedLeague.name}</span>
             <FiChevronDown
               className={clsx(
-                "ml-2 transition-transform duration-200",
+                "ml-2 shrink-0 transition-transform duration-200",
                 open && "rotate-180",
               )}
             />

@@ -19,6 +19,7 @@ export function HeaderMobileNavigation() {
         aria-label={open ? "Fermer la navigation" : "Ouvrir la navigation"}
         aria-expanded={open}
         onClick={toggle}
+        className="h-10 min-h-10 w-10 px-0 xs:h-12 xs:min-h-12 xs:w-12"
       >
         {open ? <FiX /> : <FiMenu />}
       </Button>
