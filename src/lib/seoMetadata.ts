@@ -1,5 +1,7 @@
 export const SITE_NAME = "wraeclast.cards";
 export const SITE_URL = "https://wraeclast.cards";
+export const AGPL_3_LICENSE_URL =
+  "https://www.gnu.org/licenses/agpl-3.0.en.html";
 export const PROHIBITED_LIBRARY_REFERENCE_URL =
   "https://docs.google.com/spreadsheets/d/1PmGES_e1on6K7O5ghHuoorEjruAVb7dQ5m7PGrW7t80/edit?gid=272334906#gid=272334906";
 
@@ -222,6 +224,7 @@ export function createLeagueSeoMetadata({
               url: absoluteUrl(pathname, siteUrl),
               identifier: absoluteUrl(pathname, siteUrl),
               creator: organizationReference(siteUrl),
+              license: AGPL_3_LICENSE_URL,
               isPartOf: { "@id": `${siteUrl}/#website` },
               isAccessibleForFree: true,
               ...(facts.generatedAt ? { dateModified: facts.generatedAt } : {}),
@@ -465,7 +468,7 @@ export function createStaticPageSeoMetadata(
             downloadUrl:
               "https://github.com/navali-creations/soothsayer/releases/latest",
             codeRepository: "https://github.com/navali-creations/soothsayer",
-            license: "https://www.gnu.org/licenses/agpl-3.0.en.html",
+            license: AGPL_3_LICENSE_URL,
             publisher: organizationReference(siteUrl),
             screenshot: `${siteUrl}/images/soothsayer/stats.webp`,
           },

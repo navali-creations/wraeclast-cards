@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  AGPL_3_LICENSE_URL,
   createCardSeoMetadata,
   createLeagueSeoMetadata,
   type SeoMetadata,
@@ -31,6 +32,28 @@ describe("SEO structured data", () => {
     expect(collectionPage.mainEntity).toMatchObject({
       "@type": "ItemList",
       numberOfItems: 451,
+    });
+  });
+
+  it("includes the site license on stacked deck datasets", () => {
+    const metadata = createLeagueSeoMetadata({
+      gameLabel: "PoE 1",
+      gameSeoLabel: "Path of Exile",
+      gameSlug: "path-of-exile",
+      leagueName: "Keepers",
+      leagueSlug: "keepers",
+      page: "stacked-decks",
+      facts: {
+        observedTotal: 4207137,
+        dataPath: "/data/drop-rates/poe1/keepers.json",
+      },
+    });
+    const dataset = structuredDataGraph(metadata)[0];
+
+    expect(dataset).toMatchObject({
+      "@type": "Dataset",
+      license: AGPL_3_LICENSE_URL,
+      isAccessibleForFree: true,
     });
   });
 
