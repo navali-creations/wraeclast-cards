@@ -12,7 +12,7 @@ export interface RawDivinationCard {
   flavour_html?: string;
   is_disabled?: boolean;
   from_boss?: boolean;
-  weight?: number;
+  weight?: number | null;
 }
 
 export interface DivinationCardsDataSource {
@@ -53,9 +53,13 @@ function isOptionalBoolean(value: unknown): value is boolean | undefined {
   return value === undefined || typeof value === "boolean";
 }
 
-function isOptionalFiniteNumber(value: unknown): value is number | undefined {
+function isOptionalNullableFiniteNumber(
+  value: unknown,
+): value is number | null | undefined {
   return (
-    value === undefined || (typeof value === "number" && Number.isFinite(value))
+    value === undefined ||
+    value === null ||
+    (typeof value === "number" && Number.isFinite(value))
   );
 }
 
@@ -76,7 +80,7 @@ function isRawDivinationCard(value: unknown): value is RawDivinationCard {
     isOptionalString(value.flavour_html) &&
     isOptionalBoolean(value.is_disabled) &&
     isOptionalBoolean(value.from_boss) &&
-    isOptionalFiniteNumber(value.weight)
+    isOptionalNullableFiniteNumber(value.weight)
   );
 }
 
@@ -116,7 +120,7 @@ export function createDivinationCardRouteIndex<T extends { name: string }>(
 }
 
 export function divinationCardRarity(
-  weight: number | undefined,
+  weight: number | null | undefined,
 ): DivinationCardRarity {
   if (typeof weight !== "number" || weight <= 0) return 0;
   if (weight > 5000) return 4;
@@ -125,7 +129,9 @@ export function divinationCardRarity(
   return 1;
 }
 
-export function divinationCardRarityLabel(weight: number | undefined): string {
+export function divinationCardRarityLabel(
+  weight: number | null | undefined,
+): string {
   return DIVINATION_CARD_RARITY_LABELS[divinationCardRarity(weight)];
 }
 

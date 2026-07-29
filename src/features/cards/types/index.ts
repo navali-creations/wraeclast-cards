@@ -14,7 +14,7 @@ export type Card = {
   stackSize: number;
   dropLocations: string[];
   rarity: DivinationCardRarity;
-  weight?: number;
+  weight?: number | null;
   fromBoss: boolean;
   isDisabled: boolean;
 };
