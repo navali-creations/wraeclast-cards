@@ -2,6 +2,7 @@ import { execFile } from "node:child_process";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { promisify } from "node:util";
+import { filterPublishedDropRateLeagues } from "./drop-rate-leagues.mjs";
 import { createDropRateRequestHeaders } from "./drop-rate-request.mjs";
 
 const DEFAULT_GAMES = ["poe1", "poe2"];
@@ -594,9 +595,10 @@ function enrichCardsWithReference(cards, referenceData) {
 }
 
 function splitCardsByLeague(payload) {
-  const leagueIds = new Set(payload.leagues.map((league) => league.id));
+  const publishedLeagues = filterPublishedDropRateLeagues(payload.leagues);
+  const leagueIds = new Set(publishedLeagues.map((league) => league.id));
   const byLeague = new Map(
-    payload.leagues.map((league) => [
+    publishedLeagues.map((league) => [
       league.id,
       {
         league,
@@ -997,8 +999,9 @@ async function main() {
       generatedLeagueIds.add(league.id);
     }
 
-    const previousLeagues =
-      previousManifest?.games?.[game]?.leagues?.filter(Boolean) ?? [];
+    const previousLeagues = filterPublishedDropRateLeagues(
+      previousManifest?.games?.[game]?.leagues?.filter(Boolean) ?? [],
+    );
 
     if (shouldBackfill) {
       console.log(`[drop-rates] Backfilling missing historical ${game} data`);
