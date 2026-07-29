@@ -3,6 +3,7 @@ import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { promisify } from "node:util";
 import { filterPublishedDropRateLeagues } from "./drop-rate-leagues.mjs";
+import { validateReferenceCards } from "./drop-rate-reference.mjs";
 import { createDropRateRequestHeaders } from "./drop-rate-request.mjs";
 
 const DEFAULT_GAMES = ["poe1", "poe2"];
@@ -412,28 +413,6 @@ function referenceFileUrl(baseUrl, leagueName) {
 function latestReferenceFileUrl(baseUrl) {
   const normalizedBaseUrl = normalizeBaseUrl(baseUrl);
   return `${normalizedBaseUrl}/cards.json`;
-}
-
-function validateReferenceCards(cards, leagueName) {
-  if (!Array.isArray(cards)) {
-    throw new Error(`Invalid reference card payload for ${leagueName}`);
-  }
-
-  for (const [index, card] of cards.entries()) {
-    if (
-      !card ||
-      typeof card !== "object" ||
-      typeof card.name !== "string" ||
-      typeof card.weight !== "number" ||
-      (card.is_disabled !== undefined &&
-        typeof card.is_disabled !== "boolean") ||
-      typeof card.from_boss !== "boolean"
-    ) {
-      throw new Error(
-        `Invalid reference card row for ${leagueName} at index ${index}`,
-      );
-    }
-  }
 }
 
 function isReferenceCardDisabled(card) {
