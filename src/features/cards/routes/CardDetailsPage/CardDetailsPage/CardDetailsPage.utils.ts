@@ -5,6 +5,7 @@ import {
   divinationCardSlug,
 } from "../../../../../lib/divinationCards";
 import {
+  type DropRateCard,
   gameDropRatesQueryOptions,
   leagueDropRatesQueryOptions,
 } from "../../../../../lib/dropRates";
@@ -16,8 +17,10 @@ import type { Card } from "../../../types";
 
 export interface CardSeoRouteData {
   leagueName: string;
+  card?: Card;
+  observedCard?: DropRateCard;
   facts?: CardSeoFacts;
-  status?: "not-found";
+  status?: "error" | "not-found";
 }
 
 export async function loadCardSeoRouteData(
@@ -82,7 +85,11 @@ export async function loadCardSeoRouteData(
         );
       }
 
-      return { leagueName: league.name, facts: observedFacts };
+      return {
+        leagueName: league.name,
+        observedCard,
+        facts: observedFacts,
+      };
     }
     const card = cards.find((candidate) => candidate.id === cardId);
 
@@ -91,11 +98,17 @@ export async function loadCardSeoRouteData(
         return { leagueName: league.name, status: "not-found" };
       }
 
-      return { leagueName: league.name, facts: observedFacts };
+      return {
+        leagueName: league.name,
+        observedCard,
+        facts: observedFacts,
+      };
     }
 
     return {
       leagueName: league.name,
+      card,
+      observedCard,
       facts: {
         name: card.name,
         slug: card.id,
@@ -113,6 +126,6 @@ export async function loadCardSeoRouteData(
       console.warn("Unable to load card SEO data.", error);
     }
 
-    return fallback;
+    return { ...fallback, status: "error" };
   }
 }

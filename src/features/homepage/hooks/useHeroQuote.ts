@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useRouterState } from "@tanstack/react-router";
 import { HERO_QUOTE_ATTRIBUTION, HERO_QUOTES } from "./heroQuotes";
 
 const LONG_QUOTE_LENGTH = 65;
@@ -16,13 +16,26 @@ export type HeroQuote = {
   sizeClass: string;
 };
 
+function hashPathname(pathname: string): number {
+  let hash = 0;
+  for (const character of pathname) {
+    hash = (hash * 31 + character.charCodeAt(0)) >>> 0;
+  }
+  return hash;
+}
+
+export function getHeroQuote(pathname: string): HeroQuote {
+  const quote = HERO_QUOTES[hashPathname(pathname) % HERO_QUOTES.length];
+  return {
+    quote,
+    attribution: HERO_QUOTE_ATTRIBUTION,
+    sizeClass: getQuoteSizeClass(quote),
+  };
+}
+
 export function useHeroQuote(): HeroQuote {
-  return useMemo(() => {
-    const quote = HERO_QUOTES[Math.floor(Math.random() * HERO_QUOTES.length)];
-    return {
-      quote,
-      attribution: HERO_QUOTE_ATTRIBUTION,
-      sizeClass: getQuoteSizeClass(quote),
-    };
-  }, []);
+  const pathname = useRouterState({
+    select: (state) => state.location.pathname,
+  });
+  return getHeroQuote(pathname);
 }

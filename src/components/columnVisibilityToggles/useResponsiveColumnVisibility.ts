@@ -1,5 +1,6 @@
 import type { VisibilityState } from "@tanstack/react-table";
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import { useClientLayoutEffect } from "../../lib/useClientLayoutEffect/useClientLayoutEffect";
 
 export interface ResponsiveColumnVisibilityConfig {
   /** Columns hidden once the viewport drops below 768px. */
@@ -8,13 +9,14 @@ export interface ResponsiveColumnVisibilityConfig {
   mobileHidden: string[];
 }
 
-function getVisibilityForViewport(
+export function getVisibilityForViewport(
   config: ResponsiveColumnVisibilityConfig,
+  width = typeof window === "undefined"
+    ? Number.POSITIVE_INFINITY
+    : window.innerWidth,
 ): VisibilityState {
-  if (typeof window === "undefined") return {};
-  const w = window.innerWidth;
-  if (w >= 768) return {};
-  const hidden = w >= 640 ? config.tabletHidden : config.mobileHidden;
+  if (width >= 768) return {};
+  const hidden = width >= 640 ? config.tabletHidden : config.mobileHidden;
   return Object.fromEntries(hidden.map((id) => [id, false]));
 }
 
@@ -23,12 +25,11 @@ const BREAKPOINT_QUERIES = ["(min-width: 640px)", "(min-width: 768px)"];
 export function useResponsiveColumnVisibility(
   config: ResponsiveColumnVisibilityConfig,
 ) {
-  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>(
-    () => getVisibilityForViewport(config),
-  );
+  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
 
-  useEffect(() => {
+  useClientLayoutEffect(() => {
     const update = () => setColumnVisibility(getVisibilityForViewport(config));
+    update();
     const queries = BREAKPOINT_QUERIES.map((q) => {
       const mediaQuery = window.matchMedia(q);
       mediaQuery.addEventListener("change", update);

@@ -1,10 +1,5 @@
 import type { EGame } from "../../../enums";
 import {
-  type DivinationCardsDataSource,
-  divinationCardImageUrl,
-  divinationCardRarity,
-  divinationCardRewardText,
-  divinationCardSlug,
   getDivinationCardsDataSource,
   parseDivinationCards,
   type RawDivinationCard,
@@ -12,13 +7,8 @@ import {
 import { resolveDropRatesUrl } from "../../../lib/dropRates";
 import { normalizeReference } from "../../../lib/dropRates/normalizers";
 import { readJsonResponse } from "../../../lib/readJsonResponse";
-import {
-  cleanRewardHtml,
-  extractRewardTags,
-  getRewardSearchText,
-  stripHtmlText,
-} from "../cards.utils";
 import type { Card } from "../types";
+import { createCard } from "./getCards.utils";
 
 interface GetCardsParams {
   game: EGame;
@@ -48,34 +38,6 @@ export async function fetchLegacyCardDataUrl(
   }
 }
 
-function toCard(
-  raw: RawDivinationCard,
-  source: DivinationCardsDataSource,
-): Card {
-  const rewardHtml = raw.reward_html
-    ? cleanRewardHtml(raw.reward_html)
-    : raw.description;
-
-  return {
-    id: divinationCardSlug(raw.name),
-    name: raw.name,
-    imageUrl: divinationCardImageUrl(raw, source.imagesBaseUrl),
-    frameUrl: source.frameUrl,
-    separatorUrl: source.separatorUrl,
-    flavourText: raw.flavour_html ? stripHtmlText(raw.flavour_html) : undefined,
-    rewardText: divinationCardRewardText(raw),
-    rewardHtml,
-    rewardSearchText: getRewardSearchText(rewardHtml),
-    rewardTags: extractRewardTags(raw.reward_html),
-    stackSize: raw.stack_size,
-    dropLocations: [],
-    rarity: divinationCardRarity(raw.weight),
-    weight: raw.weight,
-    fromBoss: raw.from_boss ?? false,
-    isDisabled: raw.is_disabled ?? false,
-  };
-}
-
 async function fetchCards(url: string): Promise<RawDivinationCard[]> {
   const res = await fetch(url);
   return parseDivinationCards(
@@ -100,5 +62,5 @@ export async function getCards({
   }
 
   const data = await fetchCards(source.dataUrl);
-  return data.map((raw) => toCard(raw, source));
+  return data.map((raw) => createCard(raw, source));
 }

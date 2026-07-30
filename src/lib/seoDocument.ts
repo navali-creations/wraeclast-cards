@@ -28,10 +28,6 @@ export function htmlEscape(value: unknown): string {
   });
 }
 
-export function fallbackPage(body: string): string {
-  return `<main class="mx-auto w-full max-w-300 px-4 py-8 text-(--wc-text-70)">${body}</main>`;
-}
-
 function absoluteUrl(pathname: string, siteUrl: string): string {
   return new URL(pathname, siteUrl).href;
 }
@@ -139,5 +135,16 @@ export function renderSeoDocument(
   return withHead.replace(
     SEO_BODY_MARKER,
     `${metadata.body ?? ""}${SEO_BODY_MARKER}`,
+  );
+}
+
+export function renderNonHydratedSeoDocument(
+  template: string,
+  metadata: SeoDocumentMetadata,
+  siteUrl = SITE_URL,
+): string {
+  return renderSeoDocument(template, metadata, siteUrl).replace(
+    /\s*<script\b[^>]*>[\s\S]*?<\/script>/gi,
+    "",
   );
 }

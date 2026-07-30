@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import { useClientLayoutEffect } from "../../../../lib/useClientLayoutEffect/useClientLayoutEffect";
 
 const CARDS_GRID_ROWS = 4;
 const CARDS_GRID_WIDE_COLUMNS = 5;
@@ -17,7 +18,7 @@ const TAILWIND_LG = 1024;
 const TAILWIND_XL = 1280;
 
 export const CARDS_GRID_CLASS_NAME =
-  "grid grid-cols-1 justify-items-center gap-x-4 gap-y-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5";
+  "grid grid-cols-1 justify-items-center gap-x-4 gap-y-6 max-sm:[&>*:nth-child(n+5)]:hidden sm:grid-cols-2 sm:max-md:[&>*:nth-child(n+9)]:hidden md:grid-cols-3 md:max-lg:[&>*:nth-child(n+13)]:hidden lg:grid-cols-4 lg:max-xl:[&>*:nth-child(n+17)]:hidden xl:grid-cols-5";
 
 export const CARDS_GRID_SCALE_CLASS_NAME =
   "[--wc-card-scale:0.9] sm:[--wc-card-scale:0.86] md:[--wc-card-scale:0.7] xl:[--wc-card-scale:0.68]";
@@ -51,11 +52,9 @@ export function getCardsPageSize(width: number) {
 }
 
 export function useCardsPageSize() {
-  const [pageSize, setPageSize] = useState(() =>
-    getCardsPageSize(getViewportWidth()),
-  );
+  const [pageSize, setPageSize] = useState(() => getCardsPageSize(TAILWIND_XL));
 
-  useEffect(() => {
+  useClientLayoutEffect(() => {
     const updatePageSize = () => {
       const nextPageSize = getCardsPageSize(getViewportWidth());
       setPageSize((currentPageSize) =>

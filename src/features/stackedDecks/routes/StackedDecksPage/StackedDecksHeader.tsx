@@ -16,6 +16,7 @@ export function StackedDecksHeader({ summary }: StackedDecksHeaderProps) {
   return (
     <PageHeader
       title="Stacked Decks"
+      reserveSubtitleSpace
       subtitle={
         summary && (
           <StackedDecksHeaderSubtitle

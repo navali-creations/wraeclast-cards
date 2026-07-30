@@ -1,7 +1,7 @@
 import {
   divinationCardMarkupToText,
   normalizeDivinationCardWikiMarkup,
-} from "../../lib/divinationCards";
+} from "../../lib/divinationCards.ts";
 
 const REWARD_TAG_LABELS: Record<string, string> = {
   augmented: "Quality",

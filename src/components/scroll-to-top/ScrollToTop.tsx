@@ -1,5 +1,8 @@
+import clsx from "clsx";
+import { useState } from "react";
 import { createPortal } from "react-dom";
 import { HiChevronUp } from "react-icons/hi2";
+import { useClientLayoutEffect } from "../../lib/useClientLayoutEffect/useClientLayoutEffect";
 import { Button } from "../buttons";
 import { useFooterOffset } from "./useFooterOffset";
 import { useHeaderVisibility } from "./useHeaderVisibility";
@@ -23,6 +26,13 @@ const fabHiddenClassName =
 export function ScrollToTop() {
   const { isVisible } = useHeaderVisibility();
   const bottomOffset = useFooterOffset();
+  const [portalTarget, setPortalTarget] = useState<HTMLElement | null>(null);
+
+  useClientLayoutEffect(() => {
+    setPortalTarget(document.body);
+  }, []);
+
+  if (!portalTarget) return null;
 
   return createPortal(
     <Button
@@ -34,10 +44,13 @@ export function ScrollToTop() {
         bottom: `calc(${bottomOffset}px + env(safe-area-inset-bottom))`,
         right: `calc(5rem + env(safe-area-inset-right))`,
       }}
-      className={`${fabClassName} ${isVisible ? fabVisibleClassName : fabHiddenClassName}`}
+      className={clsx(fabClassName, {
+        [fabVisibleClassName]: isVisible,
+        [fabHiddenClassName]: !isVisible,
+      })}
     >
       <HiChevronUp className="size-7" />
     </Button>,
-    document.body,
+    portalTarget,
   );
 }

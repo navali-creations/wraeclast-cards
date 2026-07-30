@@ -5,7 +5,7 @@ export function useHeaderVisibility() {
 
   useEffect(() => {
     const h1 = document.querySelector("h1");
-    if (!h1) return;
+    if (!h1 || typeof IntersectionObserver === "undefined") return;
 
     const observer = new IntersectionObserver(
       ([entry]) => setIsVisible(!entry.isIntersecting),

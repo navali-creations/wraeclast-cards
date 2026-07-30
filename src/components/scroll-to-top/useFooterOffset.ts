@@ -7,7 +7,7 @@ export function useFooterOffset() {
 
   useEffect(() => {
     const footer = document.querySelector("footer");
-    if (!footer) return;
+    if (!footer || typeof IntersectionObserver === "undefined") return;
 
     const observer = new IntersectionObserver(
       ([entry]) => {

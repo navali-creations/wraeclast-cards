@@ -1,12 +1,10 @@
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { createElement } from "react";
-import { renderToStaticMarkup } from "react-dom/server";
-import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
+import { createServer } from "vite";
+import { createCard } from "../src/features/cards/api/getCards.utils.ts";
 import {
-  divinationCardRewardText,
+  DIVINATION_CARD_RARITY_LABELS,
   divinationCardSlug,
   getDivinationCardsDataSource,
   parseDivinationCards,
@@ -15,11 +13,12 @@ import { normalizeLeagueDropRates } from "../src/lib/dropRates/normalizers.ts";
 import { GAME_METADATA } from "../src/lib/gameSlug.ts";
 import { leagueNameToSlug } from "../src/lib/leagueSlug.ts";
 import {
-  fallbackPage,
   htmlEscape,
+  renderNonHydratedSeoDocument,
   renderSeoDocument,
 } from "../src/lib/seoDocument.ts";
 import {
+  createCardSeoMetadata,
   createLeagueSeoMetadata,
   createRootSeoMetadata,
   createStaticPageSeoMetadata,
@@ -36,6 +35,7 @@ const ROOT_DIR = path.resolve(
 );
 const DIST_DIR = path.join(ROOT_DIR, "dist");
 const TEMPLATE_CACHE_PATH = path.join(ROOT_DIR, ".tanstack/seo-template.html");
+const VITE_MANIFEST_PATH = path.join(DIST_DIR, ".vite/manifest.json");
 const MAX_URLS_PER_SITEMAP = 50_000;
 // Leave room for future generated routes without ever crossing Google's limit.
 const SITEMAP_CHUNK_SIZE = 45_000;
@@ -44,6 +44,7 @@ const CARDS_DATA_DIR = path.join(
   ROOT_DIR,
   "node_modules/@navali/poe1-divination-cards/data",
 );
+const cardCatalogCache = new Map();
 
 function xmlEscape(value) {
   return htmlEscape(value).replace(/&#39;/g, "&apos;");
@@ -105,28 +106,119 @@ async function writeRouteDocument(template, metadata) {
   await writeFile(outputPath, renderSeoDocument(template, metadata, SITE_URL));
 }
 
-async function loadLeagueCards(game, league) {
+async function includeBuildStyles(template) {
+  const manifest = await readJson(VITE_MANIFEST_PATH);
+  const cssFiles = new Set(
+    Object.values(manifest).flatMap((entry) => entry.css ?? []),
+  );
+  if (cssFiles.size === 0) {
+    throw new Error("The Vite manifest does not contain any stylesheet assets");
+  }
+  const links = [...cssFiles]
+    .filter((file) => !template.includes(`href="/${file}"`))
+    .map(
+      (file) =>
+        `<link rel="stylesheet" crossorigin href="/${htmlEscape(file)}">`,
+    )
+    .join("\n    ");
+
+  return links
+    ? template.replace(
+        "<!--wraeclast-seo-head-->",
+        `${links}\n    <!--wraeclast-seo-head-->`,
+      )
+    : template;
+}
+
+function validatePrerenderedBody(entry, body) {
+  if (!body.includes("self.$_TSR") || !body.includes('class="$tsr"')) {
+    throw new Error(
+      `Prerendered route ${entry.pathname} is missing its hydration payload`,
+    );
+  }
+  if (body.includes('<article class="prose max-w-none">')) {
+    throw new Error(
+      `Prerendered route ${entry.pathname} still contains the legacy SEO fallback`,
+    );
+  }
+
+  const expectedName = entry.seoPageFacts?.name;
+  if (expectedName && !body.includes(expectedName)) {
+    throw new Error(
+      `Prerendered card route ${entry.pathname} is missing ${expectedName}`,
+    );
+  }
+}
+
+async function prerenderRouteBodies(entries, dropRatesIndex, gameDropRates) {
+  const vite = await createServer({
+    root: ROOT_DIR,
+    mode: "production",
+    server: { middlewareMode: true },
+    appType: "custom",
+    logLevel: "error",
+  });
+
+  try {
+    const { renderStaticRoute } = await vite.ssrLoadModule(
+      "/src/ssg/renderStaticRoute.tsx",
+    );
+
+    const queue = entries.values();
+    const workerCount = Math.min(
+      entries.length,
+      Math.max(1, Number(process.env.PRERENDER_CONCURRENCY) || 8),
+    );
+    await Promise.all(
+      Array.from({ length: workerCount }, async () => {
+        for (const entry of queue) {
+          const body = await renderStaticRoute({
+            pathname: entry.pathname,
+            dropRatesIndex,
+            gameDropRates,
+            prerenderData: entry.prerenderData,
+          });
+          validatePrerenderedBody(entry, body);
+          entry.body = body;
+        }
+      }),
+    );
+  } finally {
+    await vite.close();
+  }
+}
+
+async function loadLeagueCards(game, league, legacyCardDataUrl) {
   if (game !== "poe1") return [];
 
-  if (league.reference_source_url !== undefined) {
-    const source = getDivinationCardsDataSource(
-      game,
-      league.reference_source_url,
-      { allowDefaultSource: false },
-    );
-    if (!source) {
+  const cardDataUrl =
+    league.reference_source_url ??
+    (league.historical ? legacyCardDataUrl : undefined);
+  const source = getDivinationCardsDataSource(game, cardDataUrl, {
+    allowDefaultSource: !league.historical,
+  });
+  if (!source) {
+    if (cardDataUrl !== undefined) {
       throw new Error(
         `Unsupported card data source for ${game}/${league.name}`,
       );
     }
-
-    return parseDivinationCards(await readUrlJson(source.dataUrl));
+    return [];
   }
 
-  if (league.historical) return [];
+  let cardsPromise = cardCatalogCache.get(source.dataUrl);
+  if (!cardsPromise) {
+    cardsPromise = (async () => {
+      const value =
+        cardDataUrl === undefined
+          ? await readJson(path.join(CARDS_DATA_DIR, "cards.json"))
+          : await readUrlJson(source.dataUrl);
+      return parseDivinationCards(value).map((raw) => createCard(raw, source));
+    })();
+    cardCatalogCache.set(source.dataUrl, cardsPromise);
+  }
 
-  const cardsFile = path.join(CARDS_DATA_DIR, "cards.json");
-  return parseDivinationCards(await readJson(cardsFile));
+  return cardsPromise;
 }
 
 async function loadLeagueDropRates(game, league) {
@@ -136,104 +228,76 @@ async function loadLeagueDropRates(game, league) {
   return normalizeLeagueDropRates(await readJson(filePath), game);
 }
 
-function formatInteger(value) {
-  return Number(value ?? 0).toLocaleString("en-US");
-}
-
-function renderCardList(cards, cardsPath) {
-  if (cards.length === 0) {
-    return "<p>Card data is not available for this game yet.</p>";
-  }
-
-  const items = cards
-    .map(
-      (card) =>
-        `<li><a href="${htmlEscape(`${cardsPath}/${divinationCardSlug(card.name)}`)}"><strong>${htmlEscape(card.name)}</strong></a> - ${htmlEscape(divinationCardRewardText(card))}</li>`,
-    )
-    .join("");
-
-  return `<ul>${items}</ul>`;
-}
-
-function renderObservedCardList(cards, cardsPath) {
-  if (cards.length === 0) {
-    return "<p>No observed card data is available for this league.</p>";
-  }
-
-  const items = cards
-    .map(
-      (card) =>
-        `<li><a href="${htmlEscape(`${cardsPath}/${divinationCardSlug(card.name)}`)}"><strong>${htmlEscape(card.name)}</strong></a> - ${formatInteger(card.count)} reported drops</li>`,
-    )
-    .join("");
-
-  return `<ul>${items}</ul>`;
-}
-
-function cardSitemapEntry({ gameConfig, leagueSlug, card }) {
-  return {
-    pathname: `/${gameConfig.slug}/${leagueSlug}/cards/${divinationCardSlug(card.name)}`,
-    dynamic: true,
-  };
-}
-
 function cardSitemapCandidates(cards, observedCards) {
   const cardsBySlug = new Map();
 
-  for (const card of [...cards, ...observedCards]) {
-    cardsBySlug.set(divinationCardSlug(card.name), card);
+  for (const card of cards) {
+    cardsBySlug.set(card.id, { card });
+  }
+  for (const observedCard of observedCards) {
+    const slug = divinationCardSlug(observedCard.name);
+    cardsBySlug.set(slug, {
+      ...cardsBySlug.get(slug),
+      observedCard,
+    });
   }
 
   return cardsBySlug.values();
 }
 
-function renderDropRateTable(cards) {
-  const observedCards = cards.filter((card) => Number(card.count) > 0);
-  if (observedCards.length === 0) {
-    return "<p>No community drop-rate observations are available yet.</p>";
-  }
+function cardPageMetadata({
+  game,
+  gameConfig,
+  league,
+  leagueSlug,
+  card,
+  observedCard,
+  cards,
+  dropRates,
+}) {
+  const facts = card
+    ? {
+        name: card.name,
+        slug: card.id,
+        rewardText: card.rewardText,
+        stackSize: card.stackSize,
+        fromBoss: card.fromBoss,
+        rarity: DIVINATION_CARD_RARITY_LABELS[card.rarity],
+        imageUrl: card.imageUrl,
+        observedCount: observedCard?.count,
+        observedRate: observedCard?.ratio,
+      }
+    : {
+        name: observedCard.name,
+        slug: divinationCardSlug(observedCard.name),
+        observedCount: observedCard.count,
+        observedRate: observedCard.ratio,
+      };
 
-  const rows = observedCards
-    .slice()
-    .sort((left, right) => right.count - left.count)
-    .map(
-      (card) => `<tr>
-        <th scope="row">${htmlEscape(card.name)}</th>
-        <td>${formatInteger(card.count)}</td>
-        <td>${(Number(card.ratio) * 100).toFixed(6)}%</td>
-      </tr>`,
-    )
-    .join("");
-
-  return `<div class="overflow-x-auto"><table>
-    <thead><tr><th>Card</th><th>Drops reported</th><th>Observed rate</th></tr></thead>
-    <tbody>${rows}</tbody>
-  </table></div>`;
-}
-
-function renderDiscoveryLinks(entries) {
-  const links = entries
-    .filter(
-      (entry) =>
-        (entry.robots ?? "index, follow") === "index, follow" &&
-        (/^\/path-of-exile(?:-2)?\/[^/]+$/.test(entry.pathname) ||
-          ["/soothsayer", "/privacy-policy", "/attributions"].includes(
-            entry.pathname,
-          )),
-    )
-    .map(
-      (entry) =>
-        `<li><a href="${htmlEscape(entry.pathname)}">${htmlEscape(entry.title.replace(` | ${SITE_NAME}`, ""))}</a></li>`,
-    )
-    .join("");
-
-  return `<section>
-    <h2>Explore wraeclast.cards</h2>
-    <ul>${links}</ul>
-  </section>`;
+  return {
+    ...createCardSeoMetadata({
+      gameLabel: gameConfig.label,
+      gameSeoLabel: gameConfig.seoLabel,
+      gameSlug: gameConfig.slug,
+      leagueName: league.name,
+      leagueSlug,
+      facts,
+      siteUrl: SITE_URL,
+    }),
+    seoPageFacts: facts,
+    lastmod: league.generated_at || dropRates.generated_at || null,
+    prerenderData: {
+      game,
+      league,
+      cards,
+      dropRates,
+      compactQueryState: true,
+    },
+  };
 }
 
 function leaguePageMetadata({
+  game,
   gameConfig,
   league,
   leagueSlug,
@@ -241,7 +305,6 @@ function leaguePageMetadata({
   dropRates,
   page,
 }) {
-  const leaguePath = `/${gameConfig.slug}/${leagueSlug}`;
   const observedCards = dropRates.cards.filter(
     (card) => Number(card.count) > 0,
   );
@@ -269,123 +332,21 @@ function leaguePageMetadata({
     siteUrl: SITE_URL,
   });
 
-  if (page === "cards") {
-    return {
-      ...sharedMetadata,
-      seoPageFacts,
-      body: fallbackPage(`<article class="prose max-w-none">
-        <h1>${htmlEscape(league.name)} ${htmlEscape(gameConfig.label)} Divination Cards</h1>
-        <p>${htmlEscape(sharedMetadata.description)}</p>
-        <p><strong>${formatInteger(representedCardCount)}</strong> cards are represented in this league dataset.</p>
-        ${cards.length > 0 ? renderCardList(cards, `${leaguePath}/cards`) : renderObservedCardList(observedCards, `${leaguePath}/cards`)}
-      </article>`),
-    };
-  }
-
-  if (page === "stacked-decks") {
-    return {
-      ...sharedMetadata,
-      seoPageFacts,
-      lastmod: league.generated_at || dropRates.generated_at || null,
-      body: fallbackPage(`<article class="prose max-w-none">
-        <h1>${htmlEscape(league.name)} ${htmlEscape(gameConfig.label)} Stacked Deck Drop Rates</h1>
-        <p>${htmlEscape(sharedMetadata.description)}</p>
-        <h2>Methodology</h2>
-        <p>Drop rates are aggregated from real stacked deck openings captured by the open-source Soothsayer desktop application. Reference estimates use the average-weight formula documented by @nerdyjoe in the Prohibited Library spreadsheet; its published weight values are not imported. Rates can vary by league.</p>
-        ${renderDropRateTable(dropRates.cards)}
-      </article>`),
-    };
-  }
-
-  const topRates = dropRates.cards
-    .filter((card) => Number(card.count) > 0)
-    .slice()
-    .sort((left, right) => right.count - left.count)
-    .slice(0, 10);
-  const topRateItems = topRates
-    .map(
-      (card) =>
-        `<li>${htmlEscape(card.name)}: ${(Number(card.ratio) * 100).toFixed(4)}%</li>`,
-    )
-    .join("");
-
   return {
     ...sharedMetadata,
     seoPageFacts,
     lastmod: league.generated_at || dropRates.generated_at || null,
-    body: fallbackPage(`<article class="prose max-w-none">
-      <h1>${htmlEscape(gameConfig.seoLabel)}: ${htmlEscape(league.name)} Divination Card Data</h1>
-      <p>${htmlEscape(sharedMetadata.description)}</p>
-      <section>
-        <h2>Divination card database</h2>
-        <p>${cards.length > 0 ? "Browse rewards, stack sizes, card artwork, flavour text, and rarity information for this league." : "Browse divination cards with community observations from this archived league."}</p>
-        <p><a href="${htmlEscape(`${leaguePath}/cards`)}">Browse ${formatInteger(representedCardCount)} divination cards</a></p>
-      </section>
-      <section>
-        <h2>Observed stacked deck drop rates</h2>
-        ${topRateItems ? `<ol>${topRateItems}</ol>` : "<p>No observations are available yet.</p>"}
-        <p><a href="${htmlEscape(`${leaguePath}/stacked-decks`)}">View all stacked deck drop rates</a></p>
-      </section>
-      <section>
-        <h2>Soothsayer desktop tracker</h2>
-        <p>Track live stacked deck sessions, profit, card history, and rarity insights.</p>
-        <p><a href="/soothsayer">Learn more about Soothsayer</a></p>
-      </section>
-    </article>`),
+    prerenderData: { game, league, cards, dropRates },
   };
 }
 
-function renderMarkdown(markdown) {
-  return renderToStaticMarkup(
-    createElement(ReactMarkdown, { remarkPlugins: [remarkGfm] }, markdown),
-  );
-}
-
-function staticPageMetadata(privacyMarkdown, attributionsMarkdown) {
-  const soothsayer = createStaticPageSeoMetadata("soothsayer", SITE_URL);
-
+function staticPageMetadata() {
   return [
-    {
-      ...soothsayer,
-      body: fallbackPage(`<article class="prose max-w-none">
-        <h1>Soothsayer</h1>
-        <p>${htmlEscape(soothsayer.description)}</p>
-        <img src="/images/soothsayer/stats.webp" alt="${htmlEscape("Soothsayer statistics screen showing stacked deck session charts and summary metrics.")}">
-        <h2>Features</h2>
-        <ul>
-          <li>Real-time stacked deck session tracking</li>
-          <li>Personal card history and statistics</li>
-          <li>Economy-aware profit forecasting</li>
-          <li>Rarity insights using community and reference data</li>
-        </ul>
-        <p><a href="https://github.com/navali-creations/soothsayer/releases/latest">Download Soothsayer</a></p>
-        <p><a href="https://github.com/navali-creations/soothsayer">View the source code on GitHub</a></p>
-      </article>`),
-    },
-    {
-      ...createStaticPageSeoMetadata("privacy", SITE_URL),
-      body: fallbackPage(
-        `<article class="prose mx-auto">${renderMarkdown(privacyMarkdown)}</article>`,
-      ),
-    },
-    {
-      ...createStaticPageSeoMetadata("attributions", SITE_URL),
-      body: fallbackPage(
-        `<article class="prose mx-auto">${renderMarkdown(attributionsMarkdown)}</article>`,
-      ),
-    },
-    {
-      ...createStaticPageSeoMetadata("downloads", SITE_URL),
-      body: fallbackPage(
-        '<article class="prose"><h1>Downloads</h1><p>This page is still under construction.</p></article>',
-      ),
-    },
-    {
-      ...createStaticPageSeoMetadata("auth", SITE_URL),
-      body: fallbackPage(
-        '<article class="prose"><h1>Opening Soothsayer</h1><p>This page returns authorization to the Soothsayer desktop application.</p></article>',
-      ),
-    },
+    createStaticPageSeoMetadata("soothsayer", SITE_URL),
+    createStaticPageSeoMetadata("privacy", SITE_URL),
+    createStaticPageSeoMetadata("attributions", SITE_URL),
+    createStaticPageSeoMetadata("downloads", SITE_URL),
+    createStaticPageSeoMetadata("auth", SITE_URL),
   ];
 }
 
@@ -495,20 +456,25 @@ function buildRedirects(entries, defaultLeagueByGame) {
 
 async function main() {
   const templatePath = path.join(DIST_DIR, "index.html");
-  const template = await loadBuildTemplate();
+  const template = await includeBuildStyles(await loadBuildTemplate());
   const dropRatesIndex = await readJson(
     path.join(DIST_DIR, "data/drop-rates/index.json"),
   );
-  const privacyMarkdown = await readFile(
-    path.join(ROOT_DIR, "PRIVACY.md"),
-    "utf8",
-  );
-  const attributionsMarkdown = await readFile(
-    path.join(ROOT_DIR, "content/attributions.md"),
-    "utf8",
-  );
   const entries = [];
   const defaultLeagueByGame = {};
+  const gameDropRates = {};
+  let rootPrerenderData;
+  let cardPageCount = 0;
+
+  for (const game of Object.keys(GAME_METADATA)) {
+    const gameIndexPath = path.join(
+      DIST_DIR,
+      `data/drop-rates/${game}/index.json`,
+    );
+    if (await fileExists(gameIndexPath)) {
+      gameDropRates[game] = await readJson(gameIndexPath);
+    }
+  }
 
   for (const [game, gameConfig] of Object.entries(GAME_METADATA)) {
     const publishedLeagues = dropRatesIndex.games[game]?.leagues ?? [];
@@ -531,14 +497,21 @@ async function main() {
 
     for (const league of leagues) {
       const leagueSlug = leagueNameToSlug(league.name);
-      const [cards, dropRates] = await Promise.all([
-        loadLeagueCards(game, league),
-        loadLeagueDropRates(game, league),
-      ]);
+      const dropRates = await loadLeagueDropRates(game, league);
+      const cards = await loadLeagueCards(
+        game,
+        league,
+        dropRates.reference?.source_url,
+      );
+      const prerenderData = { game, league, cards, dropRates };
+      if (game === "poe1" && league.id === defaultLeague.id) {
+        rootPrerenderData = prerenderData;
+      }
 
       for (const page of ["home", "cards", "stacked-decks"]) {
         entries.push(
           leaguePageMetadata({
+            game,
             gameConfig,
             league,
             leagueSlug,
@@ -549,64 +522,56 @@ async function main() {
         );
       }
 
-      for (const card of cardSitemapCandidates(cards, dropRates.cards)) {
+      for (const { card, observedCard } of cardSitemapCandidates(
+        cards,
+        dropRates.cards,
+      )) {
         entries.push(
-          cardSitemapEntry({
+          cardPageMetadata({
+            game,
             gameConfig,
+            league,
             leagueSlug,
             card,
+            observedCard,
+            cards,
+            dropRates,
           }),
         );
+        cardPageCount += 1;
       }
     }
   }
 
-  entries.push(...staticPageMetadata(privacyMarkdown, attributionsMarkdown));
+  entries.push(...staticPageMetadata());
 
-  const staticEntries = entries.filter((entry) => !entry.dynamic);
-  for (const entry of staticEntries) {
+  const rootMetadata = {
+    ...createRootSeoMetadata(SITE_URL),
+    prerenderData: rootPrerenderData,
+  };
+  const notFoundMetadata = {
+    pathname: "/404",
+    title: `Page Not Found | ${SITE_NAME}`,
+    description: "The requested wraeclast.cards page could not be found.",
+    robots: "noindex, nofollow",
+    canonical: false,
+  };
+  await prerenderRouteBodies(
+    [rootMetadata, notFoundMetadata, ...entries],
+    dropRatesIndex,
+    gameDropRates,
+  );
+
+  for (const entry of entries) {
     await writeRouteDocument(template, entry);
   }
 
-  const poe1Default = defaultLeagueByGame.poe1 ?? "standard";
-  const rootMetadata = {
-    ...createRootSeoMetadata(SITE_URL),
-    body: fallbackPage(`<article class="prose max-w-none">
-      <h1>Path of Exile divination cards and stacked deck drop rates</h1>
-      <p>The complete divination card reference for Path of Exile, with league-specific card data, community-observed stacked deck drop rates, and the open-source Soothsayer desktop tracker.</p>
-      <section>
-        <h2>Divination card database</h2>
-        <p>Browse rewards, stack sizes, card artwork, flavour text, and rarity information for the current league.</p>
-        <p><a href="/path-of-exile/${htmlEscape(poe1Default)}/cards">Browse divination cards</a></p>
-      </section>
-      <section>
-        <h2>Observed stacked deck drop rates</h2>
-        <p>Explore aggregated observations from real stacked deck openings captured by Soothsayer.</p>
-        <p><a href="/path-of-exile/${htmlEscape(poe1Default)}/stacked-decks">View stacked deck drop rates</a></p>
-      </section>
-      <section>
-        <h2>Soothsayer desktop tracker</h2>
-        <p>Track live sessions, profit, personal card history, and rarity insights.</p>
-        <p><a href="/soothsayer">Learn more about Soothsayer</a></p>
-      </section>
-      ${renderDiscoveryLinks(entries)}
-    </article>`),
-  };
   const rootDocument = renderSeoDocument(template, rootMetadata, SITE_URL);
   await writeFile(templatePath, rootDocument);
 
-  const notFoundDocument = renderSeoDocument(
+  const notFoundDocument = renderNonHydratedSeoDocument(
     template,
-    {
-      pathname: "/404",
-      title: `Page Not Found | ${SITE_NAME}`,
-      description: "The requested wraeclast.cards page could not be found.",
-      robots: "noindex, nofollow",
-      canonical: false,
-      body: fallbackPage(
-        '<article class="prose text-center"><h1>404 — Page not found</h1><p>The page you requested does not exist or has moved.</p><p><a href="/">Return to wraeclast.cards</a></p></article>',
-      ),
-    },
+    notFoundMetadata,
     SITE_URL,
   );
   await writeFile(path.join(DIST_DIR, "404.html"), notFoundDocument);
@@ -619,7 +584,7 @@ async function main() {
   );
 
   console.log(
-    `[seo] Wrote ${staticEntries.length + 1} static pages and ${indexedCount} sitemap URLs (${entries.length - staticEntries.length} dynamically rendered card pages) across ${sitemapCount} sitemap file(s) to ${DIST_DIR}`,
+    `[seo] Wrote ${entries.length + 1} static pages (${cardPageCount} card pages) and ${indexedCount} sitemap URLs across ${sitemapCount} sitemap file(s) to ${DIST_DIR}`,
   );
 }
 

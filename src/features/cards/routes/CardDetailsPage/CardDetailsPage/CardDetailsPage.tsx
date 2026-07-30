@@ -1,40 +1,23 @@
-import { useGameContext } from "../../../../../app/game-context";
 import { useLeagueContext } from "../../../../../app/league-context";
 import { DivinationCard } from "../../../../../components/DivinationCard";
 import { PageContent } from "../../../../../components/page-content/PageContent/PageContent";
 import { PageHeader } from "../../../../../components/page-header/PageHeader/PageHeader";
-import { divinationCardSlug } from "../../../../../lib/divinationCards";
-import { useLeagueDropRates } from "../../../../../lib/dropRates";
 import { Route } from "../../../../../routes/$game/$league/cards/$cardId";
 import { EmptyMessage } from "../../../components/CardsGrid/EmptyMessage";
-import { useCardsQuery } from "../../../hooks";
 import { CardDetailsExternalLinks } from "../CardDetailsExternalLinks";
 import { CardDetailsInfo } from "../CardDetailsInfo";
 import { CardDetailsNotFound } from "../CardDetailsNotFound";
 import { CardDetailsObservedOnly } from "../CardDetailsObservedOnly/CardDetailsObservedOnly";
-import { CardDetailsSkeleton } from "../CardDetailsSkeleton";
 import { CardDetailsPageActions } from "./CardDetailsPageActions";
 import { CardDetailsPageSubtitle } from "./CardDetailsPageSubtitle";
 
 export function CardDetailsPage() {
-  const { cardId } = Route.useParams();
-  const { game } = useGameContext();
-  const { selectedLeague, selectedLeagueId } = useLeagueContext();
-  const { data: cards, isLoading, error } = useCardsQuery();
-  const {
-    data: leagueData,
-    isLoading: isLoadingDropRates,
-    error: dropRatesError,
-  } = useLeagueDropRates(game, selectedLeagueId);
-  const card = cards?.find((candidate) => candidate.id === cardId);
-  const observedCard = leagueData?.cards.find(
-    (candidate) =>
-      divinationCardSlug(candidate.name) === cardId && candidate.count > 0,
-  );
+  const { selectedLeague } = useLeagueContext();
+  const routeData = Route.useLoaderData();
+  const card = routeData?.card;
+  const observedCard = routeData?.observedCard;
 
   function renderContent() {
-    if (isLoading) return <CardDetailsSkeleton />;
-    if (!card && isLoadingDropRates) return <CardDetailsSkeleton />;
     if (!card && observedCard) {
       return (
         <CardDetailsObservedOnly
@@ -43,14 +26,9 @@ export function CardDetailsPage() {
         />
       );
     }
-    if (error) return <EmptyMessage>Failed to load cards.</EmptyMessage>;
-    if (!card) {
-      if (dropRatesError) {
-        return <EmptyMessage>Failed to load card observations.</EmptyMessage>;
-      }
-
-      return <CardDetailsNotFound />;
-    }
+    if (routeData?.status === "error")
+      return <EmptyMessage>Failed to load card details.</EmptyMessage>;
+    if (!card) return <CardDetailsNotFound />;
 
     return (
       <div className="overflow-hidden rounded-2xl border border-(--wc-border-dimmed) bg-(--wc-bg-dimmed)/40 p-4 sm:p-6">

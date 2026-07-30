@@ -26,13 +26,13 @@ interface GameLeagueCardSeoOptions {
   cardId: string;
   leagueName?: string;
   facts?: CardSeoFacts;
-  status?: "not-found";
+  status?: "error" | "not-found";
 }
 
 interface StaticSeoFactsPayload<T> {
   pathname: string;
   facts?: T;
-  status?: "not-found";
+  status?: "error" | "not-found";
 }
 
 function absoluteUrl(pathname: string): string {
@@ -55,6 +55,14 @@ function readStaticPagePayload<T>(
   } catch {
     return undefined;
   }
+}
+
+export function removeStaticSeoElements() {
+  if (typeof document === "undefined") return;
+
+  document.querySelectorAll("[data-seo-static]").forEach((element) => {
+    element.remove();
+  });
 }
 
 function createSeoHead(metadata: SeoMetadata) {

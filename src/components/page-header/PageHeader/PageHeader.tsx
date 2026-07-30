@@ -7,6 +7,7 @@ import { Text } from "../../text";
 interface PageHeaderProps {
   title: ReactNode;
   subtitle?: ReactNode;
+  reserveSubtitleSpace?: boolean;
   actions?: ReactNode;
 }
 
@@ -40,7 +41,12 @@ const headerActionsVariants: Variants = {
   },
 };
 
-export function PageHeader({ title, subtitle, actions }: PageHeaderProps) {
+export function PageHeader({
+  title,
+  subtitle,
+  reserveSubtitleSpace = false,
+  actions,
+}: PageHeaderProps) {
   return (
     <div className="border-b border-(--wc-border-strong) bg-(--wc-header-bg) pt-5 pb-4 shadow-[inset_0_-16px_36px_-28px_black]">
       <div className="mx-auto grid w-full max-w-300 gap-3 px-4 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-start">
@@ -52,8 +58,12 @@ export function PageHeader({ title, subtitle, actions }: PageHeaderProps) {
             {title}
           </Heading>
 
-          {subtitle && (
-            <Text size="sm" className="mt-1 min-h-5 text-(--wc-text-70)">
+          {(subtitle || reserveSubtitleSpace) && (
+            <Text
+              size="sm"
+              aria-hidden={subtitle ? undefined : true}
+              className="mt-1 min-h-5 text-(--wc-text-70)"
+            >
               {subtitle}
             </Text>
           )}
