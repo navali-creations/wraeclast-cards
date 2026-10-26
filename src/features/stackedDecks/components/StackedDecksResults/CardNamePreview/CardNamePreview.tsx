@@ -143,7 +143,7 @@ export function CardNamePreview({ cardId, name }: CardNamePreviewProps) {
         onPointerLeave={handlePointerLeave}
         onFocus={handlePointerEnter}
         onBlur={handlePointerLeave}
-        className="inline-flex text-inherit group-hover:underline"
+        className="inline-flex text-inherit hover:underline group-hover:underline"
       >
         {name}
       </CardLink>

@@ -1,6 +1,10 @@
 import { Link } from "@tanstack/react-router";
 import { FiGithub } from "react-icons/fi";
-import { footerNavigation, navigationRoutes } from "../../config/navigation";
+import {
+  footerGameNavigation,
+  footerNavigation,
+  navigationRoutes,
+} from "../../config/navigation";
 import { NavItemLink } from "../links";
 import { Text } from "../text";
 
@@ -22,6 +26,11 @@ export function FooterNavigation() {
         </Text>
         <ul className="space-y-2">
           {navigationRoutes.map((item) => (
+            <li key={item.path}>
+              <NavItemLink item={item} className={LINK_CLASS_NAME} />
+            </li>
+          ))}
+          {footerGameNavigation.map((item) => (
             <li key={item.path}>
               <NavItemLink item={item} className={LINK_CLASS_NAME} />
             </li>

@@ -103,6 +103,18 @@ const ROUTES = [
     pathname: "/path-of-exile/standard/stacked-decks",
     browserPathname: "/path-of-exile/standard/stacked-decks",
   },
+  {
+    pathname: "/path-of-exile/standard/stacked-decks/compare/movers",
+    browserPathname: "/path-of-exile/standard/stacked-decks/compare/movers",
+  },
+  {
+    pathname: "/path-of-exile/standard/stacked-decks/compare/matrix",
+    browserPathname: "/path-of-exile/standard/stacked-decks/compare/matrix",
+  },
+  {
+    pathname: "/path-of-exile/standard/stacked-decks/compare/history",
+    browserPathname: "/path-of-exile/standard/stacked-decks/compare/history",
+  },
   { pathname: "/soothsayer", browserPathname: "/soothsayer" },
   { pathname: "/privacy-policy", browserPathname: "/privacy-policy" },
   { pathname: "/404", browserPathname: "/404" },
@@ -171,8 +183,12 @@ describe("renderStaticRoute", () => {
     expect(markup).toContain('class="$tsr"');
     expect(markup).toContain("self.$_TSR");
     expect(markup).not.toContain('<article class="prose max-w-none">');
-    if (pathname.includes("/cards") || pathname.includes("/stacked-decks")) {
+    if (pathname.includes("/cards") || pathname.endsWith("/stacked-decks")) {
       expect(markup).toContain(CARD.name);
+    }
+    if (pathname.includes("/stacked-decks/compare/")) {
+      expect(markup).toContain("Compare Stacked Decks");
+      expect(markup).toContain("Comparison settings");
     }
     if (pathname === "/404") {
       expect(markup).toContain("Page not found");

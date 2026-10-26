@@ -1,5 +1,5 @@
 import { useNavigate } from "@tanstack/react-router";
-import { flexRender, type Row } from "@tanstack/react-table";
+import type { Row } from "@tanstack/react-table";
 import { clsx } from "clsx";
 import type { CSSProperties, MouseEvent } from "react";
 import { useGameContext } from "../../../../app/game-context";
@@ -8,6 +8,7 @@ import { divinationCardSlug } from "../../../../lib/divinationCards";
 import { gameToSlug } from "../../../../lib/gameSlug";
 import { leagueToSlug } from "../../../../lib/leagueSlug";
 import type { StackedDecksRow } from "../../hooks";
+import { StackedDecksTableRow } from "../StackedDecksTable";
 
 interface DataRowProps {
   row: Row<StackedDecksRow>;
@@ -53,33 +54,14 @@ export function DataRow({ row, animationIndex, shouldAnimate }: DataRowProps) {
   };
 
   return (
-    <tr
+    <StackedDecksTableRow
+      row={row}
       onClick={handleRowClick}
       className={clsx(
-        "group cursor-pointer border-t border-(--wc-border-dimmed) transition-colors odd:bg-(--wc-table-even) even:bg-(--wc-table-odd) hover:bg-(--wc-bg-dimmed)",
+        "cursor-pointer",
         shouldAnimate && "wc-stacked-decks-row-enter",
       )}
       style={{ "--row-stagger": animationIndex } as CSSProperties}
-    >
-      {row.getVisibleCells().map((cell) => {
-        const meta = cell.column.columnDef.meta;
-        const isSorted = cell.column.getIsSorted();
-        return (
-          <td
-            key={cell.id}
-            className={clsx(
-              "px-3 py-3",
-              meta?.align === "right" && "text-right",
-              meta?.tdClassName,
-              isSorted && "xs:bg-(--wc-skeleton-highlight)",
-            )}
-          >
-            <div className="wc-stacked-decks-cell-content">
-              {flexRender(cell.column.columnDef.cell, cell.getContext())}
-            </div>
-          </td>
-        );
-      })}
-    </tr>
+    />
   );
 }

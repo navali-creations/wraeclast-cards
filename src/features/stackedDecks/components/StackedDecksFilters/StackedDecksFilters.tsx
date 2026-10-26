@@ -38,7 +38,7 @@ export function StackedDecksFilters() {
       suggestions={suggestions}
       placeholder="Search..."
       leftIcon={<HiMagnifyingGlass className="size-4" />}
-      containerClassName="w-full sm:max-w-sm"
+      containerClassName="w-full sm:w-56 sm:max-w-56"
     />
   );
 }

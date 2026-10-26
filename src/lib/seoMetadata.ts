@@ -1,3 +1,5 @@
+import type { StackedDecksComparisonView } from "./stackedDecksComparisonViews";
+
 export const SITE_NAME = "wraeclast.cards";
 export const SITE_URL = "https://wraeclast.cards";
 export const AGPL_3_LICENSE_URL =
@@ -51,7 +53,8 @@ interface LeagueSeoOptions {
   gameSlug: string;
   leagueName: string;
   leagueSlug: string;
-  page: "home" | "cards" | "stacked-decks";
+  page: "home" | "cards" | "stacked-decks" | "stacked-decks-compare";
+  comparisonView?: StackedDecksComparisonView;
   robots?: RobotsDirective;
   facts?: LeagueSeoFacts;
   siteUrl?: string;
@@ -152,12 +155,18 @@ export function createLeagueSeoMetadata({
   leagueName,
   leagueSlug,
   page,
+  comparisonView = "movers",
   robots = "index, follow",
   facts = {},
   siteUrl = SITE_URL,
 }: LeagueSeoOptions): SeoMetadata {
   const leaguePath = `/${gameSlug}/${leagueSlug}`;
-  const pathname = page === "home" ? leaguePath : `${leaguePath}/${page}`;
+  const pathname =
+    page === "home"
+      ? leaguePath
+      : page === "stacked-decks-compare"
+        ? `${leaguePath}/stacked-decks/compare/${comparisonView}`
+        : `${leaguePath}/${page}`;
   const cardCount = facts.cardCount;
   const observedTotal = facts.observedTotal;
   const formattedCards = cardCount?.toLocaleString("en-US") ?? "all";
@@ -251,6 +260,51 @@ export function createLeagueSeoMetadata({
             createBreadcrumbs(siteUrl, [
               { name: `${gameLabel} ${leagueName}`, pathname: leaguePath },
               { name: "Stacked Deck Drop Rates", pathname },
+            ]),
+          ],
+        },
+      ],
+    };
+  }
+
+  if (page === "stacked-decks-compare") {
+    const comparisonViewLabel =
+      comparisonView === "matrix"
+        ? "League Matrix"
+        : comparisonView === "history"
+          ? "Card History"
+          : "Biggest Movers";
+    const title = `${comparisonViewLabel} – Compare Stacked Deck Drop Rates | ${SITE_NAME}`;
+    const description = `Compare ${gameLabel} stacked deck card rates across leagues, find the largest changes, and inspect each card's observed history with ${leagueName} as the route context.`;
+
+    return {
+      pathname,
+      title,
+      description,
+      robots,
+      structuredData: [
+        {
+          "@context": "https://schema.org",
+          "@graph": [
+            {
+              "@type": "WebPage",
+              name: title,
+              description,
+              url: absoluteUrl(pathname, siteUrl),
+              isPartOf: { "@id": `${siteUrl}/#website` },
+              about: [
+                { "@type": "VideoGame", name: gameSeoLabel },
+                { "@type": "Thing", name: "Stacked deck drop rates" },
+              ],
+              inLanguage: "en",
+            },
+            createBreadcrumbs(siteUrl, [
+              { name: `${gameLabel} ${leagueName}`, pathname: leaguePath },
+              {
+                name: "Stacked Deck Drop Rates",
+                pathname: `${leaguePath}/stacked-decks`,
+              },
+              { name: "Compare Leagues", pathname },
             ]),
           ],
         },

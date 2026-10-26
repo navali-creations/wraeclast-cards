@@ -5,6 +5,7 @@ import {
   createRootRoute,
   createRoute,
   createRouter,
+  Outlet,
   RouterProvider,
 } from "@tanstack/react-router";
 import { act, cleanup, render, screen, waitFor } from "@testing-library/react";
@@ -13,7 +14,13 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { AppLayout } from "./AppLayout";
 
 vi.mock("motion/react-m", () => ({
-  div: ({ children }: { children: ReactNode }) => <div>{children}</div>,
+  div: ({
+    children,
+    className,
+  }: {
+    children: ReactNode;
+    className?: string;
+  }) => <div className={className}>{children}</div>,
 }));
 vi.mock("../../components/footer/Footer", () => ({ Footer: () => null }));
 vi.mock("../../components/header/Header", () => ({ Header: () => null }));
@@ -63,6 +70,52 @@ function createTestRouter(cardsMounted: () => void) {
   return { router, stackedDecksLoader };
 }
 
+function createComparisonRouter(comparisonMounted: () => void) {
+  function ComparisonLayout() {
+    useEffect(comparisonMounted, []);
+    return (
+      <div data-testid="comparison-layout">
+        <Outlet />
+      </div>
+    );
+  }
+
+  const rootRoute = createRootRoute({ component: AppLayout });
+  const gameRoute = createRoute({
+    getParentRoute: () => rootRoute,
+    path: "$game",
+  });
+  const leagueRoute = createRoute({
+    getParentRoute: () => gameRoute,
+    path: "$league",
+  });
+  const comparisonRoute = createRoute({
+    getParentRoute: () => leagueRoute,
+    path: "stacked-decks/compare",
+    component: ComparisonLayout,
+  });
+  const comparisonViewRoute = createRoute({
+    getParentRoute: () => comparisonRoute,
+    path: "$comparisonView",
+    component: () => <h1>Comparison view</h1>,
+  });
+  const routeTree = rootRoute.addChildren([
+    gameRoute.addChildren([
+      leagueRoute.addChildren([
+        comparisonRoute.addChildren([comparisonViewRoute]),
+      ]),
+    ]),
+  ]);
+  const router = createRouter({
+    routeTree,
+    history: createMemoryHistory({
+      initialEntries: ["/path-of-exile/mirage/stacked-decks/compare/movers"],
+    }),
+  });
+
+  return router;
+}
+
 describe("AppLayout route animation", () => {
   it("keeps the committed page mounted until navigation completes", async () => {
     const cardsMounted = vi.fn();
@@ -104,5 +157,32 @@ describe("AppLayout route animation", () => {
 
     await waitFor(() => expect(cardsMounted).toHaveBeenCalledTimes(1));
     expect(screen.queryByText("Cards page")).not.toBeNull();
+  });
+
+  it("keeps the comparison layout mounted between view segments", async () => {
+    const comparisonMounted = vi.fn();
+    const router = createComparisonRouter(comparisonMounted);
+    await router.load();
+    render(<RouterProvider router={router} />);
+
+    expect(await screen.findByText("Comparison view")).not.toBeNull();
+    expect(comparisonMounted).toHaveBeenCalledTimes(1);
+    expect(document.querySelector("main > div")?.className).not.toContain(
+      "mx-auto",
+    );
+
+    await act(async () => {
+      await router.navigate({
+        to: "/$game/$league/stacked-decks/compare/$comparisonView",
+        params: {
+          game: "path-of-exile",
+          league: "mirage",
+          comparisonView: "matrix",
+        },
+      });
+    });
+
+    await waitFor(() => expect(comparisonMounted).toHaveBeenCalledTimes(1));
+    expect(screen.queryByTestId("comparison-layout")).not.toBeNull();
   });
 });

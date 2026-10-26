@@ -5,6 +5,7 @@ import {
   createLeagueSeoMetadata,
   type SeoMetadata,
 } from "./seoMetadata";
+import { STACKED_DECKS_COMPARISON_VIEWS } from "./stackedDecksComparisonViews";
 
 function structuredDataGraph(metadata: SeoMetadata) {
   const document = metadata.structuredData?.[0] as
@@ -55,6 +56,30 @@ describe("SEO structured data", () => {
       license: AGPL_3_LICENSE_URL,
       isAccessibleForFree: true,
     });
+  });
+
+  it("builds metadata for every nested comparison route", () => {
+    for (const comparisonView of STACKED_DECKS_COMPARISON_VIEWS) {
+      const metadata = createLeagueSeoMetadata({
+        gameLabel: "PoE 1",
+        gameSeoLabel: "Path of Exile",
+        gameSlug: "path-of-exile",
+        leagueName: "Mirage",
+        leagueSlug: "mirage",
+        page: "stacked-decks-compare",
+        comparisonView,
+      });
+      const [page, breadcrumbs] = structuredDataGraph(metadata);
+
+      expect(metadata.pathname).toBe(
+        `/path-of-exile/mirage/stacked-decks/compare/${comparisonView}`,
+      );
+      expect(metadata.title).toContain("Compare Stacked Deck");
+      expect(page).toMatchObject({ "@type": "WebPage" });
+      expect(breadcrumbs.itemListElement).toContainEqual(
+        expect.objectContaining({ name: "Compare Leagues" }),
+      );
+    }
   });
 
   it("expresses observed rates as percentages and builds one breadcrumb trail", () => {

@@ -14,7 +14,7 @@ export function ColumnHeader({
   return (
     <span className="inline-flex items-center gap-1">
       <span>{label}</span>
-      <span className="tooltip tooltip-bottom z-30 [--tt-bg:var(--wc-card-darker)]">
+      <span className="tooltip tooltip-bottom z-30 inline-flex items-center self-center align-middle leading-none [--tt-bg:var(--wc-card-darker)]">
         <span
           role="tooltip"
           className="tooltip-content max-w-64 rounded-md border border-(--wc-border) bg-(--wc-card-darker)! px-3! py-2! font-medium text-(--wc-text-90)! shadow-xl"
@@ -33,7 +33,7 @@ export function ColumnHeader({
         <button
           type="button"
           aria-label={`${label}: ${tooltip}`}
-          className="inline-flex cursor-help rounded-sm text-(--wc-text-50) transition-colors hover:text-(--wc-gold) focus-visible:outline-1 focus-visible:outline-offset-1 focus-visible:outline-(--wc-gold)"
+          className="inline-flex items-center justify-center self-center rounded-sm leading-none text-(--wc-text-50) transition-colors hover:text-(--wc-gold) focus-visible:outline-1 focus-visible:outline-offset-1 focus-visible:outline-(--wc-gold) cursor-help"
           onClick={(event) => event.stopPropagation()}
         >
           <FiInfo className="size-3.5" aria-hidden="true" />
