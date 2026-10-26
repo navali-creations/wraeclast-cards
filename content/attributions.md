@@ -1,6 +1,12 @@
 # Attributions
 
-wraeclast.cards relies on the following third-party and community-maintained data sources:
+## Website
+
+### Bloderyn
+
+Bloderyn created the design of wraeclast.cards and established the foundations of its codebase.
+
+- https://bloderyn.com/
 
 ## Data Sources
 

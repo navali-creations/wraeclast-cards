@@ -539,9 +539,9 @@ export function createStaticPageSeoMetadata(
     case "attributions":
       return {
         pathname: "/attributions",
-        title: `Data Sources and Attributions | ${SITE_NAME}`,
+        title: `Credits and Attributions | ${SITE_NAME}`,
         description:
-          "Data-source and community attributions for wraeclast.cards, including Prohibited Library, poe.ninja, and the Path of Exile Wiki.",
+          "Design, codebase, data-source, and community attributions for wraeclast.cards, including Bloderyn, Prohibited Library, poe.ninja, and the Path of Exile Wiki.",
       };
     case "downloads":
       return {

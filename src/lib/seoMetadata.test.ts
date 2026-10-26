@@ -3,6 +3,7 @@ import {
   AGPL_3_LICENSE_URL,
   createCardSeoMetadata,
   createLeagueSeoMetadata,
+  createStaticPageSeoMetadata,
   type SeoMetadata,
 } from "./seoMetadata";
 import { STACKED_DECKS_COMPARISON_VIEWS } from "./stackedDecksComparisonViews";
@@ -114,5 +115,16 @@ describe("SEO structured data", () => {
       expect.objectContaining({ position: 3, name: "Divination Cards" }),
       expect.objectContaining({ position: 4, name: "A Chilling Wind" }),
     ]);
+  });
+});
+
+describe("static page SEO metadata", () => {
+  it("describes the attribution page credits", () => {
+    expect(createStaticPageSeoMetadata("attributions")).toEqual({
+      pathname: "/attributions",
+      title: "Credits and Attributions | wraeclast.cards",
+      description:
+        "Design, codebase, data-source, and community attributions for wraeclast.cards, including Bloderyn, Prohibited Library, poe.ninja, and the Path of Exile Wiki.",
+    });
   });
 });
