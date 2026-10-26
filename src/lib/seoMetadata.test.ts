@@ -119,6 +119,15 @@ describe("SEO structured data", () => {
 });
 
 describe("static page SEO metadata", () => {
+  it("describes the privacy policy data handling", () => {
+    expect(createStaticPageSeoMetadata("privacy")).toEqual({
+      pathname: "/privacy-policy",
+      title: "Privacy Policy | wraeclast.cards",
+      description:
+        "How wraeclast.cards handles error reporting, Cloudflare delivery and web performance data, and aggregated Soothsayer drop-rate data.",
+    });
+  });
+
   it("describes the attribution page credits", () => {
     expect(createStaticPageSeoMetadata("attributions")).toEqual({
       pathname: "/attributions",

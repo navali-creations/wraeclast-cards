@@ -534,7 +534,7 @@ export function createStaticPageSeoMetadata(
         pathname: "/privacy-policy",
         title: `Privacy Policy | ${SITE_NAME}`,
         description:
-          "How wraeclast.cards handles anonymous analytics, error reporting, Cloudflare delivery data, and aggregated Soothsayer drop-rate data.",
+          "How wraeclast.cards handles error reporting, Cloudflare delivery and web performance data, and aggregated Soothsayer drop-rate data.",
       };
     case "attributions":
       return {

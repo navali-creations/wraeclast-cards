@@ -2,7 +2,7 @@
 
 **Data Controller:** wraeclast.cards
 
-**Last Updated:** July 11, 2026
+**Last Updated:** October 26, 2026
 
 wraeclast.cards is an open-source website for Path of Exile divination card data. It is primarily a static site delivered through Cloudflare. This privacy policy explains what data we collect, how we use it, and your rights.
 
@@ -22,12 +22,6 @@ The production site uses Sentry for crash and error reporting. Anonymous error r
 - **Breadcrumb timeline** a sequence of events leading up to the error
 
 Crash reports are intended to exclude personal information. The site is configured not to collect user information or HTTP request/response bodies through Sentry.
-
-### Usage Analytics (Umami)
-
-The production site uses a hosted [Umami](https://umami.is/) instance for privacy-focused usage analytics. Anonymous page views and feature usage events are tracked to help us understand which pages and features are used most so we can prioritize development.
-
-Usage analytics do **not** include personal identifiers. We see aggregated counts like "50 users opened the Cards page today", not who they are.
 
 ### Web Performance Analytics (Cloudflare Web Analytics)
 
@@ -72,7 +66,6 @@ When that route is used:
 ## How We Use Your Data
 
 - **Crash reports** to fix bugs and edge cases across different browsers, devices, and operating systems
-- **Usage analytics** to understand which pages and features matter most and prioritize development
 - **Web performance analytics** to measure production page speed, responsiveness, and layout stability
 - **Cloudflare infrastructure processing** to deliver, cache, and protect the website
 - **Stacked deck data display** to publish aggregated drop-rate data derived from Soothsayer community uploads
@@ -85,7 +78,6 @@ When that route is used:
 | Service | Purpose | Region |
 |---|---|---|
 | [Sentry](https://sentry.io/) | Crash reporting | EU (Frankfurt) |
-| [Umami](https://umami.is/) hosted instance | Usage analytics | According to the hosting configuration for the analytics endpoint |
 | [Cloudflare](https://www.cloudflare.com/) | Website hosting, caching, delivery, security, and Web Analytics/Core Web Vitals | According to Cloudflare infrastructure and policy |
 
 ---
@@ -95,7 +87,6 @@ When that route is used:
 | Data | Retention |
 |---|---|
 | Sentry crash reports | 30 days (auto-deleted) |
-| Umami analytics | 90 days (aggregated, no personal data) |
 | Cloudflare request, infrastructure, and Web Analytics data | According to Cloudflare's systems and policies |
 
 ---
@@ -104,7 +95,7 @@ When that route is used:
 
 ### Site Telemetry
 
-The production site uses anonymous telemetry for crash reporting, usage analytics, and web performance analytics.
+The production site uses telemetry for crash reporting and web performance analytics.
 
 The site does not currently provide a built-in opt-out control for this telemetry. Telemetry is intended to be anonymous or aggregated and is not used to identify individual visitors.
 
@@ -139,7 +130,7 @@ If your request relates to a specific crash report, include any Sentry event ID 
 ### Important Notes
 
 - wraeclast.cards does not operate end-user accounts for normal site usage.
-- Sentry, Umami, and Cloudflare Web Analytics are intended to operate on anonymous or aggregated data only.
+- Sentry and Cloudflare Web Analytics are intended to operate on anonymous or aggregated data only.
 - Requests involving anonymous or aggregated telemetry can only be actioned when the relevant data can be reasonably linked to the requester.
 - Cloudflare may process standard request data as part of serving and securing the site under its own privacy policy.
 - Stacked deck data is derived from Soothsayer desktop app community uploads, which are covered by the [Soothsayer Privacy Policy](https://github.com/navali-creations/soothsayer/blob/master/PRIVACY.md).
@@ -152,7 +143,6 @@ If your request relates to a specific crash report, include any Sentry event ID 
 | Service | Provider | Purpose |
 |---|---|---|
 | Sentry | Functional Software GmbH | Crash and error reporting |
-| Hosted Umami instance | Umami analytics software, hosted for this site | Privacy-focused usage analytics |
 | Cloudflare | Cloudflare, Inc. | Website hosting, caching, delivery, security, and Web Analytics/Core Web Vitals |
 
 Each third-party service has its own privacy policy. We encourage you to review them.
