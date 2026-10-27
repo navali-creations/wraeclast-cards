@@ -44,7 +44,7 @@ export function StackedDecksTableHeaderCell<TData>({
       onClick={canSort ? column.getToggleSortingHandler() : undefined}
       onKeyDown={handleKeyDown}
       className={clsx(
-        "border-b border-(--wc-accent-border) px-3 py-3 text-xs font-semibold transition-colors",
+        "border-b border-(--wc-accent-border) px-3 py-3 text-xs font-semibold whitespace-nowrap transition-colors",
         canSort &&
           "cursor-pointer select-none hover:text-(--wc-gold) focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-(--wc-gold)",
         alignRight ? "text-right" : "text-left",
@@ -52,7 +52,7 @@ export function StackedDecksTableHeaderCell<TData>({
         sortDirection ? "text-(--wc-gold-bright)" : "text-(--wc-text-80)",
       )}
     >
-      <span className="inline-flex items-center gap-1.5">
+      <span className="inline-flex items-center gap-1.5 whitespace-nowrap">
         {sortDirection === "desc" ? (
           <HiChevronDown
             aria-hidden="true"

@@ -79,6 +79,7 @@ function leagueData(
     game: "poe1",
     league,
     reference: null,
+    context: null,
     cards,
   };
 }

@@ -61,6 +61,43 @@ export interface DropRateReference {
   source_url: string;
 }
 
+export interface DropRateContextLinks {
+  // Paths relative to the drop-rates data root.
+  time_buckets_url: string;
+  locations_url: string;
+}
+
+interface LeagueDropContextBase {
+  schema_version: number;
+  generated_at: string;
+  game: Game;
+  league: {
+    id: string;
+    name: string;
+    historical: boolean;
+  };
+}
+
+export interface CardTimeBuckets {
+  utc: Record<string, number>;
+  local: Record<string, number>;
+}
+
+export interface LeagueTimeBuckets extends LeagueDropContextBase {
+  bucket_minutes: 15;
+  observed_total: number;
+  totals: CardTimeBuckets;
+  cards: Record<string, CardTimeBuckets>;
+}
+
+export interface LeagueDropLocations extends LeagueDropContextBase {
+  observed_total: number;
+  located_total: number;
+  totals: Record<string, number>;
+  card_totals: Record<string, number>;
+  cards: Record<string, Record<string, number>>;
+}
+
 // Shape of `<game>/<leagueId>.json`: the full per-card drop-rate data for
 // one league, fetched by useLeagueDropRates.
 export interface LeagueDropRates {
@@ -73,5 +110,6 @@ export interface LeagueDropRates {
     historical: boolean;
   };
   reference: DropRateReference | null;
+  context: DropRateContextLinks | null;
   cards: DropRateCard[];
 }

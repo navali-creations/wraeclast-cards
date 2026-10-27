@@ -7,6 +7,7 @@ const BASIC_RESPONSIVE_COLUMNS = {
     "reference_estimated_chance",
     "chance_difference",
     "seen_vs_reference",
+    "time_buckets",
     "count",
   ],
 };

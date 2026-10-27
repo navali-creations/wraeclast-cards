@@ -1,13 +1,17 @@
 import { createDivinationCardRouteIndex } from "../divinationCards.ts";
 import type {
+  CardTimeBuckets,
   DropRateCard,
+  DropRateContextLinks,
   DropRateLeague,
   DropRateReference,
   DropRatesIndex,
   DropRatesRootGame,
   Game,
   GameDropRates,
+  LeagueDropLocations,
   LeagueDropRates,
+  LeagueTimeBuckets,
 } from "./types";
 
 const KNOWN_GAMES: Game[] = ["poe1", "poe2"];
@@ -43,7 +47,13 @@ function booleanOrFalse(value: unknown): boolean {
 }
 
 function gameOrFallback(value: unknown, fallback: Game): Game {
-  return value === "poe1" || value === "poe2" ? value : fallback;
+  if (value === undefined || value === "") return fallback;
+  if (value !== fallback) {
+    throw new Error(
+      `Expected ${fallback} drop-rate data, received ${String(value)}`,
+    );
+  }
+  return fallback;
 }
 
 function records(value: unknown): JsonRecord[] {
@@ -95,6 +105,222 @@ function normalizeCard(value: JsonRecord): DropRateCard {
     verified_community_estimated_weight_delta_vs_reference: numberOrNull(
       value.verified_community_estimated_weight_delta_vs_reference,
     ),
+  };
+}
+
+function normalizeCountMap(value: unknown): Record<string, number> {
+  if (!isRecord(value)) return {};
+
+  return Object.fromEntries(
+    Object.entries(value)
+      .filter(
+        ([key, count]) =>
+          key.trim().length > 0 &&
+          typeof count === "number" &&
+          Number.isFinite(count) &&
+          count >= 0,
+      )
+      .map(([key, count]) => [key, Math.floor(count as number)]),
+  );
+}
+
+function normalizeTimeBuckets(value: unknown): Record<string, number> {
+  const buckets = normalizeCountMap(value);
+
+  return Object.fromEntries(
+    Object.entries(buckets).filter(([key]) => {
+      const minute = Number(key);
+      return (
+        Number.isInteger(minute) &&
+        minute >= 0 &&
+        minute < 1440 &&
+        minute % 15 === 0
+      );
+    }),
+  );
+}
+
+function normalizeCardTimeBuckets(value: unknown): CardTimeBuckets {
+  if (!isRecord(value)) return { utc: {}, local: {} };
+
+  // Schema 7 published a single player-local map. Preserve it as local data
+  // while leaving UTC empty rather than mislabelling it as global time.
+  const hasNamedSeries = isRecord(value.utc) || isRecord(value.local);
+  if (!hasNamedSeries) {
+    return { utc: {}, local: normalizeTimeBuckets(value) };
+  }
+
+  return {
+    utc: normalizeTimeBuckets(value.utc),
+    local: normalizeTimeBuckets(value.local),
+  };
+}
+
+function addCountMaps(
+  target: Record<string, number>,
+  source: Readonly<Record<string, number>>,
+) {
+  for (const [key, count] of Object.entries(source)) {
+    target[key] = (target[key] ?? 0) + count;
+  }
+}
+
+function deriveTimeBucketTotals(
+  cards: Readonly<Record<string, CardTimeBuckets>>,
+): CardTimeBuckets {
+  const totals: CardTimeBuckets = { utc: {}, local: {} };
+  for (const card of Object.values(cards)) {
+    addCountMaps(totals.utc, card.utc);
+    addCountMaps(totals.local, card.local);
+  }
+  return totals;
+}
+
+function sumCountMap(value: Readonly<Record<string, number>>): number {
+  return Object.values(value).reduce((sum, count) => sum + count, 0);
+}
+
+function normalizeContextLinks(value: unknown): DropRateContextLinks | null {
+  if (!isRecord(value)) return null;
+
+  const timeBucketsUrl = stringOrUndefined(value.time_buckets_url);
+  const locationsUrl = stringOrUndefined(value.locations_url);
+  if (!timeBucketsUrl || !locationsUrl) return null;
+
+  return {
+    time_buckets_url: timeBucketsUrl,
+    locations_url: locationsUrl,
+  };
+}
+
+function normalizeContextCards(
+  value: unknown,
+  normalizeCounts: (value: unknown) => Record<string, number>,
+): Record<string, Record<string, number>> {
+  if (!isRecord(value)) return {};
+
+  return Object.fromEntries(
+    Object.entries(value)
+      .filter(
+        ([cardName, counts]) => cardName.trim().length > 0 && isRecord(counts),
+      )
+      .map(([cardName, counts]) => [cardName, normalizeCounts(counts)]),
+  );
+}
+
+function normalizeContextLeague(value: unknown, expectedLeagueId?: string) {
+  if (!isRecord(value)) {
+    throw new Error("Missing league identity in drop-context data");
+  }
+
+  const id = stringOrEmpty(value.id);
+  const name = stringOrEmpty(value.name);
+  if (!id || !name || (expectedLeagueId && id !== expectedLeagueId)) {
+    throw new Error("Unexpected league identity in drop-context data");
+  }
+
+  return { id, name, historical: booleanOrFalse(value.historical) };
+}
+
+function normalizeContextMetadata(
+  value: JsonRecord,
+  requestedGame: Game,
+  expectedLeagueId?: string,
+) {
+  const schemaVersion = numberOrNull(value.schema_version);
+  const generatedAt = stringOrEmpty(value.generated_at);
+  if (
+    !Number.isInteger(schemaVersion) ||
+    (schemaVersion ?? 0) < 7 ||
+    !generatedAt
+  ) {
+    throw new Error("Unexpected drop-context document metadata");
+  }
+
+  return {
+    schema_version: schemaVersion as number,
+    generated_at: generatedAt,
+    game: gameOrFallback(value.game, requestedGame),
+    league: normalizeContextLeague(value.league, expectedLeagueId),
+  };
+}
+
+export function normalizeLeagueTimeBuckets(
+  value: unknown,
+  requestedGame: Game,
+  expectedLeagueId?: string,
+): LeagueTimeBuckets {
+  if (!isRecord(value) || value.bucket_minutes !== 15) {
+    throw new Error("Unexpected league time-bucket data shape");
+  }
+
+  const cards = isRecord(value.cards)
+    ? Object.fromEntries(
+        Object.entries(value.cards)
+          .filter(
+            ([cardName, buckets]) =>
+              cardName.trim().length > 0 && isRecord(buckets),
+          )
+          .map(([cardName, buckets]) => [
+            cardName,
+            normalizeCardTimeBuckets(buckets),
+          ]),
+      )
+    : {};
+  const publishedTotals = normalizeCardTimeBuckets(value.totals);
+  const totals =
+    Object.keys(publishedTotals.utc).length > 0 ||
+    Object.keys(publishedTotals.local).length > 0
+      ? publishedTotals
+      : deriveTimeBucketTotals(cards);
+  const derivedObservedTotal = Math.max(
+    sumCountMap(totals.utc),
+    sumCountMap(totals.local),
+  );
+  const metadata = normalizeContextMetadata(
+    value,
+    requestedGame,
+    expectedLeagueId,
+  );
+
+  return {
+    ...metadata,
+    bucket_minutes: 15,
+    observed_total: Math.max(
+      numberOrZero(value.observed_total),
+      derivedObservedTotal,
+    ),
+    totals,
+    cards,
+  };
+}
+
+export function normalizeLeagueDropLocations(
+  value: unknown,
+  requestedGame: Game,
+  expectedLeagueId?: string,
+): LeagueDropLocations {
+  if (
+    !isRecord(value) ||
+    !isRecord(value.totals) ||
+    !isRecord(value.card_totals) ||
+    !isRecord(value.cards)
+  ) {
+    throw new Error("Unexpected league location data shape");
+  }
+  const metadata = normalizeContextMetadata(
+    value,
+    requestedGame,
+    expectedLeagueId,
+  );
+
+  return {
+    ...metadata,
+    observed_total: numberOrZero(value.observed_total),
+    located_total: numberOrZero(value.located_total),
+    totals: normalizeCountMap(value.totals),
+    card_totals: normalizeCountMap(value.card_totals),
+    cards: normalizeContextCards(value.cards, normalizeCountMap),
   };
 }
 
@@ -174,6 +400,7 @@ export function normalizeLeagueDropRates(
       historical: booleanOrFalse(league.historical),
     },
     reference: normalizeReference(value.reference),
+    context: normalizeContextLinks(value.context),
     cards,
   };
 }

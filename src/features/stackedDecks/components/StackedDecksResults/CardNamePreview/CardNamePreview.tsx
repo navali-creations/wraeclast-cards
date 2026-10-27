@@ -1,5 +1,6 @@
 import { useQueryClient } from "@tanstack/react-query";
-import type { CSSProperties } from "react";
+import clsx from "clsx";
+import type { CSSProperties, ReactNode } from "react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { useGameContext } from "../../../../../app/game-context";
@@ -18,10 +19,17 @@ import {
 
 interface CardNamePreviewProps {
   cardId: string;
+  children?: ReactNode;
+  className?: string;
   name: string;
 }
 
-export function CardNamePreview({ cardId, name }: CardNamePreviewProps) {
+export function CardNamePreview({
+  cardId,
+  children,
+  className,
+  name,
+}: CardNamePreviewProps) {
   const triggerRef = useRef<HTMLAnchorElement>(null);
   // Invalidates stale async preview loads after hover changes or preview hides.
   const requestIdRef = useRef(0);
@@ -143,9 +151,12 @@ export function CardNamePreview({ cardId, name }: CardNamePreviewProps) {
         onPointerLeave={handlePointerLeave}
         onFocus={handlePointerEnter}
         onBlur={handlePointerLeave}
-        className="inline-flex text-inherit hover:underline group-hover:underline"
+        className={clsx(
+          "inline-flex text-inherit hover:underline group-hover:underline",
+          className,
+        )}
       >
-        {name}
+        {children ?? name}
       </CardLink>
       {preview}
     </>

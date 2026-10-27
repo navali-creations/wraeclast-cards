@@ -2,9 +2,17 @@ import { queryOptions, useQuery } from "@tanstack/react-query";
 import { readJsonResponse } from "../readJsonResponse";
 import {
   normalizeGameDropRates,
+  normalizeLeagueDropLocations,
   normalizeLeagueDropRates,
+  normalizeLeagueTimeBuckets,
 } from "./normalizers";
-import type { Game, GameDropRates, LeagueDropRates } from "./types";
+import type {
+  Game,
+  GameDropRates,
+  LeagueDropLocations,
+  LeagueDropRates,
+  LeagueTimeBuckets,
+} from "./types";
 
 const ONE_HOUR_MS = 1000 * 60 * 60;
 const DROP_RATES_PATH_PREFIX = "/data/drop-rates";
@@ -38,7 +46,13 @@ export function getDropRatesBaseUrl() {
 export function resolveDropRatesUrl(pathOrUrl: string) {
   if (/^https?:\/\//.test(pathOrUrl)) return pathOrUrl;
 
-  const baseUrl = getDropRatesBaseUrl().replace(/\/+$/, "");
+  return resolveDropRatesUrlFromBase(getDropRatesBaseUrl(), pathOrUrl);
+}
+
+function resolveDropRatesUrlFromBase(baseUrl: string, pathOrUrl: string) {
+  if (/^https?:\/\//.test(pathOrUrl)) return pathOrUrl;
+
+  const normalizedBaseUrl = baseUrl.replace(/\/+$/, "");
   const normalizedPath = pathOrUrl
     .replace(
       new RegExp(`^/?${DROP_RATES_PATH_PREFIX.replace(/^\//, "")}/?`),
@@ -46,7 +60,29 @@ export function resolveDropRatesUrl(pathOrUrl: string) {
     )
     .replace(/^\/+/, "");
 
-  return normalizedPath ? `${baseUrl}/${normalizedPath}` : baseUrl;
+  return normalizedPath
+    ? `${normalizedBaseUrl}/${normalizedPath}`
+    : normalizedBaseUrl;
+}
+
+async function fetchDropRatesFile(pathOrUrl: string): Promise<unknown> {
+  const baseUrl = getDropRatesBaseUrl();
+
+  try {
+    return await readDropRatesUrl(
+      resolveDropRatesUrlFromBase(baseUrl, pathOrUrl),
+    );
+  } catch (error) {
+    if (!shouldRetryWithProduction(baseUrl)) throw error;
+
+    console.warn(
+      "Local drop-rate data is unavailable; using production data instead.",
+      error,
+    );
+    return readDropRatesUrl(
+      resolveDropRatesUrlFromBase(PRODUCTION_DROP_RATES_BASE_URL, pathOrUrl),
+    );
+  }
 }
 
 // Joins the base URL with path segments (e.g. game, league id) into a full
@@ -128,5 +164,61 @@ export function useLeagueDropRates(game: Game, leagueId: string | undefined) {
   return useQuery({
     ...leagueDropRatesQueryOptions(game, leagueId ?? ""),
     enabled: !!leagueId,
+  });
+}
+
+function leagueTimeBucketsQueryOptions(
+  game: Game,
+  url: string,
+  expectedLeagueId?: string,
+) {
+  return queryOptions({
+    queryKey: ["drop-rates", game, "time-buckets", url],
+    queryFn: async (): Promise<LeagueTimeBuckets> =>
+      normalizeLeagueTimeBuckets(
+        await fetchDropRatesFile(url),
+        game,
+        expectedLeagueId,
+      ),
+    staleTime: ONE_HOUR_MS,
+  });
+}
+
+export function useLeagueTimeBuckets(
+  game: Game,
+  url: string | undefined,
+  expectedLeagueId?: string,
+) {
+  return useQuery({
+    ...leagueTimeBucketsQueryOptions(game, url ?? "", expectedLeagueId),
+    enabled: !!url,
+  });
+}
+
+function leagueDropLocationsQueryOptions(
+  game: Game,
+  url: string,
+  expectedLeagueId?: string,
+) {
+  return queryOptions({
+    queryKey: ["drop-rates", game, "locations", url],
+    queryFn: async (): Promise<LeagueDropLocations> =>
+      normalizeLeagueDropLocations(
+        await fetchDropRatesFile(url),
+        game,
+        expectedLeagueId,
+      ),
+    staleTime: ONE_HOUR_MS,
+  });
+}
+
+export function useLeagueDropLocations(
+  game: Game,
+  url: string | undefined,
+  expectedLeagueId?: string,
+) {
+  return useQuery({
+    ...leagueDropLocationsQueryOptions(game, url ?? "", expectedLeagueId),
+    enabled: !!url,
   });
 }

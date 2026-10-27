@@ -3,5 +3,6 @@ export const SECONDARY_COLUMNS = [
   { id: "ratio", label: "Players Saw" },
   { id: "chance_difference", label: "Chance Difference" },
   { id: "seen_vs_reference", label: "Compared to Reference" },
+  { id: "time_buckets", label: "Time of Day" },
   { id: "count", label: "Drops Reported" },
 ] as const;

@@ -66,6 +66,7 @@ const LEAGUE_DROP_RATES = {
   game: "poe1" as const,
   league: { id: "standard", name: "Standard", historical: false },
   reference: null,
+  context: null,
   cards: [
     {
       name: CARD.name,
