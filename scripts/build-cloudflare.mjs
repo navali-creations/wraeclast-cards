@@ -1,8 +1,21 @@
 import { spawn } from "node:child_process";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+import { hydratePreviewDropRates } from "./hydrate-preview-drop-rates.mjs";
 
 const PRODUCTION_BRANCH = "main";
 const PRODUCTION_DROP_RATES_BASE_URL =
   "https://wraeclast.cards/data/drop-rates";
+const ROOT_DIRECTORY = path.resolve(
+  path.dirname(fileURLToPath(import.meta.url)),
+  "..",
+);
+const DROP_RATES_OUTPUT_DIRECTORY = path.join(
+  ROOT_DIRECTORY,
+  "dist",
+  "data",
+  "drop-rates",
+);
 
 const isCloudflarePages = process.env.CF_PAGES === "1";
 const cloudflareBranch = process.env.CF_PAGES_BRANCH;
@@ -44,7 +57,14 @@ await runPnpm(["build"], buildEnv);
 
 if (isPreviewBranch) {
   console.log(
-    `[build:cloudflare] Reusing committed drop-rate data for preview branch "${cloudflareBranch}".`,
+    `[build:cloudflare] Hydrating production drop-rate data for preview branch "${cloudflareBranch}".`,
+  );
+  const resourceCount = await hydratePreviewDropRates({
+    baseUrl: PRODUCTION_DROP_RATES_BASE_URL,
+    outputDirectory: DROP_RATES_OUTPUT_DIRECTORY,
+  });
+  console.log(
+    `[build:cloudflare] Hydrated ${resourceCount} drop-rate resources.`,
   );
 } else {
   await runPnpm(["drop-rates:generate"]);
