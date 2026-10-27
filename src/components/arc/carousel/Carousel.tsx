@@ -1,6 +1,5 @@
 "use client";
 
-import { m } from "motion/react";
 import { Children, type CSSProperties, isValidElement, useId } from "react";
 import { CarouselControls } from "./CarouselControls";
 import { CarouselSlide } from "./CarouselSlide";
@@ -29,18 +28,32 @@ export function Carousel({
   const count = slides.length;
   const last = Math.max(0, count - 1);
   const looping = count > 1;
+  const leadingCloneIndexes = looping ? [last - 1, last] : [];
+  const trailingCloneIndexes = looping ? [0, 1] : [];
   const trackSlides = looping
     ? [
-        { clone: true, logicalIndex: last, slide: slides[last] },
+        ...leadingCloneIndexes.map((logicalIndex, cloneIndex) => ({
+          clone: true,
+          cloneKey: `before-${cloneIndex}`,
+          logicalIndex,
+          slide: slides[logicalIndex],
+        })),
         ...slides.map((slide, logicalIndex) => ({
           clone: false,
+          cloneKey: "",
           logicalIndex,
           slide,
         })),
-        { clone: true, logicalIndex: 0, slide: slides[0] },
+        ...trailingCloneIndexes.map((logicalIndex, cloneIndex) => ({
+          clone: true,
+          cloneKey: `after-${cloneIndex}`,
+          logicalIndex,
+          slide: slides[logicalIndex],
+        })),
       ]
     : slides.map((slide, logicalIndex) => ({
         clone: false,
+        cloneKey: "",
         logicalIndex,
         slide,
       }));
@@ -56,7 +69,7 @@ export function Carousel({
   });
   const rootStyle = {
     "--carousel-slide": slideSize,
-    "--carousel-start": controller.startIndex,
+    "--carousel-start": controller.visualPosition,
   } as CSSProperties;
 
   return (
@@ -85,32 +98,30 @@ export function Carousel({
         onClickCapture={controller.handleClickCapture}
         onDragStart={controller.handleDragStart}
       >
-        <m.div
-          ref={controller.trackRef}
-          className={styles.track}
-          style={{ x: controller.x }}
-        >
-          {trackSlides.map(({ clone, logicalIndex, slide }, position) => (
-            <CarouselSlide
-              key={
-                clone
-                  ? `clone-${logicalIndex === last ? "before" : "after"}`
-                  : isValidElement(slide) && slide.key != null
-                    ? slide.key
-                    : `slide-${slideLabel(logicalIndex, count)}`
-              }
-              id={`${id}-slide-${position}`}
-              index={position}
-              progress={controller.progress}
-              direction={controller.direction}
-              active={position === controller.visualPosition}
-              clone={clone}
-              label={slideLabel(logicalIndex, count)}
-            >
-              {slide}
-            </CarouselSlide>
-          ))}
-        </m.div>
+        <div ref={controller.trackRef} className={styles.track}>
+          {trackSlides.map(
+            ({ clone, cloneKey, logicalIndex, slide }, position) => (
+              <CarouselSlide
+                key={
+                  clone
+                    ? `clone-${cloneKey}`
+                    : isValidElement(slide) && slide.key != null
+                      ? slide.key
+                      : `slide-${slideLabel(logicalIndex, count)}`
+                }
+                id={`${id}-slide-${position}`}
+                index={position}
+                progress={controller.progress}
+                direction={controller.direction}
+                active={position === controller.visualPosition}
+                clone={clone}
+                label={slideLabel(logicalIndex, count)}
+              >
+                {slide}
+              </CarouselSlide>
+            ),
+          )}
+        </div>
       </fieldset>
       {count > 1 && (
         <CarouselControls

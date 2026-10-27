@@ -1,12 +1,14 @@
 import { type MotionValue, m, useTransform } from "motion/react";
 import type { Ref } from "react";
 import styles from "./carousel.module.css";
+import { carouselIndicatorEmphasis } from "./carousel.utils";
 
 const DOT_WIDTH = 6;
 const PILL_WIDTH = 22;
 
 export function CarouselIndicator({
   index,
+  firstRealPosition,
   progress,
   drain,
   selected,
@@ -17,6 +19,7 @@ export function CarouselIndicator({
   onSelect,
 }: {
   index: number;
+  firstRealPosition: number;
   progress: MotionValue<number>;
   drain: MotionValue<number>;
   selected: boolean;
@@ -27,13 +30,11 @@ export function CarouselIndicator({
   onSelect: () => void;
 }) {
   const emphasis = useTransform(progress, (value) => {
-    const realPosition = index + 1;
-    const distance = Math.min(
-      ...[realPosition - count, realPosition, realPosition + count].map(
-        (position) => Math.abs(value - position),
-      ),
-    );
-    return Math.max(0, 1 - distance);
+    return carouselIndicatorEmphasis(value, index, {
+      count,
+      firstRealPosition,
+      looping: count > 1,
+    });
   });
   const width = useTransform(
     emphasis,

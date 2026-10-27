@@ -118,6 +118,7 @@ export function CarouselControls({
             <CarouselIndicator
               key={label}
               index={indicatorIndex}
+              firstRealPosition={firstRealPosition}
               progress={progress}
               drain={drain}
               selected={indicatorIndex === index}

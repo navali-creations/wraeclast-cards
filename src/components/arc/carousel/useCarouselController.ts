@@ -13,7 +13,6 @@ import {
   type PointerEvent as ReactPointerEvent,
   useEffect,
   useEffectEvent,
-  useLayoutEffect,
   useMemo,
   useRef,
   useState,
@@ -42,6 +41,11 @@ interface DragState {
   samples: [number, number][];
 }
 
+interface SelectOptions {
+  velocity?: number;
+  announce?: boolean;
+}
+
 const subscribeNothing = () => () => {};
 
 export function useCarouselController({
@@ -63,9 +67,9 @@ export function useCarouselController({
 }) {
   const last = Math.max(0, count - 1);
   const looping = count > 1;
-  const trackLast = looping ? count + 1 : last;
-  const firstRealPosition = looping ? 1 : 0;
-  const lastRealPosition = looping ? count : 0;
+  const trackLast = looping ? count + 3 : last;
+  const firstRealPosition = looping ? 2 : 0;
+  const lastRealPosition = looping ? count + 1 : 0;
   const reduced = useReducedMotion() ?? false;
   const hydrated = useSyncExternalStore(
     subscribeNothing,
@@ -95,6 +99,7 @@ export function useCarouselController({
   const trackRef = useRef<HTMLDivElement>(null);
   const playRef = useRef<HTMLButtonElement>(null);
   const tabRefs = useRef<(HTMLButtonElement | null)[]>([]);
+  const previousCount = useRef(count);
   const metrics = useRef({ step: 0, width: 0 });
   const target = useRef(startIndex);
   const travel = useRef<AnimationPlaybackControls | null>(null);
@@ -119,8 +124,8 @@ export function useCarouselController({
   };
   const normalizePosition = (position: number) => {
     if (!looping) return clamp(position, 0, trackLast);
-    if (position <= 0) return lastRealPosition;
-    if (position >= trackLast) return firstRealPosition;
+    if (position < firstRealPosition) return position + count;
+    if (position > lastRealPosition) return position - count;
     return position;
   };
   const closestPositionFor = (logicalIndex: number, from: number) => {
@@ -154,6 +159,22 @@ export function useCarouselController({
         : shown;
   };
 
+  // The track is rendered from `x` here rather than through a motion
+  // component: once LazyMotion's features load, a motion component resets its
+  // style values to their first-render state, which would snap the track to 0.
+  function renderTrack(offset: number) {
+    const track = trackRef.current;
+    if (track) {
+      track.style.transform = offset === 0 ? "none" : `translateX(${offset}px)`;
+    }
+  }
+
+  function jumpTrackTo(position: number, step: number) {
+    const offset = -position * step;
+    x.jump(offset);
+    renderTrack(offset);
+  }
+
   function settleLoop(position: number) {
     const normalized = normalizePosition(position);
     travel.current = null;
@@ -162,8 +183,36 @@ export function useCarouselController({
     const { step } = metrics.current;
     target.current = normalized;
     setVisualPosition(normalized);
-    x.jump(-normalized * step);
     progress.jump(normalized);
+    jumpTrackTo(normalized, step);
+  }
+
+  function shiftLoopPosition(shift: number) {
+    if (shift === 0) return target.current;
+
+    travel.current?.stop();
+    travel.current = null;
+    const { step } = metrics.current;
+    const currentPosition = step ? -x.get() / step : target.current;
+    const rebasedPosition = currentPosition + shift;
+    const rebasedTarget = target.current + shift;
+    target.current = rebasedTarget;
+    setVisualPosition(rebasedTarget);
+    progress.jump(rebasedPosition);
+    if (step) jumpTrackTo(rebasedPosition, step);
+    return rebasedTarget;
+  }
+
+  function rebaseLoopPosition() {
+    if (!looping) return target.current;
+
+    const shift =
+      target.current < firstRealPosition
+        ? count
+        : target.current > lastRealPosition
+          ? -count
+          : 0;
+    return shiftLoopPosition(shift);
   }
 
   function glide(to: number, velocity = 0) {
@@ -172,7 +221,7 @@ export function useCarouselController({
     travel.current = null;
     if (!step) return;
     if (reduced) {
-      x.jump(-to * step);
+      jumpTrackTo(to, step);
       return;
     }
     travel.current = animate(x, -to * step, {
@@ -184,14 +233,20 @@ export function useCarouselController({
 
   function select(
     to: number,
-    {
-      velocity = 0,
-      announce = true,
-    }: { velocity?: number; announce?: boolean } = {},
+    { velocity = 0, announce = true }: SelectOptions = {},
   ) {
-    const next = reduced
+    let next = reduced
       ? normalizePosition(clamp(to, 0, trackLast))
       : clamp(to, 0, trackLast);
+    if (looping && !reduced) {
+      if (next < firstRealPosition) {
+        shiftLoopPosition(count);
+        next += count;
+      } else if (next > lastRealPosition) {
+        shiftLoopPosition(-count);
+        next -= count;
+      }
+    }
     const nextLogicalIndex = logicalIndexAt(next);
     target.current = next;
     setVisualPosition(next);
@@ -207,6 +262,10 @@ export function useCarouselController({
     if (announce) setAnnouncement(slideLabel(nextLogicalIndex, count));
   }
 
+  function moveBy(offset: number, options?: SelectOptions) {
+    select(rebaseLoopPosition() + offset, options);
+  }
+
   const measure = useEffectEvent(() => {
     const track = trackRef.current;
     const viewport = viewportRef.current;
@@ -218,40 +277,87 @@ export function useCarouselController({
       return rect.left + rect.width / 2;
     };
     const step = second ? center(second) - center(first) : first.offsetWidth;
+    if (!Number.isFinite(step) || step <= 0) {
+      metrics.current = { step: 0, width: viewport.clientWidth };
+      delete track.dataset.measured;
+      return;
+    }
+
     const changed = step !== metrics.current.step;
     metrics.current = { step, width: viewport.clientWidth };
-    track.dataset.measured = "";
     if (changed && !drag.current) {
       travel.current?.stop();
       travel.current = null;
-      x.jump(-target.current * step);
-      progress.set(target.current);
+      const measuredPosition = normalizePosition(target.current);
+      target.current = measuredPosition;
+      setVisualPosition(measuredPosition);
+      progress.jump(measuredPosition);
+      jumpTrackTo(measuredPosition, step);
+    }
+    track.dataset.measured = "";
+  });
+
+  const reconcileSlideCount = useEffectEvent((nextCount: number) => {
+    if (previousCount.current === nextCount) return;
+    previousCount.current = nextCount;
+
+    travel.current?.stop();
+    travel.current = null;
+    const nextPosition = index + firstRealPosition;
+    target.current = nextPosition;
+    setVisualPosition(nextPosition);
+    progress.jump(nextPosition);
+    const { step } = metrics.current;
+    if (step) jumpTrackTo(nextPosition, step);
+
+    if (controlledIndex !== undefined && controlledIndex !== index) {
+      onIndexChange?.(index);
     }
   });
 
-  useLayoutEffect(() => {
-    measure();
+  const observeMeasurements = useEffectEvent(() => {
     const viewport = viewportRef.current;
     if (!viewport || typeof ResizeObserver === "undefined") return;
     const observer = new ResizeObserver(() => measure());
     observer.observe(viewport);
+    for (const slide of Array.from(trackRef.current?.children ?? []).slice(
+      0,
+      2,
+    )) {
+      observer.observe(slide);
+    }
     return () => observer.disconnect();
-  }, []);
+  });
 
-  useEffect(
-    () =>
-      x.on("change", (value) => {
-        const { step } = metrics.current;
-        if (!step) return;
-        const position = -value / step;
-        const previousPosition = progress.get();
-        if (Math.abs(position - previousPosition) > 0.0001) {
-          direction.set(Math.sign(position - previousPosition));
-        }
-        progress.set(position);
-      }),
-    [direction, progress, x],
-  );
+  useEffect(() => {
+    reconcileSlideCount(count);
+    measure();
+    return observeMeasurements();
+  }, [count]);
+
+  const handleTrackPositionChange = useEffectEvent((value: number) => {
+    renderTrack(value);
+    const { step } = metrics.current;
+    if (!step) return;
+    const position = -value / step;
+    const previousPosition = progress.get();
+    if (Math.abs(position - previousPosition) > 0.0001) {
+      direction.set(Math.sign(position - previousPosition));
+    }
+    progress.set(position);
+
+    const edgeTarget = target.current;
+    if (
+      travel.current &&
+      normalizePosition(edgeTarget) !== edgeTarget &&
+      Math.abs(position - edgeTarget) <= 0.01
+    ) {
+      const activeTravel = travel.current;
+      activeTravel.stop();
+      if (travel.current === activeTravel) settleLoop(edgeTarget);
+    }
+  });
+  useEffect(() => x.on("change", handleTrackPositionChange), [x]);
 
   const followIndexProp = useEffectEvent((next: number) => {
     if (logicalIndexAt(target.current) === next) return;
@@ -264,9 +370,7 @@ export function useCarouselController({
     followIndexProp(index);
   }, [index]);
 
-  const advance = useEffectEvent(() =>
-    select(target.current + 1, { announce: false }),
-  );
+  const advance = useEffectEvent(() => moveBy(1, { announce: false }));
   useEffect(() => {
     if (!running || !interval) return;
     const drain = drains[index];
@@ -304,7 +408,7 @@ export function useCarouselController({
     };
   }, [interval]);
 
-  const onWheel = useEffectEvent((event: WheelEvent) => {
+  const handleWheel = useEffectEvent((event: WheelEvent) => {
     const state = wheel.current;
     if (count < 2 || drag.current || !metrics.current.step) return;
     if (!state.active && Math.abs(event.deltaX) <= Math.abs(event.deltaY)) {
@@ -313,6 +417,7 @@ export function useCarouselController({
     event.preventDefault();
     if (!state.active) {
       state.active = true;
+      rebaseLoopPosition();
       travel.current?.stop();
       travel.current = null;
       state.raw = unband(x.get());
@@ -331,7 +436,7 @@ export function useCarouselController({
     const viewport = viewportRef.current;
     const state = wheel.current;
     if (!viewport) return;
-    const listener = (event: WheelEvent) => onWheel(event);
+    const listener = (event: WheelEvent) => handleWheel(event);
     viewport.addEventListener("wheel", listener, { passive: false });
     return () => {
       viewport.removeEventListener("wheel", listener);
@@ -362,6 +467,7 @@ export function useCarouselController({
       travel.current !== null &&
       x.isAnimating() &&
       Math.abs(x.get() + target.current * metrics.current.step) > 12;
+    rebaseLoopPosition();
     if (caught) {
       travel.current?.stop();
       travel.current = null;
@@ -449,7 +555,7 @@ export function useCarouselController({
     if (event.altKey || event.ctrlKey || event.metaKey || count < 2) return;
     const node = event.target as HTMLElement;
     if (node.closest("input, textarea, select, [contenteditable]")) return;
-    const from = target.current;
+    const from = rebaseLoopPosition();
     const to =
       event.key === "ArrowLeft"
         ? from - 1
@@ -528,23 +634,23 @@ export function useCarouselController({
     handlePointerUp: (event: ReactPointerEvent<HTMLFieldSetElement>) =>
       finishPointer(event, false),
     index,
-    next: () => select(target.current + 1),
+    next: () => moveBy(1),
     playRef,
     playing,
-    previous: () => select(target.current - 1),
+    previous: () => moveBy(-1),
     progress,
     reduced,
     rootRef,
-    selectLogicalIndex: (logicalIndex: number) =>
-      select(closestPositionFor(logicalIndex, target.current)),
+    selectLogicalIndex: (logicalIndex: number) => {
+      const from = rebaseLoopPosition();
+      select(closestPositionFor(logicalIndex, from));
+    },
     setTabRef: (tabIndex: number, node: HTMLButtonElement | null) => {
       tabRefs.current[tabIndex] = node;
     },
-    startIndex,
     toggleRotation,
     trackRef,
     viewportRef,
     visualPosition,
-    x,
   };
 }
