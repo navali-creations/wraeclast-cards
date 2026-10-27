@@ -1,6 +1,9 @@
 import { useEffect, useState } from "react";
-import { safeGetItem, safeSetItem } from "../../../../../lib/safeLocalStorage";
-import type { TableViewMode } from "../CardDetailsDropRateTables";
+import {
+  safeGetItem,
+  safeSetItem,
+} from "../../../../../../lib/safeLocalStorage";
+import type { TableViewMode } from "../../CardDetailsDropRateTables/CardDetailsDropRateTables";
 
 const STORAGE_KEY = "wc:card-details:drop-rate-table-mode";
 

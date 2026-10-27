@@ -1,11 +1,11 @@
 import {
   createAdvancedColumns,
   createColumns,
-} from "../../../stackedDecks/components/StackedDecksResults/columns";
-import { StackedDecksResultsTable } from "../../../stackedDecks/components/StackedDecksResults/StackedDecksResultsTable";
-import type { Card } from "../../types";
-import { CardDetailsDropRateSummary } from "./CardDetailsDropRateSummary";
-import { useCardDropRateTable } from "./useCardDropRateTable";
+} from "../../../../stackedDecks/components/StackedDecksResults/columns";
+import { StackedDecksResultsTable } from "../../../../stackedDecks/components/StackedDecksResults/StackedDecksResultsTable";
+import type { Card } from "../../../types";
+import { CardDetailsDropRateSummary } from "../CardDetailsDropRateSummary/CardDetailsDropRateSummary";
+import { useCardDropRateTable } from "../useCardDropRateTable";
 
 export type TableViewMode = "basic" | "advanced";
 

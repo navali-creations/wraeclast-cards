@@ -48,7 +48,7 @@ describe("drop context charts", () => {
 
     expect(screen.getByRole("tooltip")).toBeTruthy();
     expect(screen.getByText("When drops were reported")).toBeTruthy();
-    expect(screen.getByText(/10 reports for this card/)).toBeTruthy();
+    expect(screen.getByText("10 reports")).toBeTruthy();
     expect(
       screen.getByText(/compare when this card was reported/),
     ).toBeTruthy();
@@ -77,7 +77,7 @@ describe("drop context charts", () => {
     expect(chart.textContent).toContain("00");
 
     fireEvent.mouseEnter(chart);
-    expect(screen.getByText(/10 reports for this card/)).toBeTruthy();
+    expect(screen.getByText("10 reports")).toBeTruthy();
     expect(screen.queryByText("Global (UTC)")).toBeNull();
     expect(screen.getByText("Player timezone")).toBeTruthy();
   });

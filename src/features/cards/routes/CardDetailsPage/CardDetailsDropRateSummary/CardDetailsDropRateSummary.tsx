@@ -1,8 +1,8 @@
 import type { StackedDecksRow } from "../../../../stackedDecks/hooks";
-import type { TableViewMode } from "../CardDetailsDropRateTables";
+import type { TableViewMode } from "../CardDetailsDropRateTables/CardDetailsDropRateTables";
 import { buildTiles } from "./buildTiles";
-import { StatusMessage } from "./StatusMessage";
-import { SummaryTile } from "./SummaryTile";
+import { StatusMessage } from "./StatusMessage/StatusMessage";
+import { SummaryTile } from "./SummaryTile/SummaryTile";
 
 interface CardDetailsDropRateSummaryProps {
   row: StackedDecksRow | undefined;
@@ -36,8 +36,8 @@ export function CardDetailsDropRateSummary({
   const tiles = buildTiles(mode, row);
 
   return (
-    <section className="space-y-3 rounded-lg border border-(--wc-border-dimmed) bg-(--wc-bg-dimmed) p-3">
-      <div className="flex items-center justify-between gap-2 text-[11px] text-(--wc-text-60)">
+    <section className="space-y-3">
+      <div className="flex items-center justify-between gap-2 text-[11px] text-(--wc-text-dimmed)">
         <span className="truncate">{leagueName ?? "Selected league"}</span>
         <span className="tabular-nums">
           {totalCount.toLocaleString()} observations

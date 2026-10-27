@@ -27,7 +27,7 @@ export function TimeDistributionProfile({
             <span className="flex h-7 items-end gap-px">
               <span
                 aria-hidden="true"
-                className="w-1 rounded-t-sm bg-(--wc-accent-border)"
+                className="w-1 rounded-t-sm bg-(--color-primary-content)"
                 style={{
                   height: distributionBarHeight(
                     bucket.cardShare,
@@ -39,7 +39,7 @@ export function TimeDistributionProfile({
               />
               <span
                 aria-hidden="true"
-                className="w-1 rounded-t-sm bg-(--wc-text-50)"
+                className="w-1 rounded-t-sm bg-(--wc-table-odd)"
                 style={{
                   height: distributionBarHeight(
                     bucket.activityShare,

@@ -21,7 +21,6 @@ export interface NormalizedLocationDatum {
   count: number;
   lift: number;
   lowSample: boolean;
-  rate: number;
   sampleSize: number;
 }
 
@@ -69,8 +68,26 @@ export function buildTimeDistributionProfile(
   cardTimeBuckets: Readonly<Record<string, number>>,
   totalTimeBuckets: Readonly<Record<string, number>>,
 ): TimeDistributionProfileData {
-  const cardBuckets = buildThreeHourBuckets(cardTimeBuckets);
-  const totalBuckets = buildThreeHourBuckets(totalTimeBuckets);
+  return buildDistributionProfile(
+    buildThreeHourBuckets(cardTimeBuckets),
+    buildThreeHourBuckets(totalTimeBuckets),
+  );
+}
+
+export function buildQuarterHourDistributionProfile(
+  cardTimeBuckets: Readonly<Record<string, number>>,
+  totalTimeBuckets: Readonly<Record<string, number>>,
+): TimeDistributionProfileData {
+  return buildDistributionProfile(
+    buildQuarterHourBuckets(cardTimeBuckets),
+    buildQuarterHourBuckets(totalTimeBuckets),
+  );
+}
+
+function buildDistributionProfile(
+  cardBuckets: TimeBucketDatum[],
+  totalBuckets: TimeBucketDatum[],
+): TimeDistributionProfileData {
   const cardTotal = cardBuckets.reduce((sum, bucket) => sum + bucket.count, 0);
   const activityTotal = totalBuckets.reduce(
     (sum, bucket) => sum + bucket.count,
@@ -115,7 +132,6 @@ export function buildNormalizedLocationData(
           name,
           count,
           sampleSize,
-          rate,
           lift: rate / overallRate,
           lowSample: sampleSize < LOW_SAMPLE_THRESHOLD,
         },
@@ -129,6 +145,14 @@ export function buildNormalizedLocationData(
 
 export function formatLift(lift: number | null): string {
   return lift === null || !Number.isFinite(lift) ? "—" : `${lift.toFixed(2)}×`;
+}
+
+export function formatReportCount(
+  count: number,
+  singular = "report",
+  plural = "reports",
+) {
+  return `${count.toLocaleString()} ${count === 1 ? singular : plural}`;
 }
 
 export function distributionBarHeight(

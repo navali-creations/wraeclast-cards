@@ -4,8 +4,8 @@ import { PageContent } from "../../../../../components/page-content/PageContent/
 import { PageHeader } from "../../../../../components/page-header/PageHeader/PageHeader";
 import { Route } from "../../../../../routes/$game/$league/cards/$cardId";
 import { EmptyMessage } from "../../../components/CardsGrid/EmptyMessage";
-import { CardDetailsExternalLinks } from "../CardDetailsExternalLinks";
-import { CardDetailsInfo } from "../CardDetailsInfo";
+import { CardDetailsExternalLinks } from "../CardDetailsExternalLinks/CardDetailsExternalLinks";
+import { CardDetailsInfo } from "../CardDetailsInfo/CardDetailsInfo";
 import { CardDetailsNotFound } from "../CardDetailsNotFound";
 import { CardDetailsObservedOnly } from "../CardDetailsObservedOnly/CardDetailsObservedOnly";
 import { CardDetailsPageActions } from "./CardDetailsPageActions";

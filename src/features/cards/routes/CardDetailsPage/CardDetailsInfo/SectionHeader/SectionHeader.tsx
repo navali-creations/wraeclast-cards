@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { Text } from "../../../../../components/text";
+import { Text } from "../../../../../../components/text";
 
 export function SectionHeader({
   title,
@@ -21,7 +21,7 @@ export function SectionHeader({
         >
           {title}
         </Text>
-        <Text size="xs" className="mt-1 text-(--wc-text-50)">
+        <Text size="xs" className="mt-1 text-(--wc-text-dimmed)">
           {description}
         </Text>
       </div>

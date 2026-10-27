@@ -1,1 +1,0 @@
-export { CardDetailsDropRateSummary } from "./CardDetailsDropRateSummary";

@@ -1,6 +1,9 @@
 import type { RefObject } from "react";
 import { DropTimePerspectiveNotice } from "./DropTimePerspectiveNotice";
-import type { TimeDistributionProfileData } from "./dropContext.utils";
+import {
+  formatReportCount,
+  type TimeDistributionProfileData,
+} from "./dropContext.utils";
 import { TimeDistributionProfile } from "./TimeDistributionProfile";
 import type { DropTimePopoverPosition } from "./useDropTimePopover";
 
@@ -36,8 +39,7 @@ export function DropTimeRateTooltip({
           When drops were reported
         </span>
         <span className="tabular-nums text-(--wc-text-70)">
-          {total.toLocaleString()} {total === 1 ? "report" : "reports"} for this
-          card
+          {formatReportCount(total)}
         </span>
       </div>
       <DropTimePerspectiveNotice />
@@ -45,14 +47,14 @@ export function DropTimeRateTooltip({
         <span className="inline-flex items-center gap-1.5">
           <span
             aria-hidden="true"
-            className="size-2 rounded-sm bg-(--wc-accent-border)"
+            className="size-2 rounded-sm bg-(--color-primary-content)"
           />
           This card
         </span>
         <span className="inline-flex items-center gap-1.5">
           <span
             aria-hidden="true"
-            className="size-2 rounded-sm bg-(--wc-text-50) opacity-70"
+            className="size-2 rounded-sm bg-(--wc-table-odd) opacity-70"
           />
           All reported cards with time data
         </span>
