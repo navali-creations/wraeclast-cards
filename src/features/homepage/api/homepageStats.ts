@@ -2,7 +2,7 @@ import type { DropRateCard, DropRateLeague } from "../../../lib/dropRates";
 
 interface HomepageDropRate {
   cardName: string;
-  rate: string | null;
+  rate: string;
 }
 
 const COMPACT_NUMBER_FORMATTER = new Intl.NumberFormat("en-US", {
@@ -38,16 +38,12 @@ export function totalObservedDrops(leagues: DropRateLeague[]) {
 
 export function featuredObservedDropRates(
   cards: DropRateCard[] | undefined,
-  cardNames: readonly string[],
 ): HomepageDropRate[] {
-  const cardsByName = new Map(cards?.map((card) => [card.name, card]));
-
-  return cardNames.map((cardName) => {
-    const card = cardsByName.get(cardName);
-
-    return {
-      cardName,
-      rate: card && card.count > 0 ? formatHomepageRate(card.ratio) : null,
-    };
-  });
+  return (
+    cards?.flatMap((card) =>
+      card.count > 0
+        ? [{ cardName: card.name, rate: formatHomepageRate(card.ratio) }]
+        : [],
+    ) ?? []
+  );
 }

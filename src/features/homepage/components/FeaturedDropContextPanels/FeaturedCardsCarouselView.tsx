@@ -78,7 +78,7 @@ export function FeaturedCardsCarouselView({
         </Heading>
         <Text size="sm" className="text-(--wc-text-60)">
           Compare when drops were reported and how observed rates vary by
-          opening location for four cards across the rarity spectrum.
+          opening location for featured cards in this league.
         </Text>
       </div>
 

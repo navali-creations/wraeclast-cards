@@ -25,19 +25,14 @@ function dropRateCard(
 }
 
 describe("featuredObservedDropRates", () => {
-  it("preserves featured-card order and keeps cards without observations", () => {
-    const rates = featuredObservedDropRates(
-      [
-        dropRateCard("Common Card", 20, 0.125),
-        dropRateCard("Rare Card", 1, 0.00004),
-        dropRateCard("Unseen Card", 0, 0),
-      ],
-      ["Unseen Card", "Missing Card", "Common Card", "Rare Card"],
-    );
+  it("preserves league order and excludes cards without observations", () => {
+    const rates = featuredObservedDropRates([
+      dropRateCard("Unseen Card", 0, 0),
+      dropRateCard("Common Card", 20, 0.125),
+      dropRateCard("Rare Card", 1, 0.00004),
+    ]);
 
     expect(rates).toEqual([
-      { cardName: "Unseen Card", rate: null },
-      { cardName: "Missing Card", rate: null },
       { cardName: "Common Card", rate: "12.5%" },
       { cardName: "Rare Card", rate: "<0.01%" },
     ]);

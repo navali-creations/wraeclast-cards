@@ -6,7 +6,7 @@ export interface FeaturedCardCarouselEntry {
   locations: Readonly<Record<string, number>>;
   locationTotals: Readonly<Record<string, number>>;
   locatedCardTotal: number;
-  rate: string | null;
+  rate: string;
   timeBuckets: CardTimeBuckets;
   timeBucketTotals: CardTimeBuckets;
 }

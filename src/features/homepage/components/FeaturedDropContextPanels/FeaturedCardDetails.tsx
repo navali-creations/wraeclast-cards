@@ -30,7 +30,7 @@ export function FeaturedCardDetails({
         <CardRarityBadge rarity={card.rarity} />
         <FeaturedHelpTooltip content="This card’s share of all reported Stacked Deck drops in the selected league.">
           <span className="inline-flex items-baseline gap-0.5 border-b border-dotted border-current text-sm font-semibold tabular-nums text-success">
-            {rate ?? "—"}
+            {rate}
             <sup className="text-[0.6em] leading-none text-current">?</sup>
           </span>
         </FeaturedHelpTooltip>
