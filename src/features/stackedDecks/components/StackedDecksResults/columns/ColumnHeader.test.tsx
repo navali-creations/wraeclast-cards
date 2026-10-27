@@ -14,6 +14,8 @@ describe("ColumnHeader", () => {
     expect(markup).toContain("<sup");
     expect(markup).toContain(">?</sup>");
     expect(markup).toContain('role="tooltip"');
+    expect(markup).toContain('popover="manual"');
+    expect(markup).not.toContain("tooltip-content");
     expect(markup).toContain('aria-label="Estimate: Estimated drop chance."');
   });
 });
