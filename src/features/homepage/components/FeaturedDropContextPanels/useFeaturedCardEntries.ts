@@ -9,7 +9,7 @@ import {
 } from "../../../../lib/dropRates";
 import { useCardsQuery } from "../../../cards/hooks";
 import { featuredObservedDropRates } from "../../api/homepageStats";
-import { useRarityPreviewCards } from "../../hooks/useRarityPreviewCards";
+import { useRarityPreviewCards } from "../../hooks/useRarityPreviewCards/useRarityPreviewCards";
 
 export function useFeaturedCardEntries() {
   const { game } = useGameContext();
@@ -66,7 +66,11 @@ export function useFeaturedCardEntries() {
   return {
     entries,
     isLoading:
-      cardsQuery.isLoading || isLoadingLeagues || leagueQuery.isLoading,
+      cardsQuery.isLoading ||
+      isLoadingLeagues ||
+      leagueQuery.isLoading ||
+      timeBucketsQuery.isLoading ||
+      locationsQuery.isLoading,
     error: cardsQuery.error ?? leaguesError ?? leagueQuery.error,
   };
 }

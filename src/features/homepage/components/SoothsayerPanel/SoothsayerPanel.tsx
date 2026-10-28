@@ -27,6 +27,8 @@ export function SoothsayerPanel() {
         <img
           src="/images/soothsayer/stats.webp"
           alt="Soothsayer statistics screen with stacked deck session charts and summary metrics."
+          width={1193}
+          height={789}
           className="w-full rounded-lg border border-(--wc-border) object-cover md:col-start-2 md:row-span-2 md:row-start-1"
         />
 

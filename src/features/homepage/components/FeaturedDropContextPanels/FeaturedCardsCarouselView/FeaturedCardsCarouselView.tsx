@@ -1,11 +1,12 @@
 import { useState } from "react";
 import { FiArrowRight } from "react-icons/fi";
-import { Carousel } from "../../../../components/arc/carousel/Carousel";
-import { ButtonInternalLink } from "../../../../components/buttons/ButtonLink";
-import { Heading } from "../../../../components/headings";
-import { Text } from "../../../../components/text";
-import { FeaturedCardSlide } from "./FeaturedCardSlide";
-import type { FeaturedCardCarouselEntry } from "./types";
+import { Carousel } from "../../../../../components/arc/carousel/Carousel";
+import { ButtonInternalLink } from "../../../../../components/buttons/ButtonLink";
+import { Heading } from "../../../../../components/headings";
+import { Text } from "../../../../../components/text";
+import { FeaturedCardSlide } from "../FeaturedCardSlide";
+import styles from "../FeaturedDropContextPanels.module.css";
+import type { FeaturedCardCarouselEntry } from "../types";
 
 export function FeaturedCardsCarouselView({
   entries,
@@ -21,7 +22,9 @@ export function FeaturedCardsCarouselView({
   let content: React.ReactNode;
   if (isLoading) {
     content = (
-      <div className="grid min-h-100 gap-5 rounded-xl border border-(--wc-border) bg-(--wc-card-darker) p-5 sm:grid-cols-[9rem_minmax(0,1fr)]">
+      <div
+        className={`${styles.loadingContent} grid gap-5 rounded-xl border border-(--wc-border) bg-(--wc-card-darker) p-5`}
+      >
         <div className="wc-card-shimmer mx-auto h-52 w-36 rounded-sm" />
         <div className="space-y-4">
           <div className="wc-card-shimmer h-7 w-2/3 rounded" />
@@ -63,7 +66,7 @@ export function FeaturedCardsCarouselView({
   }
 
   return (
-    <section className="rounded-xl bg-base-300 p-5">
+    <section className={`${styles.contentShell} rounded-xl bg-base-300 p-5`}>
       <div className="mb-5 flex flex-col gap-1">
         <Text
           size="xs"
@@ -82,7 +85,7 @@ export function FeaturedCardsCarouselView({
         </Text>
       </div>
 
-      {content}
+      <div className={styles.contentFrame}>{content}</div>
 
       <div className="mt-5 grid gap-5 md:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)]">
         <ButtonInternalLink

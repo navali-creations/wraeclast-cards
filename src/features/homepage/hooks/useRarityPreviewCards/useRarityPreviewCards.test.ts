@@ -1,9 +1,9 @@
 // @vitest-environment jsdom
 
 import { renderHook } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
-import type { DivinationCardRarity } from "../../../lib/divinationCards";
-import type { Card } from "../../cards/types";
+import { afterEach, describe, expect, it, vi } from "vitest";
+import type { DivinationCardRarity } from "../../../../lib/divinationCards";
+import type { Card } from "../../../cards/types";
 import { useRarityPreviewCards } from "./useRarityPreviewCards";
 
 function createCard(
@@ -30,6 +30,10 @@ function createCard(
 }
 
 describe("useRarityPreviewCards", () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
   it("selects only image-backed cards eligible for the selected league", () => {
     const cards = [
       createCard("Observed common", 4),
@@ -54,5 +58,39 @@ describe("useRarityPreviewCards", () => {
       "Observed uncommon",
       "Observed rare",
     ]);
+  });
+
+  it("randomly selects one eligible card from each rarity", () => {
+    const cards = [
+      createCard("Common A", 4),
+      createCard("Common B", 4),
+      createCard("Uncommon A", 3),
+      createCard("Uncommon B", 3),
+      createCard("Rare A", 2),
+      createCard("Rare B", 2),
+      createCard("Extremely rare A", 1),
+      createCard("Extremely rare B", 1),
+    ];
+    const eligibleCardNames = new Set(cards.map((card) => card.name));
+    const random = vi
+      .spyOn(Math, "random")
+      .mockReturnValueOnce(0)
+      .mockReturnValueOnce(0.99)
+      .mockReturnValueOnce(0.5)
+      .mockReturnValueOnce(0.25);
+
+    const { result, rerender } = renderHook(() =>
+      useRarityPreviewCards(cards, eligibleCardNames),
+    );
+
+    expect(result.current.map((card) => card.name)).toEqual([
+      "Common A",
+      "Uncommon B",
+      "Rare B",
+      "Extremely rare A",
+    ]);
+
+    rerender();
+    expect(random).toHaveBeenCalledTimes(4);
   });
 });

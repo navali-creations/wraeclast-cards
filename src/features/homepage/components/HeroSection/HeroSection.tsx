@@ -1,13 +1,14 @@
 import clsx from "clsx";
-import { useLeagueContext } from "../../../app/league-context";
-import { Text } from "../../../components/text";
-import { useCardsQuery } from "../../cards/hooks";
-import { useDropRatesIndex } from "../api/dropRatesIndex";
-import { formatHomepageNumber, totalObservedDrops } from "../api/homepageStats";
-import { useHeroQuote } from "../hooks/useHeroQuote";
+import { useLeagueContext } from "../../../../app/league-context";
+import { Text } from "../../../../components/text";
+import { useCardsQuery } from "../../../cards/hooks";
+import { useDropRatesIndex } from "../../api/dropRatesIndex";
+import { totalObservedDrops } from "../../api/homepageStats";
+import { useHeroQuote } from "../../hooks/useHeroQuote";
+import { AnimatedStatValue } from "../AnimatedStatValue/AnimatedStatValue";
 
 export function HeroSection() {
-  const { selectedLeague } = useLeagueContext();
+  const { selectedLeague, isLoadingLeagues, leaguesError } = useLeagueContext();
   const { data, error: dropRatesError } = useDropRatesIndex();
   const { data: cards, error: cardsError } = useCardsQuery();
   const { quote, attribution, sizeClass: quoteSizeClass } = useHeroQuote();
@@ -25,20 +26,40 @@ export function HeroSection() {
 
   const heroStats = [
     {
-      value: cardsError ? "N/A" : formatHomepageNumber(cardCount),
+      value: cardCount,
+      unavailable: Boolean(cardsError),
       label: "Divination Cards",
     },
     {
-      value: dropRatesError ? "N/A" : formatHomepageNumber(archivedLeagueCount),
+      value: archivedLeagueCount,
+      unavailable: Boolean(dropRatesError),
       label: "Leagues Archived",
     },
     {
-      value: dropRatesError
-        ? "N/A"
-        : formatHomepageNumber(
-            leagues === undefined ? undefined : totalObservedDrops(leagues),
-          ),
-      label: "Deck Openings",
+      value: selectedLeague.observed_total,
+      unavailable:
+        selectedLeague.observed_total === undefined &&
+        (Boolean(leaguesError) || !isLoadingLeagues),
+      label: `${selectedLeague.name} Deck Openings`,
+      visibleLabel: (
+        <>
+          {selectedLeague.name}
+          <br />
+          Deck Openings
+        </>
+      ),
+    },
+    {
+      value: leagues === undefined ? undefined : totalObservedDrops(leagues),
+      unavailable: Boolean(dropRatesError),
+      label: "Total Decks Opened",
+      visibleLabel: (
+        <>
+          Total
+          <br />
+          Decks Opened
+        </>
+      ),
     },
   ];
 
@@ -79,24 +100,29 @@ export function HeroSection() {
             size="base"
             className="max-w-none text-center leading-relaxed text-(--wc-text-60)"
           >
-            The complete divination card reference for Path of Exile — drop
-            analytics, and stacked deck tracking.
+            <span className="block">
+              Browse essential divination card information for Path of Exile.
+            </span>
+            <span className="block">
+              Explore community-reported Stacked Deck analytics.
+            </span>
           </Text>
           <div className="h-px w-full bg-linear-to-r from-transparent via-(--wc-text-60) to-transparent" />
         </div>
 
         <div className="flex w-full flex-col items-center gap-6 md:col-span-2 md:row-start-3 lg:col-auto lg:row-auto">
-          <div className="flex flex-wrap justify-center gap-6 md:w-auto md:shrink-0 md:flex-nowrap md:gap-5 lg:justify-center lg:gap-6">
+          <div className="grid w-full grid-cols-2 gap-x-4 gap-y-5 sm:grid-cols-4 sm:gap-x-3 lg:gap-x-2">
             {heroStats.map((stat) => (
               <div
                 key={stat.label}
-                className="flex flex-col items-center gap-0.5 text-center md:min-w-0"
+                className="flex min-w-0 flex-col items-center gap-0.5 text-center"
               >
-                <span className="font-fontin text-2xl font-bold text-(--wc-gold)">
-                  {stat.value}
-                </span>
-                <span className="text-xs text-(--wc-text-50)">
-                  {stat.label}
+                <AnimatedStatValue
+                  unavailable={stat.unavailable}
+                  value={stat.value}
+                />
+                <span className="text-xs leading-tight text-(--wc-text-50)">
+                  {stat.visibleLabel ?? stat.label}
                 </span>
               </div>
             ))}

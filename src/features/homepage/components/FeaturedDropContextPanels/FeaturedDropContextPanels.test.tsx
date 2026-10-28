@@ -1,8 +1,8 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
 import type { Card } from "../../../cards/types";
-import { FeaturedCardsCarouselView } from "./FeaturedCardsCarouselView";
-import { FeaturedLocationsChart } from "./FeaturedLocationsChart";
+import { FeaturedCardsCarouselView } from "./FeaturedCardsCarouselView/FeaturedCardsCarouselView";
+import { FeaturedLocationsChart } from "./FeaturedLocationsChart/FeaturedLocationsChart";
 import type { FeaturedCardCarouselEntry } from "./types";
 
 vi.mock("../../../../components/buttons/ButtonLink", () => ({
@@ -98,14 +98,14 @@ describe("FeaturedCardsCarouselView", () => {
     const markup = renderToStaticMarkup(
       <FeaturedLocationsChart
         cardName="A Dab of Ink"
-        locations={{ Highgate: 50, "The Menagerie": 10 }}
-        locationTotals={{ Highgate: 100, "The Menagerie": 1_000 }}
-        locatedCardTotal={60}
+        locations={{ Highgate: 20, "The Menagerie": 10 }}
+        locationTotals={{ Highgate: 100, "The Menagerie": 100 }}
+        locatedCardTotal={30}
       />,
     );
 
-    expect(markup).toContain('data-label-placement="inside"');
-    expect(markup).toContain('data-label-placement="outside"');
+    expect(markup.match(/data-label-placement="inside"/g)).toHaveLength(1);
+    expect(markup.match(/data-label-placement="outside"/g)).toHaveLength(1);
   });
 
   it("shows an unavailable state instead of stale carousel content", () => {

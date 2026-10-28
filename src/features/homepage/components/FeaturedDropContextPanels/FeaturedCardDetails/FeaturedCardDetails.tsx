@@ -1,9 +1,9 @@
-import { Text } from "../../../../components/text";
-import { CardRarityBadge } from "../../../cards/routes/CardDetailsPage/CardRarityBadge/CardRarityBadge";
-import { DropTimeMiniChart } from "../../../stackedDecks/components/DropContextCharts/DropTimeMiniChart";
-import { FeaturedHelpTooltip } from "./FeaturedHelpTooltip";
-import { FeaturedLocationsChart } from "./FeaturedLocationsChart";
-import type { FeaturedCardCarouselEntry } from "./types";
+import { Text } from "../../../../../components/text";
+import { CardRarityBadge } from "../../../../cards/routes/CardDetailsPage/CardRarityBadge/CardRarityBadge";
+import { DropTimeMiniChart } from "../../../../stackedDecks/components/DropContextCharts/DropTimeMiniChart";
+import { FeaturedHelpTooltip } from "../FeaturedHelpTooltip";
+import { FeaturedLocationsChart } from "../FeaturedLocationsChart/FeaturedLocationsChart";
+import type { FeaturedCardCarouselEntry } from "../types";
 
 export function FeaturedCardDetails({
   entry,

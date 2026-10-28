@@ -1,6 +1,6 @@
 import { m, useTransform } from "motion/react";
 import { useCarouselSlideMotion } from "../../../../components/arc/carousel/Carousel";
-import { FeaturedCardDetails } from "./FeaturedCardDetails";
+import { FeaturedCardDetails } from "./FeaturedCardDetails/FeaturedCardDetails";
 import { FeaturedCardVisual } from "./FeaturedCardVisual";
 import styles from "./FeaturedDropContextPanels.module.css";
 import type { FeaturedCardCarouselEntry } from "./types";

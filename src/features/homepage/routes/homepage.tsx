@@ -1,8 +1,35 @@
+import type { Variants } from "motion/react";
+import * as m from "motion/react-m";
 import {
   FeaturedCardsCarousel,
   HeroSection,
   SoothsayerPanel,
 } from "../components";
+
+const panelGroupVariants: Variants = {
+  hidden: {},
+  visible: {
+    transition: {
+      delayChildren: 0.08,
+      staggerChildren: 0.14,
+    },
+  },
+};
+
+const panelVariants: Variants = {
+  hidden: {
+    opacity: 0,
+    y: -18,
+  },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.35,
+      ease: [0.22, 1, 0.36, 1],
+    },
+  },
+};
 
 export function HomepagePage() {
   return (
@@ -13,15 +40,18 @@ export function HomepagePage() {
       </div>
 
       {/* Right — feature panels */}
-      <div className="flex flex-1 flex-col gap-4">
-        <div>
+      <m.div
+        className="flex flex-1 flex-col gap-4"
+        variants={panelGroupVariants}
+      >
+        <m.div variants={panelVariants}>
           <SoothsayerPanel />
-        </div>
+        </m.div>
 
-        <div>
+        <m.div variants={panelVariants}>
           <FeaturedCardsCarousel />
-        </div>
-      </div>
+        </m.div>
+      </m.div>
     </div>
   );
 }

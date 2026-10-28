@@ -3,9 +3,9 @@ import { useMemo } from "react";
 import {
   buildNormalizedLocationData,
   formatLift,
-} from "../../../stackedDecks/components/DropContextCharts/dropContext.utils";
+} from "../../../../stackedDecks/components/DropContextCharts/dropContext.utils";
 
-const MINIMUM_INSIDE_LABEL_WIDTH = 45;
+const MINIMUM_INSIDE_LABEL_WIDTH = 65;
 
 export function FeaturedLocationsChart({
   cardName,

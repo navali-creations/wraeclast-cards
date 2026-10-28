@@ -1,8 +1,28 @@
+.contentShell {
+  --carousel-layout-gap: 0.75rem;
+  --carousel-control-size: 2rem;
+  --featured-slide-min-height: 20rem;
+  container-type: inline-size;
+}
+
+.contentFrame {
+  min-width: 0;
+  min-height: calc(
+    var(--featured-slide-min-height) +
+    var(--carousel-layout-gap) +
+    var(--carousel-control-size)
+  );
+}
+
+.loadingContent {
+  grid-template-columns: 9rem minmax(0, 1fr);
+}
+
 .slideContent {
   position: relative;
   display: grid;
   grid-template-columns: 55% 45%;
-  min-height: 20rem;
+  min-height: var(--featured-slide-min-height);
   align-items: flex-start;
   padding: 1.25rem 0.5rem;
 }
@@ -38,6 +58,14 @@
 }
 
 @container (max-width: 620px) {
+  .contentFrame {
+    min-height: 33.75rem;
+  }
+
+  .loadingContent {
+    grid-template-columns: 1fr;
+  }
+
   .slideContent {
     min-height: 0;
     grid-template-columns: 1fr;

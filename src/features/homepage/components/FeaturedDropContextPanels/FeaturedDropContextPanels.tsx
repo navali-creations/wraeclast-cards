@@ -1,4 +1,4 @@
-import { FeaturedCardsCarouselView } from "./FeaturedCardsCarouselView";
+import { FeaturedCardsCarouselView } from "./FeaturedCardsCarouselView/FeaturedCardsCarouselView";
 import { useFeaturedCardEntries } from "./useFeaturedCardEntries";
 
 export function FeaturedCardsCarousel() {
