@@ -123,6 +123,13 @@ function parseJsdelivrGithubUrl(value) {
   }
 }
 
+function rawGithubFallbackUrl(value) {
+  const source = parseJsdelivrGithubUrl(value);
+  if (!source) return null;
+
+  return `https://raw.githubusercontent.com/${source.owner}/${source.repo}/${source.ref}/${source.pathPrefix}`;
+}
+
 function parseRawGithubUrl(value) {
   try {
     const url = new URL(value);
@@ -287,6 +294,7 @@ async function fetchOptionalJson(url) {
 }
 
 async function fetchOptionalRawJson(url) {
+  const fallbackUrl = rawGithubFallbackUrl(url);
   let response;
   try {
     response = await fetch(url, {
@@ -294,6 +302,13 @@ async function fetchOptionalRawJson(url) {
       signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
     });
   } catch (error) {
+    if (fallbackUrl) {
+      console.warn(
+        `[drop-rates] Could not fetch optional JSON from ${url}; retrying via ${fallbackUrl}`,
+      );
+      return fetchOptionalRawJson(fallbackUrl);
+    }
+
     throw new Error(`Could not fetch optional JSON from ${url}`, {
       cause: error,
     });
@@ -304,6 +319,18 @@ async function fetchOptionalRawJson(url) {
   }
 
   if (!response.ok) {
+    if (
+      fallbackUrl &&
+      (response.status === 403 ||
+        response.status === 429 ||
+        response.status >= 500)
+    ) {
+      console.warn(
+        `[drop-rates] Optional JSON request to ${url} returned ${response.status}; retrying via ${fallbackUrl}`,
+      );
+      return fetchOptionalRawJson(fallbackUrl);
+    }
+
     throw new Error(
       `Could not fetch optional JSON from ${url}: ${response.status}`,
     );
