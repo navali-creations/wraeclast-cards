@@ -33,7 +33,9 @@ export function useCardDropRateTable(
     getCoreRowModel: coreRowModel,
     // Rank and card name are redundant on the card details page: there's
     // only ever one row, and it's already the card the page is about.
-    state: { columnVisibility: { rank: false, name: false } },
+    state: {
+      columnVisibility: { rank: false, name: false, time_buckets: false },
+    },
   });
 
   return {

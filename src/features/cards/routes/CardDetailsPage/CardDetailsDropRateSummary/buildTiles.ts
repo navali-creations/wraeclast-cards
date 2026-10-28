@@ -1,5 +1,5 @@
 import type { StackedDecksRow } from "../../../../stackedDecks/hooks";
-import type { TableViewMode } from "../CardDetailsDropRateTables";
+import type { TableViewMode } from "../CardDetailsDropRateTables/CardDetailsDropRateTables";
 import {
   formatComparedToReference,
   formatDeltaPercent,

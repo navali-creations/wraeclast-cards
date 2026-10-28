@@ -1,5 +1,4 @@
-export { CardDatabasePanel } from "./CardDatabasePanel";
 export { DownloadsPanel } from "./DownloadsPanel";
-export { HeroSection } from "./HeroSection";
+export { FeaturedCardsCarousel } from "./FeaturedDropContextPanels/FeaturedDropContextPanels";
+export { HeroSection } from "./HeroSection/HeroSection";
 export { SoothsayerPanel } from "./SoothsayerPanel";
-export { StackedDecksPanel } from "./StackedDecksPanel";

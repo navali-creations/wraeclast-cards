@@ -23,7 +23,10 @@ import { Route as GameLeagueRouteImport } from './routes/$game/$league'
 import { Route as GameLeagueIndexRouteImport } from './routes/$game/$league/index'
 import { Route as GameLeagueStackedDecksRouteImport } from './routes/$game/$league/stacked-decks'
 import { Route as GameLeagueCardsIndexRouteImport } from './routes/$game/$league/cards/index'
+import { Route as GameLeagueStackedDecksCompareRouteImport } from './routes/$game/$league/stacked-decks_.compare'
 import { Route as GameLeagueCardsCardIdRouteImport } from './routes/$game/$league/cards/$cardId'
+import { Route as GameLeagueStackedDecksCompareIndexRouteImport } from './routes/$game/$league/stacked-decks_.compare.index'
+import { Route as GameLeagueStackedDecksCompareComparisonViewRouteImport } from './routes/$game/$league/stacked-decks_.compare.$comparisonView'
 
 const StackedDecksRoute = StackedDecksRouteImport.update({
   id: '/stacked-decks',
@@ -95,11 +98,29 @@ const GameLeagueCardsIndexRoute = GameLeagueCardsIndexRouteImport.update({
   path: '/cards/',
   getParentRoute: () => GameLeagueRoute,
 } as any)
+const GameLeagueStackedDecksCompareRoute =
+  GameLeagueStackedDecksCompareRouteImport.update({
+    id: '/stacked-decks_/compare',
+    path: '/stacked-decks/compare',
+    getParentRoute: () => GameLeagueRoute,
+  } as any)
 const GameLeagueCardsCardIdRoute = GameLeagueCardsCardIdRouteImport.update({
   id: '/cards/$cardId',
   path: '/cards/$cardId',
   getParentRoute: () => GameLeagueRoute,
 } as any)
+const GameLeagueStackedDecksCompareIndexRoute =
+  GameLeagueStackedDecksCompareIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => GameLeagueStackedDecksCompareRoute,
+  } as any)
+const GameLeagueStackedDecksCompareComparisonViewRoute =
+  GameLeagueStackedDecksCompareComparisonViewRouteImport.update({
+    id: '/$comparisonView',
+    path: '/$comparisonView',
+    getParentRoute: () => GameLeagueStackedDecksCompareRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -116,7 +137,10 @@ export interface FileRoutesByFullPath {
   '/$game/$league/stacked-decks': typeof GameLeagueStackedDecksRoute
   '/$game/$league/': typeof GameLeagueIndexRoute
   '/$game/$league/cards/$cardId': typeof GameLeagueCardsCardIdRoute
+  '/$game/$league/stacked-decks/compare': typeof GameLeagueStackedDecksCompareRouteWithChildren
   '/$game/$league/cards/': typeof GameLeagueCardsIndexRoute
+  '/$game/$league/stacked-decks/compare/$comparisonView': typeof GameLeagueStackedDecksCompareComparisonViewRoute
+  '/$game/$league/stacked-decks/compare/': typeof GameLeagueStackedDecksCompareIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -133,6 +157,8 @@ export interface FileRoutesByTo {
   '/$game/$league': typeof GameLeagueIndexRoute
   '/$game/$league/cards/$cardId': typeof GameLeagueCardsCardIdRoute
   '/$game/$league/cards': typeof GameLeagueCardsIndexRoute
+  '/$game/$league/stacked-decks/compare/$comparisonView': typeof GameLeagueStackedDecksCompareComparisonViewRoute
+  '/$game/$league/stacked-decks/compare': typeof GameLeagueStackedDecksCompareIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -150,7 +176,10 @@ export interface FileRoutesById {
   '/$game/$league/stacked-decks': typeof GameLeagueStackedDecksRoute
   '/$game/$league/': typeof GameLeagueIndexRoute
   '/$game/$league/cards/$cardId': typeof GameLeagueCardsCardIdRoute
+  '/$game/$league/stacked-decks_/compare': typeof GameLeagueStackedDecksCompareRouteWithChildren
   '/$game/$league/cards/': typeof GameLeagueCardsIndexRoute
+  '/$game/$league/stacked-decks_/compare/$comparisonView': typeof GameLeagueStackedDecksCompareComparisonViewRoute
+  '/$game/$league/stacked-decks_/compare/': typeof GameLeagueStackedDecksCompareIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -169,7 +198,10 @@ export interface FileRouteTypes {
     | '/$game/$league/stacked-decks'
     | '/$game/$league/'
     | '/$game/$league/cards/$cardId'
+    | '/$game/$league/stacked-decks/compare'
     | '/$game/$league/cards/'
+    | '/$game/$league/stacked-decks/compare/$comparisonView'
+    | '/$game/$league/stacked-decks/compare/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -186,6 +218,8 @@ export interface FileRouteTypes {
     | '/$game/$league'
     | '/$game/$league/cards/$cardId'
     | '/$game/$league/cards'
+    | '/$game/$league/stacked-decks/compare/$comparisonView'
+    | '/$game/$league/stacked-decks/compare'
   id:
     | '__root__'
     | '/'
@@ -202,7 +236,10 @@ export interface FileRouteTypes {
     | '/$game/$league/stacked-decks'
     | '/$game/$league/'
     | '/$game/$league/cards/$cardId'
+    | '/$game/$league/stacked-decks_/compare'
     | '/$game/$league/cards/'
+    | '/$game/$league/stacked-decks_/compare/$comparisonView'
+    | '/$game/$league/stacked-decks_/compare/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -318,6 +355,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof GameLeagueCardsIndexRouteImport
       parentRoute: typeof GameLeagueRoute
     }
+    '/$game/$league/stacked-decks_/compare': {
+      id: '/$game/$league/stacked-decks_/compare'
+      path: '/stacked-decks/compare'
+      fullPath: '/$game/$league/stacked-decks/compare'
+      preLoaderRoute: typeof GameLeagueStackedDecksCompareRouteImport
+      parentRoute: typeof GameLeagueRoute
+    }
     '/$game/$league/cards/$cardId': {
       id: '/$game/$league/cards/$cardId'
       path: '/cards/$cardId'
@@ -325,13 +369,46 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof GameLeagueCardsCardIdRouteImport
       parentRoute: typeof GameLeagueRoute
     }
+    '/$game/$league/stacked-decks_/compare/': {
+      id: '/$game/$league/stacked-decks_/compare/'
+      path: '/'
+      fullPath: '/$game/$league/stacked-decks/compare/'
+      preLoaderRoute: typeof GameLeagueStackedDecksCompareIndexRouteImport
+      parentRoute: typeof GameLeagueStackedDecksCompareRoute
+    }
+    '/$game/$league/stacked-decks_/compare/$comparisonView': {
+      id: '/$game/$league/stacked-decks_/compare/$comparisonView'
+      path: '/$comparisonView'
+      fullPath: '/$game/$league/stacked-decks/compare/$comparisonView'
+      preLoaderRoute: typeof GameLeagueStackedDecksCompareComparisonViewRouteImport
+      parentRoute: typeof GameLeagueStackedDecksCompareRoute
+    }
   }
 }
+
+interface GameLeagueStackedDecksCompareRouteChildren {
+  GameLeagueStackedDecksCompareComparisonViewRoute: typeof GameLeagueStackedDecksCompareComparisonViewRoute
+  GameLeagueStackedDecksCompareIndexRoute: typeof GameLeagueStackedDecksCompareIndexRoute
+}
+
+const GameLeagueStackedDecksCompareRouteChildren: GameLeagueStackedDecksCompareRouteChildren =
+  {
+    GameLeagueStackedDecksCompareComparisonViewRoute:
+      GameLeagueStackedDecksCompareComparisonViewRoute,
+    GameLeagueStackedDecksCompareIndexRoute:
+      GameLeagueStackedDecksCompareIndexRoute,
+  }
+
+const GameLeagueStackedDecksCompareRouteWithChildren =
+  GameLeagueStackedDecksCompareRoute._addFileChildren(
+    GameLeagueStackedDecksCompareRouteChildren,
+  )
 
 interface GameLeagueRouteChildren {
   GameLeagueStackedDecksRoute: typeof GameLeagueStackedDecksRoute
   GameLeagueIndexRoute: typeof GameLeagueIndexRoute
   GameLeagueCardsCardIdRoute: typeof GameLeagueCardsCardIdRoute
+  GameLeagueStackedDecksCompareRoute: typeof GameLeagueStackedDecksCompareRouteWithChildren
   GameLeagueCardsIndexRoute: typeof GameLeagueCardsIndexRoute
 }
 
@@ -339,6 +416,8 @@ const GameLeagueRouteChildren: GameLeagueRouteChildren = {
   GameLeagueStackedDecksRoute: GameLeagueStackedDecksRoute,
   GameLeagueIndexRoute: GameLeagueIndexRoute,
   GameLeagueCardsCardIdRoute: GameLeagueCardsCardIdRoute,
+  GameLeagueStackedDecksCompareRoute:
+    GameLeagueStackedDecksCompareRouteWithChildren,
   GameLeagueCardsIndexRoute: GameLeagueCardsIndexRoute,
 }
 

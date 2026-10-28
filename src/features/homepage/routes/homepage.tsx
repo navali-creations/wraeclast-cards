@@ -1,10 +1,35 @@
+import type { Variants } from "motion/react";
+import * as m from "motion/react-m";
 import {
-  CardDatabasePanel,
-  // DownloadsPanel,
+  FeaturedCardsCarousel,
   HeroSection,
   SoothsayerPanel,
-  StackedDecksPanel,
 } from "../components";
+
+const panelGroupVariants: Variants = {
+  hidden: {},
+  visible: {
+    transition: {
+      delayChildren: 0.08,
+      staggerChildren: 0.14,
+    },
+  },
+};
+
+const panelVariants: Variants = {
+  hidden: {
+    opacity: 0,
+    y: -18,
+  },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.35,
+      ease: [0.22, 1, 0.36, 1],
+    },
+  },
+};
 
 export function HomepagePage() {
   return (
@@ -15,24 +40,18 @@ export function HomepagePage() {
       </div>
 
       {/* Right — feature panels */}
-      <div className="flex flex-1 flex-col gap-4">
-        <div className="order-2 lg:order-1">
+      <m.div
+        className="flex flex-1 flex-col gap-4"
+        variants={panelGroupVariants}
+      >
+        <m.div variants={panelVariants}>
           <SoothsayerPanel />
-        </div>
+        </m.div>
 
-        <div className="order-1 grid grid-cols-1 gap-4 md:grid-cols-[minmax(0,58%)_minmax(0,1fr)] lg:order-2">
-          {/* Card database (wider) */}
-          <div>
-            <CardDatabasePanel />
-          </div>
-
-          {/* Stacked Decks + Downloads (narrower, stacked) */}
-          <div className="flex flex-col gap-4">
-            <StackedDecksPanel />
-            {/*<DownloadsPanel />*/}
-          </div>
-        </div>
-      </div>
+        <m.div variants={panelVariants}>
+          <FeaturedCardsCarousel />
+        </m.div>
+      </m.div>
     </div>
   );
 }

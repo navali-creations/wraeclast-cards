@@ -3,8 +3,10 @@ import {
   AGPL_3_LICENSE_URL,
   createCardSeoMetadata,
   createLeagueSeoMetadata,
+  createStaticPageSeoMetadata,
   type SeoMetadata,
 } from "./seoMetadata";
+import { STACKED_DECKS_COMPARISON_VIEWS } from "./stackedDecksComparisonViews";
 
 function structuredDataGraph(metadata: SeoMetadata) {
   const document = metadata.structuredData?.[0] as
@@ -57,6 +59,30 @@ describe("SEO structured data", () => {
     });
   });
 
+  it("builds metadata for every nested comparison route", () => {
+    for (const comparisonView of STACKED_DECKS_COMPARISON_VIEWS) {
+      const metadata = createLeagueSeoMetadata({
+        gameLabel: "PoE 1",
+        gameSeoLabel: "Path of Exile",
+        gameSlug: "path-of-exile",
+        leagueName: "Mirage",
+        leagueSlug: "mirage",
+        page: "stacked-decks-compare",
+        comparisonView,
+      });
+      const [page, breadcrumbs] = structuredDataGraph(metadata);
+
+      expect(metadata.pathname).toBe(
+        `/path-of-exile/mirage/stacked-decks/compare/${comparisonView}`,
+      );
+      expect(metadata.title).toContain("Compare Stacked Deck");
+      expect(page).toMatchObject({ "@type": "WebPage" });
+      expect(breadcrumbs.itemListElement).toContainEqual(
+        expect.objectContaining({ name: "Compare Leagues" }),
+      );
+    }
+  });
+
   it("expresses observed rates as percentages and builds one breadcrumb trail", () => {
     const metadata = createCardSeoMetadata({
       gameLabel: "PoE 1",
@@ -89,5 +115,25 @@ describe("SEO structured data", () => {
       expect.objectContaining({ position: 3, name: "Divination Cards" }),
       expect.objectContaining({ position: 4, name: "A Chilling Wind" }),
     ]);
+  });
+});
+
+describe("static page SEO metadata", () => {
+  it("describes the privacy policy data handling", () => {
+    expect(createStaticPageSeoMetadata("privacy")).toEqual({
+      pathname: "/privacy-policy",
+      title: "Privacy Policy | wraeclast.cards",
+      description:
+        "How wraeclast.cards handles error reporting, Cloudflare delivery and web performance data, and aggregated Soothsayer drop-rate data.",
+    });
+  });
+
+  it("describes the attribution page credits", () => {
+    expect(createStaticPageSeoMetadata("attributions")).toEqual({
+      pathname: "/attributions",
+      title: "Credits and Attributions | wraeclast.cards",
+      description:
+        "Design, codebase, data-source, and community attributions for wraeclast.cards, including Bloderyn, Prohibited Library, poe.ninja, and the Path of Exile Wiki.",
+    });
   });
 });

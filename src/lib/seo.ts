@@ -13,11 +13,13 @@ import {
   SITE_NAME,
   SITE_URL,
 } from "./seoMetadata";
+import type { StackedDecksComparisonView } from "./stackedDecksComparisonViews";
 
 interface GameLeagueSeoOptions {
   game: EGame;
   leagueSlug: string;
-  page: "home" | "cards" | "stacked-decks";
+  page: "home" | "cards" | "stacked-decks" | "stacked-decks-compare";
+  comparisonView?: StackedDecksComparisonView;
 }
 
 interface GameLeagueCardSeoOptions {
@@ -129,6 +131,7 @@ export function createGameLeagueSeoHead({
   game,
   leagueSlug,
   page,
+  comparisonView = "movers",
 }: GameLeagueSeoOptions) {
   const gameSlug = gameToSlug(game);
   const gameLabel = gameToLabel(game);
@@ -136,7 +139,9 @@ export function createGameLeagueSeoHead({
   const pathname =
     page === "home"
       ? `/${gameSlug}/${leagueSlug}`
-      : `/${gameSlug}/${leagueSlug}/${page}`;
+      : page === "stacked-decks-compare"
+        ? `/${gameSlug}/${leagueSlug}/stacked-decks/compare/${comparisonView}`
+        : `/${gameSlug}/${leagueSlug}/${page}`;
 
   return createSeoHead(
     createLeagueSeoMetadata({
@@ -146,6 +151,7 @@ export function createGameLeagueSeoHead({
       leagueName,
       leagueSlug,
       page,
+      comparisonView,
       // PoE 2 routes are placeholders until their datasets exist.
       robots: game === EGame.Poe2 ? "noindex, follow" : "index, follow",
       // Production HTML embeds the same facts used by the static generator so

@@ -1,7 +1,12 @@
 import { execFile } from "node:child_process";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 import { promisify } from "node:util";
+import {
+  buildDropContextDocuments,
+  validateDropContextPayload,
+} from "./drop-rate-context.mjs";
 import { filterPublishedDropRateLeagues } from "./drop-rate-leagues.mjs";
 import { validateReferenceCards } from "./drop-rate-reference.mjs";
 import { createDropRateRequestHeaders } from "./drop-rate-request.mjs";
@@ -11,10 +16,11 @@ const DEFAULT_OUTPUT_DIR = "dist/data/drop-rates";
 const DEFAULT_PUBLIC_BASE_URL = "https://wraeclast.cards/data/drop-rates";
 const DEFAULT_REFERENCE_DATA_BASE_URL =
   "https://cdn.jsdelivr.net/gh/navali-creations/fateweaver@main/packages/poe1-divination-cards/data";
-const SCHEMA_VERSION = 6;
+const SCHEMA_VERSION = 9;
 const CACHE_SECONDS = 7 * 24 * 60 * 60;
 const BROWSER_CACHE_SECONDS = 60 * 60;
 const FETCH_TIMEOUT_MS = 15_000;
+const DROP_CONTEXT_FETCH_TIMEOUT_MS = 60_000;
 const execFileAsync = promisify(execFile);
 
 function parseArgs(argv) {
@@ -372,6 +378,30 @@ async function fetchDropRates({
   return payload;
 }
 
+async function fetchDropContext({
+  supabaseUrl,
+  apiKey,
+  callerToken,
+  game,
+  leagueName,
+  cardNames,
+}) {
+  const url = new URL(
+    `${normalizeBaseUrl(supabaseUrl)}/functions/v1/get-community-drop-context`,
+  );
+  url.searchParams.set("game", game);
+  url.searchParams.set("league", leagueName);
+  url.searchParams.set("projection", "static");
+
+  const payload = await fetchJson(url.toString(), {
+    headers: createDropRateRequestHeaders({ apiKey, callerToken }),
+    signal: AbortSignal.timeout(DROP_CONTEXT_FETCH_TIMEOUT_MS),
+  });
+
+  validateDropContextPayload(game, leagueName, payload, cardNames);
+  return payload;
+}
+
 function roundRatio(value) {
   if (!Number.isFinite(value)) return null;
   return Number(value.toFixed(12));
@@ -614,6 +644,18 @@ function leagueFilePath(outputDir, game, leagueId) {
   return path.join(outputDir, game, `${leagueId}.json`);
 }
 
+function supplementalFileName(leagueId, kind) {
+  return `${leagueId}.${kind}.json`;
+}
+
+function supplementalFilePath(outputDir, game, leagueId, kind) {
+  return path.join(outputDir, game, supplementalFileName(leagueId, kind));
+}
+
+function supplementalUrl(game, leagueId, kind) {
+  return `${game}/${supplementalFileName(leagueId, kind)}`;
+}
+
 function leagueUrl(game, leagueId) {
   return `/data/drop-rates/${game}/${leagueId}.json`;
 }
@@ -626,6 +668,7 @@ async function writeLeagueFile({
   cards,
   historical,
   referenceData,
+  dropContext,
 }) {
   const leagueMetadata = publicLeagueMetadata(
     league,
@@ -633,18 +676,59 @@ async function writeLeagueFile({
     referenceData,
   );
   const referenceMetadata = publicReferenceMetadata(referenceData);
+  const context = {
+    time_buckets_url: supplementalUrl(game, league.id, "time-buckets"),
+    locations_url: supplementalUrl(game, league.id, "locations"),
+  };
   const body = {
     schema_version: SCHEMA_VERSION,
     generated_at: generatedAt,
     game,
     league: leagueMetadata,
     ...(referenceMetadata ? { reference: referenceMetadata } : {}),
+    context,
     cards,
   };
 
   const target = leagueFilePath(outputDir, game, league.id);
   await mkdir(path.dirname(target), { recursive: true });
-  await writeFile(target, jsonStringify(body));
+  const supplementalMetadata = {
+    schema_version: SCHEMA_VERSION,
+    generated_at: generatedAt,
+    game,
+    league: {
+      id: league.id,
+      name: league.name,
+      historical,
+    },
+  };
+  const timeBucketsDocument = {
+    ...supplementalMetadata,
+    bucket_minutes: 15,
+    observed_total: dropContext.observedTotal,
+    totals: dropContext.timeBucketTotals,
+    cards: dropContext.timeBucketsByCard,
+  };
+  const locationsDocument = {
+    ...supplementalMetadata,
+    observed_total: dropContext.observedTotal,
+    located_total: dropContext.locatedTotal,
+    totals: dropContext.locationTotals,
+    card_totals: dropContext.locatedEventsByCard,
+    cards: dropContext.locationsByCard,
+  };
+
+  await Promise.all([
+    writeFile(target, jsonStringify(body)),
+    writeFile(
+      supplementalFilePath(outputDir, game, league.id, "time-buckets"),
+      jsonStringify(timeBucketsDocument),
+    ),
+    writeFile(
+      supplementalFilePath(outputDir, game, league.id, "locations"),
+      jsonStringify(locationsDocument),
+    ),
+  ]);
 
   return {
     ...leagueMetadata,
@@ -703,6 +787,31 @@ function normalizePreservedCard(card, leagueName) {
   return normalized;
 }
 
+function normalizePreservedCountMap(
+  value,
+  leagueName,
+  cardName,
+  field,
+  validateKey = (key) => key.trim().length > 0,
+) {
+  if (value === undefined) return {};
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    throw new Error(`Invalid preserved ${field} for ${leagueName}/${cardName}`);
+  }
+
+  const entries = Object.entries(value);
+  if (
+    entries.some(
+      ([key, count]) =>
+        !validateKey(key) || !Number.isInteger(count) || count < 0,
+    )
+  ) {
+    throw new Error(`Invalid preserved ${field} for ${leagueName}/${cardName}`);
+  }
+
+  return Object.fromEntries(entries);
+}
+
 function normalizePreservedLeagueDocument(value, game, previousLeague) {
   if (!value || typeof value !== "object" || Array.isArray(value)) {
     throw new Error(`Invalid preserved data for ${game}/${previousLeague.id}`);
@@ -715,6 +824,9 @@ function normalizePreservedLeagueDocument(value, game, previousLeague) {
     typeof league !== "object" ||
     Array.isArray(league) ||
     league.id !== previousLeague.id ||
+    !value.context ||
+    typeof value.context !== "object" ||
+    Array.isArray(value.context) ||
     !Array.isArray(value.cards)
   ) {
     throw new Error(`Invalid preserved data for ${game}/${previousLeague.id}`);
@@ -765,6 +877,20 @@ function normalizePreservedLeagueDocument(value, game, previousLeague) {
     ...(referenceSourceUrl === undefined
       ? {}
       : { reference: { source_url: referenceSourceUrl } }),
+    context: {
+      time_buckets_url: requiredPreservedSupplementalUrl(
+        value.context.time_buckets_url,
+        game,
+        previousLeague.id,
+        "time-buckets",
+      ),
+      locations_url: requiredPreservedSupplementalUrl(
+        value.context.locations_url,
+        game,
+        previousLeague.id,
+        "locations",
+      ),
+    },
     cards,
   };
 
@@ -778,6 +904,164 @@ function normalizePreservedLeagueDocument(value, game, previousLeague) {
     },
   };
 }
+
+function requiredPreservedSupplementalUrl(value, game, leagueId, kind) {
+  const expected = supplementalUrl(game, leagueId, kind);
+  if (value !== expected) {
+    throw new Error(
+      `Invalid preserved ${kind} URL for ${game}/${leagueId}: expected ${expected}`,
+    );
+  }
+  return value;
+}
+
+function normalizePreservedSupplementalDocument(
+  value,
+  { game, leagueId, leagueName, historical, kind },
+) {
+  if (
+    !value ||
+    typeof value !== "object" ||
+    Array.isArray(value) ||
+    value.schema_version !== SCHEMA_VERSION ||
+    value.game !== game ||
+    !value.league ||
+    value.league.id !== leagueId ||
+    !value.cards ||
+    typeof value.cards !== "object" ||
+    Array.isArray(value.cards) ||
+    (kind === "time-buckets" && value.bucket_minutes !== 15)
+  ) {
+    throw new Error(`Invalid preserved ${kind} data for ${game}/${leagueId}`);
+  }
+
+  const validateTimeBucketKey = (key) => {
+    const minute = Number(key);
+    return (
+      Number.isInteger(minute) &&
+      minute >= 0 &&
+      minute < 1440 &&
+      minute % 15 === 0
+    );
+  };
+  const validateLocationKey = (key) => key.trim().length > 0;
+  if (!Number.isInteger(value.observed_total) || value.observed_total < 0) {
+    throw new Error(`Invalid preserved ${kind} total for ${game}/${leagueId}`);
+  }
+  if (
+    kind === "locations" &&
+    (!Number.isInteger(value.located_total) || value.located_total < 0)
+  ) {
+    throw new Error(`Invalid preserved located total for ${game}/${leagueId}`);
+  }
+  const totals =
+    kind === "time-buckets"
+      ? {
+          utc: normalizePreservedCountMap(
+            value.totals?.utc,
+            leagueName,
+            "all cards",
+            `${kind} UTC totals`,
+            validateTimeBucketKey,
+          ),
+          local: normalizePreservedCountMap(
+            value.totals?.local,
+            leagueName,
+            "all cards",
+            `${kind} player-local totals`,
+            validateTimeBucketKey,
+          ),
+        }
+      : normalizePreservedCountMap(
+          value.totals,
+          leagueName,
+          "all cards",
+          `${kind} totals`,
+          validateLocationKey,
+        );
+  const cards = Object.fromEntries(
+    Object.entries(value.cards).map(([cardName, counts]) => {
+      if (cardName.trim().length === 0) {
+        throw new Error(
+          `Invalid preserved ${kind} card for ${game}/${leagueId}`,
+        );
+      }
+
+      if (kind === "time-buckets") {
+        if (
+          !counts ||
+          typeof counts !== "object" ||
+          Array.isArray(counts) ||
+          Object.keys(counts).some((key) => key !== "utc" && key !== "local")
+        ) {
+          throw new Error(
+            `Invalid preserved ${kind} for ${leagueName}/${cardName}`,
+          );
+        }
+
+        return [
+          cardName,
+          {
+            utc: normalizePreservedCountMap(
+              counts.utc,
+              leagueName,
+              cardName,
+              `${kind} UTC`,
+              validateTimeBucketKey,
+            ),
+            local: normalizePreservedCountMap(
+              counts.local,
+              leagueName,
+              cardName,
+              `${kind} player-local`,
+              validateTimeBucketKey,
+            ),
+          },
+        ];
+      }
+
+      return [
+        cardName,
+        normalizePreservedCountMap(
+          counts,
+          leagueName,
+          cardName,
+          kind,
+          validateLocationKey,
+        ),
+      ];
+    }),
+  );
+  const cardTotals =
+    kind === "locations"
+      ? normalizePreservedCountMap(
+          value.card_totals,
+          leagueName,
+          "all cards",
+          "located card totals",
+        )
+      : undefined;
+
+  return {
+    schema_version: SCHEMA_VERSION,
+    generated_at:
+      typeof value.generated_at === "string" ? value.generated_at : "",
+    game,
+    league: { id: leagueId, name: leagueName, historical },
+    ...(kind === "time-buckets" ? { bucket_minutes: 15 } : {}),
+    observed_total: value.observed_total,
+    ...(kind === "locations"
+      ? {
+          located_total: value.located_total,
+          card_totals: cardTotals,
+        }
+      : {}),
+    totals,
+    cards,
+  };
+}
+
+export { normalizePreservedSupplementalDocument };
 
 async function preservePreviousLeague({
   outputDir,
@@ -825,7 +1109,39 @@ async function preservePreviousLeague({
   );
   const target = leagueFilePath(outputDir, game, previousLeague.id);
   await mkdir(path.dirname(target), { recursive: true });
-  await writeFile(target, jsonStringify(preserved.document));
+  const supplementalDocuments = await Promise.all(
+    ["time-buckets", "locations"].map(async (kind) => {
+      const urlKey =
+        kind === "time-buckets" ? "time_buckets_url" : "locations_url";
+      const url = new URL(
+        preserved.document.context[urlKey],
+        `${publicBaseUrl}/`,
+      ).toString();
+      const value = await fetchJson(url, {
+        headers: { Accept: "application/json" },
+      });
+      return [
+        kind,
+        normalizePreservedSupplementalDocument(value, {
+          game,
+          leagueId: previousLeague.id,
+          leagueName: preserved.document.league.name,
+          historical: true,
+          kind,
+        }),
+      ];
+    }),
+  );
+
+  await Promise.all([
+    writeFile(target, jsonStringify(preserved.document)),
+    ...supplementalDocuments.map(([kind, document]) =>
+      writeFile(
+        supplementalFilePath(outputDir, game, previousLeague.id, kind),
+        jsonStringify(document),
+      ),
+    ),
+  ]);
 
   return preserved.league;
 }
@@ -963,6 +1279,14 @@ async function main() {
         allowLatestFallback: true,
       });
       const enriched = enrichCardsWithReference(cards, referenceData);
+      const dropContext = await fetchDropContext({
+        supabaseUrl,
+        apiKey,
+        callerToken,
+        game,
+        leagueName: league.name,
+        cardNames: enriched.cards.map((card) => card.name),
+      });
 
       leagueEntries.push(
         await writeLeagueFile({
@@ -973,6 +1297,7 @@ async function main() {
           cards: enriched.cards,
           historical: false,
           referenceData,
+          dropContext: buildDropContextDocuments(dropContext),
         }),
       );
       generatedLeagueIds.add(league.id);
@@ -1003,6 +1328,14 @@ async function main() {
           allowLatestFallback: false,
         });
         const enriched = enrichCardsWithReference(cards, referenceData);
+        const dropContext = await fetchDropContext({
+          supabaseUrl,
+          apiKey,
+          callerToken,
+          game,
+          leagueName: league.name,
+          cardNames: enriched.cards.map((card) => card.name),
+        });
 
         leagueEntries.push(
           await writeLeagueFile({
@@ -1013,6 +1346,7 @@ async function main() {
             cards: enriched.cards,
             historical: true,
             referenceData,
+            dropContext: buildDropContextDocuments(dropContext),
           }),
         );
         generatedLeagueIds.add(league.id);
@@ -1055,7 +1389,13 @@ async function main() {
   console.log(`[drop-rates] Wrote static data to ${outputDir}`);
 }
 
-main().catch((error) => {
-  console.error(error);
-  process.exit(1);
-});
+const isMainModule =
+  process.argv[1] !== undefined &&
+  path.resolve(process.argv[1]) === fileURLToPath(import.meta.url);
+
+if (isMainModule) {
+  main().catch((error) => {
+    console.error(error);
+    process.exit(1);
+  });
+}

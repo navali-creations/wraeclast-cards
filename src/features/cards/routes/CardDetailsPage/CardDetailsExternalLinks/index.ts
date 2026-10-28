@@ -1,1 +1,0 @@
-export { CardDetailsExternalLinks } from "./CardDetailsExternalLinks";

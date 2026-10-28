@@ -44,10 +44,9 @@ await runPnpm(["build"], buildEnv);
 
 if (isPreviewBranch) {
   console.log(
-    `[build:cloudflare] Reusing committed drop-rate data for preview branch "${cloudflareBranch}".`,
+    `[build:cloudflare] Skipping drop-rate generation and static page generation for preview branch "${cloudflareBranch}".`,
   );
 } else {
   await runPnpm(["drop-rates:generate"]);
+  await runPnpm(["sitemap:generate"], buildEnv);
 }
-
-await runPnpm(["sitemap:generate"], buildEnv);

@@ -7,11 +7,13 @@ type StaticRoutePath = Exclude<
   `${string}$${string}` | "." | ".."
 >;
 
-// Game-link suffixes with no further dynamic segments (e.g. excludes /cards/$cardId)
-type StaticGameLinkSuffix = Exclude<GameLinkSuffix, `${string}$${string}`>;
-
 export type NavigationItem =
-  | { label: string; path: StaticGameLinkSuffix; gameScoped: true }
+  | {
+      label: string;
+      path: GameLinkSuffix;
+      params?: Record<string, string>;
+      gameScoped: true;
+    }
   | { label: string; path: StaticRoutePath; gameScoped?: false };
 
 type FooterNavigationItem = {
@@ -24,6 +26,15 @@ export const navigationRoutes: NavigationItem[] = [
   { label: "Stacked Decks", path: "/stacked-decks", gameScoped: true },
   { label: "Soothsayer", path: "/soothsayer" },
   // { label: "Downloads", path: "/downloads" },
+] as const;
+
+export const footerGameNavigation: NavigationItem[] = [
+  {
+    label: "Compare leagues",
+    path: "/stacked-decks/compare/$comparisonView",
+    params: { comparisonView: "movers" },
+    gameScoped: true,
+  },
 ] as const;
 
 export const footerNavigation: FooterNavigationItem[] = [

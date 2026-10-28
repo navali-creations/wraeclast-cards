@@ -4,6 +4,7 @@ import {
   formatSignedPercentage,
 } from "../../../../../lib/percentage";
 import type { StackedDecksRow } from "../../../hooks";
+import { DropTimeMiniChart } from "../../DropContextCharts/DropTimeMiniChart";
 import { CardNamePreview } from "../CardNamePreview/CardNamePreview";
 import { ColumnHeader } from "./ColumnHeader";
 import { ComparedToReferenceCell, DeltaPercentCell } from "./cells";
@@ -62,7 +63,8 @@ function rankColumn() {
 
 function nameColumn() {
   return col("name", "Card", {
-    tdClassName: "font-fontin-sc text-(--wc-accent-border)",
+    thClassName: "min-w-56",
+    tdClassName: "min-w-56 font-fontin-sc text-(--wc-accent-border)",
     cell: (ctx) => (
       <CardNamePreview
         cardId={divinationCardSlug(ctx.row.original.name)}
@@ -113,7 +115,7 @@ function chanceDifferenceColumn(verified: boolean) {
     {
       id: "chance_difference",
       header: headerWithTooltip(
-        "Chance Difference",
+        "Difference",
         "Players Saw minus Reference Estimate, shown as a raw percentage-point difference.",
       ),
       sortUndefined: "last",
@@ -144,6 +146,30 @@ function dropsReportedColumn(verified: boolean) {
   );
 }
 
+function timeOfDayColumn() {
+  return columnHelper.display({
+    id: "time_buckets",
+    header: headerWithTooltip(
+      "Time of Day",
+      "When this card was reported compared with every reported card that includes time data. This shows an observed pattern, not a change in drop chance.",
+    ),
+    enableSorting: false,
+    meta: {
+      align: "right",
+      thClassName: "w-40 min-w-40",
+      tdClassName: "w-40 min-w-40",
+    },
+    cell: ({ row }) => (
+      <DropTimeMiniChart
+        utcTimeBuckets={row.original.time_buckets?.utc ?? {}}
+        localTimeBuckets={row.original.time_buckets?.local ?? {}}
+        utcTotalBuckets={row.original.time_bucket_totals?.utc ?? {}}
+        localTotalBuckets={row.original.time_bucket_totals?.local ?? {}}
+      />
+    ),
+  });
+}
+
 export function createColumns(verified: boolean) {
   return [
     rankColumn(),
@@ -151,7 +177,7 @@ export function createColumns(verified: boolean) {
     col(
       "reference_estimated_chance",
       headerWithTooltip(
-        "Reference Estimate",
+        "Estimate",
         "Modeled chance derived from the Prohibited Library average-weight formula; it is not a known drop probability.",
       ),
       {
@@ -178,6 +204,7 @@ export function createColumns(verified: boolean) {
         cell: ComparedToReferenceCell,
       },
     ),
+    timeOfDayColumn(),
     dropsReportedColumn(verified),
   ];
 }
@@ -229,6 +256,7 @@ export function createAdvancedColumns(verified: boolean) {
         cell: (ctx) => <DeltaPercentCell value={ctx.getValue()} />,
       },
     ),
+    timeOfDayColumn(),
     dropsReportedColumn(verified),
   ];
 }

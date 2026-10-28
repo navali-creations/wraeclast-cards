@@ -15,6 +15,7 @@ const FULL_WIDTH_ROUTE_IDS = new Set([
   "/soothsayer/",
   "/soothsayer/auth",
 ]);
+const STACKED_DECKS_COMPARISON_PATH_SEGMENT = "/stacked-decks/compare";
 
 const pageVariants: Variants = {
   hidden: {},
@@ -30,7 +31,15 @@ export function AppLayout() {
   const matches = useMatches();
   const leafMatch = matches[matches.length - 1];
   const routeId = leafMatch?.routeId;
-  const isFullWidthRoute = routeId ? FULL_WIDTH_ROUTE_IDS.has(routeId) : false;
+  const isStackedDecksComparisonRoute = matches.some((match) =>
+    match.pathname.includes(STACKED_DECKS_COMPARISON_PATH_SEGMENT),
+  );
+  const isFullWidthRoute = routeId
+    ? FULL_WIDTH_ROUTE_IDS.has(routeId) || isStackedDecksComparisonRoute
+    : false;
+  const pageTransitionKey = isStackedDecksComparisonRoute
+    ? STACKED_DECKS_COMPARISON_PATH_SEGMENT
+    : leafMatch?.id;
   const isHomepage = routeId === "/" || routeId === "/$game/$league/";
 
   return (
@@ -44,7 +53,7 @@ export function AppLayout() {
         })}
       >
         <m.div
-          key={leafMatch?.id}
+          key={pageTransitionKey}
           className={clsx("flex-1 flex flex-col", {
             "mx-auto w-full max-w-300 max-md:px-4 md:px-6 py-6":
               !isFullWidthRoute,

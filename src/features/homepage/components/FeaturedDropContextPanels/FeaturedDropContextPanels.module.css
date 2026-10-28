@@ -1,0 +1,111 @@
+.contentShell {
+  --carousel-layout-gap: 0.75rem;
+  --carousel-control-size: 2rem;
+  --featured-slide-min-height: 20rem;
+  container-type: inline-size;
+}
+
+.contentFrame {
+  min-width: 0;
+  min-height: calc(
+    var(--featured-slide-min-height) +
+    var(--carousel-layout-gap) +
+    var(--carousel-control-size)
+  );
+}
+
+.loadingContent {
+  grid-template-columns: 9rem minmax(0, 1fr);
+}
+
+.slideContent {
+  position: relative;
+  display: grid;
+  grid-template-columns: 55% 45%;
+  min-height: var(--featured-slide-min-height);
+  align-items: flex-start;
+  padding: 1.25rem 0.5rem;
+}
+
+.visualColumn {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  width: 100%;
+  min-width: 0;
+  justify-content: center;
+  will-change: transform;
+}
+
+.cardScale {
+  flex: none;
+  transform-origin: 50% 0;
+  will-change: transform;
+}
+
+.detailsReveal {
+  position: relative;
+  width: calc(100% + 1.5rem);
+  min-width: 0;
+  margin-left: -1.5rem;
+  will-change: opacity, transform;
+}
+
+.detailsContent {
+  box-sizing: border-box;
+  width: 100%;
+  padding-left: 1.5rem;
+}
+
+@container (max-width: 620px) {
+  .contentFrame {
+    min-height: 33.75rem;
+  }
+
+  .loadingContent {
+    grid-template-columns: 1fr;
+  }
+
+  .slideContent {
+    min-height: 0;
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .detailsContent {
+    width: 100%;
+    padding-left: 0;
+  }
+
+  .detailsReveal {
+    width: 100%;
+    margin-top: 2.5rem;
+    margin-left: 0;
+  }
+
+  .visualColumn {
+    /* biome-ignore lint/complexity/noImportantStyles: overrides Motion's inline sibling-centering transform in the single-column layout */
+    transform: none !important;
+  }
+}
+
+@media (max-width: 667px) {
+  .visualColumn,
+  .detailsReveal {
+    /* biome-ignore lint/complexity/noImportantStyles: narrow layouts use opacity-only transitions instead of Motion's inline transforms */
+    transform: none !important;
+  }
+
+  .cardScale {
+    /* biome-ignore lint/complexity/noImportantStyles: preserves the active card size without animating between scales */
+    transform: scale(1.22) !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .visualColumn,
+  .cardScale,
+  .detailsReveal {
+    will-change: auto;
+  }
+}

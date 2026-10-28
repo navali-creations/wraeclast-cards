@@ -24,6 +24,7 @@ import {
   createStaticPageSeoMetadata,
   SITE_NAME,
 } from "../src/lib/seoMetadata.ts";
+import { STACKED_DECKS_COMPARISON_VIEWS } from "../src/lib/stackedDecksComparisonViews.ts";
 
 const SITE_URL = (process.env.SITE_URL ?? "https://wraeclast.cards").replace(
   /\/+$/,
@@ -304,6 +305,7 @@ function leaguePageMetadata({
   cards,
   dropRates,
   page,
+  comparisonView,
 }) {
   const observedCards = dropRates.cards.filter(
     (card) => Number(card.count) > 0,
@@ -327,6 +329,7 @@ function leaguePageMetadata({
     leagueName: league.name,
     leagueSlug,
     page,
+    comparisonView,
     robots,
     facts: seoPageFacts,
     siteUrl: SITE_URL,
@@ -518,6 +521,21 @@ async function main() {
             cards,
             dropRates,
             page,
+          }),
+        );
+      }
+
+      for (const comparisonView of STACKED_DECKS_COMPARISON_VIEWS) {
+        entries.push(
+          leaguePageMetadata({
+            game,
+            gameConfig,
+            league,
+            leagueSlug,
+            cards,
+            dropRates,
+            page: "stacked-decks-compare",
+            comparisonView,
           }),
         );
       }

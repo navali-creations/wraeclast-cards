@@ -10,8 +10,6 @@ import { router } from "./router";
 import "./index.css";
 
 const sentryDsn = import.meta.env.VITE_SENTRY_DSN;
-const umamiScriptUrl = import.meta.env.VITE_UMAMI_SCRIPT_URL;
-const umamiWebsiteId = import.meta.env.VITE_UMAMI_WEBSITE_ID;
 const enableTelemetry = import.meta.env.PROD;
 
 if (enableTelemetry && sentryDsn) {
@@ -34,14 +32,6 @@ if (enableTelemetry && sentryDsn) {
       },
     },
   });
-}
-
-if (enableTelemetry && umamiScriptUrl && umamiWebsiteId) {
-  const script = document.createElement("script");
-  script.defer = true;
-  script.src = umamiScriptUrl;
-  script.dataset.websiteId = umamiWebsiteId;
-  document.head.append(script);
 }
 
 const rootElement = document.getElementById("root");

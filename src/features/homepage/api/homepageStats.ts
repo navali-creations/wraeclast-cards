@@ -15,6 +15,13 @@ const PERCENT_FORMATTER = new Intl.NumberFormat("en-US", {
   minimumFractionDigits: 0,
   style: "percent",
 });
+const MINIMUM_DISPLAYED_RATE = 0.0001;
+
+function formatHomepageRate(value: number) {
+  if (value > 0 && value < MINIMUM_DISPLAYED_RATE) return "<0.01%";
+
+  return PERCENT_FORMATTER.format(value);
+}
 
 export function formatHomepageNumber(value: number | undefined) {
   if (value === undefined) return "...";
@@ -29,18 +36,14 @@ export function totalObservedDrops(leagues: DropRateLeague[]) {
   );
 }
 
-export function topObservedDropRates(
+export function featuredObservedDropRates(
   cards: DropRateCard[] | undefined,
 ): HomepageDropRate[] {
-  if (!cards) return [];
-
-  return cards
-    .filter((card) => card.count > 0)
-    .slice()
-    .sort((left, right) => right.ratio - left.ratio)
-    .slice(0, 5)
-    .map((card) => ({
-      cardName: card.name,
-      rate: PERCENT_FORMATTER.format(card.ratio),
-    }));
+  return (
+    cards?.flatMap((card) =>
+      card.count > 0
+        ? [{ cardName: card.name, rate: formatHomepageRate(card.ratio) }]
+        : [],
+    ) ?? []
+  );
 }

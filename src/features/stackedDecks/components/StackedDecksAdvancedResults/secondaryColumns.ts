@@ -5,5 +5,6 @@ export const ADVANCED_SECONDARY_COLUMNS = [
     id: "community_estimated_weight_delta_vs_reference",
     label: "Weight Difference",
   },
+  { id: "time_buckets", label: "Time of Day" },
   { id: "count", label: "Drops Reported" },
 ] as const;

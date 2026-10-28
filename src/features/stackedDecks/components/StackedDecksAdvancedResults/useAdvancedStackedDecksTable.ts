@@ -7,6 +7,7 @@ const ADVANCED_RESPONSIVE_COLUMNS = {
     "reference_weight",
     "community_estimated_weight",
     "community_estimated_weight_delta_vs_reference",
+    "time_buckets",
     "count",
   ],
 };

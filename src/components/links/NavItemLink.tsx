@@ -20,6 +20,7 @@ export function NavItemLink({
     return (
       <InternalLink
         to={item.path}
+        params={item.params}
         className={className}
         activeProps={activeProps}
         onClick={onClick}
